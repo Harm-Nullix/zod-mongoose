@@ -1,4 +1,4 @@
-# @nullix/zod-mongoose-family
+# @nullix/zod-mongoose
 
 This is a monorepo containing the `@nullix/zod-mongoose` ecosystem, a collection of tools for integrating [Zod](https://github.com/colinhacks/zod) with [Mongoose](https://github.com/Automattic/mongoose).
 
