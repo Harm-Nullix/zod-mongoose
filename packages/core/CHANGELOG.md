@@ -1,3 +1,10 @@
+## 1.0.4
+
+### Patch Changes
+
+- 2f60bea: add acces public to release step
+- 2f60bea: v6 for release
+
 ## 1.0.3
 
 ### Patch Changes
