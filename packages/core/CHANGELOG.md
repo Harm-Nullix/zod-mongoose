@@ -1,3 +1,9 @@
+## 1.0.1
+
+### Patch Changes
+
+- 3454377: do not build docs for release
+
 ## 1.0.0
 
 ### Major Changes
