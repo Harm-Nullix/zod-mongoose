@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.1
+
+### Patch Changes
+
+- 3454377: do not build docs for release
+- Updated dependencies [3454377]
+  - @nullix/zod-mongoose@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
