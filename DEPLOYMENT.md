@@ -1,21 +1,21 @@
 # Deployment Guide
 
-This guide explains how to manage releases and deploy the `zod-mongoose` family of packages to npm using GitHub Actions and Changesets.
+This guide explains how to manage releases and deploy the `@nullix/zod-mongoose` family of packages to npm using GitHub Actions, Changesets, and **Trusted Publishing**.
 
 ## Package Structure
 
-- `@nullix/zod-mongoose`: Core package.
-- `@nullix/zod-mongoose-studio`: Studio component and Nuxt layer.
+- `@nullix/zod-mongoose`: Core package (`packages/zod-mongoose`).
+- `@nullix/zod-mongoose-studio`: Studio component (`packages/zod-mongoose-studio`).
 
-Both packages are kept in sync regarding their version numbers.
+Both packages are kept in sync regarding their version numbers (fixed mode).
 
 ## Release Process
 
-We use [Changesets](https://github.com/changesets/changesets) to manage versioning and changelogs.
+We use [Changesets](https://github.com/changesets/changesets) to automate versioning and changelogs.
 
 ### 1. Create a Changeset
 
-When you make a change that requires a new version, run the following command in the root of the repository:
+When you make a change that requires a new version, run the following command in the root of the repository on your **feature branch**:
 
 ```bash
 pnpm changeset
@@ -23,18 +23,18 @@ pnpm changeset
 
 Follow the interactive prompts:
 1. Select which packages should be versioned (usually both).
-2. Choose the version type (patch, minor, or major).
+2. Choose the version type (**patch**, **minor**, or **major**).
 3. Provide a brief description of the changes for the changelog.
 
-This will create a new markdown file in the `.changeset` directory. Commit this file to your branch.
+This will create a new markdown file in the `.changeset` directory. **Commit and push** this file along with your code changes.
 
 ### 2. Merge to Main
 
 Once your PR is reviewed and merged into the `main` branch, the **Release** GitHub Action will trigger.
 
-### 3. Automated Release Pull Request
+### 3. Automated "Version Packages" Pull Request
 
-The GitHub Action will detect new changeset files and automatically create (or update) a "Version Packages" Pull Request. This PR:
+The GitHub Action will detect new changeset files and automatically create (or update) a **"Version Packages"** Pull Request. This PR:
 - Bumps the versions in `package.json` files.
 - Updates the `CHANGELOG.md` files.
 - Removes the consumed changeset files.
@@ -42,36 +42,42 @@ The GitHub Action will detect new changeset files and automatically create (or u
 ### 4. Publish to npm
 
 To trigger the actual publication to npm:
-1. Review the "Version Packages" PR.
-2. Merge the "Version Packages" PR into `main`.
+1. Review the "Version Packages" PR on GitHub.
+2. **Merge** the "Version Packages" PR into `main`.
 
-The GitHub Action will run again, but this time it will see that there are no new changesets and that versions have been bumped. It will then:
+The GitHub Action will run again. Since there are no new changesets but versions have been bumped, it will:
 1. Run tests (`pnpm run test`).
 2. Build the packages (`pnpm run build`).
-3. Publish both packages to npm (`pnpm release`).
+3. Publish both packages to npm using **Trusted Publishing** (OIDC).
 4. Create a GitHub Release with the changelog.
+
+## Security & Configuration
+
+### Trusted Publishing (OIDC)
+
+We no longer use a manual `NPM_TOKEN` secret. Authentication is handled via **Trusted Publishing**:
+- **npm side**: The GitHub repository is added as a "Trusted Publisher" on the `/access` page of the packages on npmjs.com.
+- **GitHub side**: The workflow has `id-token: write` permissions to identify itself to npm securely.
+
+### Provenance
+
+Every release is published with `--provenance`. This adds a verified checkmark on npm, proving the code was built directly from this GitHub repository.
 
 ## Manual Troubleshooting
 
 ### Manual Publish
 
-If you ever need to publish manually (not recommended), ensure you have an `NPM_TOKEN` and run:
+If you ever need to publish manually (not recommended), ensure you are logged into npm locally and run:
 
 ```bash
 pnpm build
-pnpm changeset publish
+pnpm changeset publish --provenance
 ```
 
-### CI/CD Configuration
-
-The release workflow is defined in `.github/workflows/release.yml`. It requires the following secrets to be set in the GitHub repository:
-- `NPM_TOKEN`: A Granular Access Token or Automation Token from npmjs.com with publish permissions for the `@nullix` scope.
-- `GITHUB_TOKEN`: Provided automatically by GitHub Actions (used for creating PRs and Releases).
+> **Note:** Only use manual publishing in emergencies to maintain the integrity of the automated changelogs.
 
 ## Versioning Policy
 
 - **Patch**: Bug fixes, non-breaking internal changes.
 - **Minor**: New features, non-breaking API additions.
 - **Major**: Breaking changes, significant API overhauls.
-
-Since we use a "fixed" versioning mode, both core and studio packages will always share the same version number.
