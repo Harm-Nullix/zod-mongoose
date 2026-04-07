@@ -2,9 +2,7 @@
 
 <template>
   <svg
-    width="1020"
-    height="200"
-    viewBox="0 0 1823 593"
+    viewBox="0 0 1823 293"
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"

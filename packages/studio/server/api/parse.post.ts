@@ -41,6 +41,8 @@ export default defineEventHandler(async (event) => {
   const sandbox = {
     require: sandboxRequire,
     console: { log: () => {}, warn: () => {}, error: () => {} },
+    __filename: "/sandbox/main.ts",
+    __dirname: "/sandbox",
   };
   const context = vm.createContext(sandbox);
 

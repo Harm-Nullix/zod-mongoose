@@ -15,20 +15,13 @@ const { header } = useAppConfig();
     />
 
     <template v-if="header?.title" #title>
-      <NuxtLink :to="header?.to || '/'">
-        <AppLogo class="w-auto h-16 shrink-0" />
-      </NuxtLink>
-      <span v-if="header?.title">
-        {{ header.title }}
-      </span>
+      {{ header.title }}
     </template>
 
-    <template v-else #left>
+    <template #left>
       <NuxtLink :to="header?.to || '/'">
-        <AppLogo class="w-auto h-16 shrink-0" />
+        <AppLogo class="w-auto h-8 shrink-0" />
       </NuxtLink>
-
-      <TemplateMenu />
     </template>
 
     <template #right>
