@@ -1,3 +1,15 @@
+## 1.0.0
+
+### Major Changes
+
+- 038e1f4: Initial release of zod-mongoose for public use
+
+### Patch Changes
+
+- 52d8187: release version updates
+- 7a9de05: release and docs updates
+- 76368d7: internal changes for release
+
 ## 0.2.0
 
 - Renamed package to `@nullix/zod-mongoose`.
@@ -20,6 +32,7 @@
 - All generated mongoose schemas now have `strict` option set to `throw`. There's an option to override this behaviour for all the schemas or per a schema basis.
 
 ## 0.0.7
+
 ## 0.0.6
 
 - Fixed an erroneous sub schema validation error if one of its fields has `Buffer` type.
