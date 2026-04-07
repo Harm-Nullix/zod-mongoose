@@ -51,6 +51,18 @@ The GitHub Action will run again. Since there are no new changesets but versions
 3. Publish both packages to npm using **Trusted Publishing** (OIDC).
 4. Create a GitHub Release with the changelog.
 
+## Repository Configuration
+
+For the automated release process to work correctly, the following settings must be enabled in the GitHub repository:
+
+### 1. Workflow Permissions
+
+1. Go to **Settings** > **Actions** > **General**.
+2. Under **Workflow permissions**, ensure **Read and write permissions** is selected.
+3. Check **Allow GitHub Actions to create and approve pull requests**.
+
+This allows the `changesets/action` to create the "Version Packages" PR automatically.
+
 ## Security & Configuration
 
 ### Trusted Publishing (OIDC)

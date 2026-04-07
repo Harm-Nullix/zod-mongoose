@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "pnpm --filter \"*\" run lint",
     "test": "pnpm --filter \"*\" run test",
-    "build": "pnpm --filter \"*\" run build",
+    "build": "pnpm --filter \"*\" --filter \"!docs\" run build",
     "dev": "pnpm --filter \"*playground*\" run dev",
     "release": "pnpm build && changeset publish --provenance"
   },
