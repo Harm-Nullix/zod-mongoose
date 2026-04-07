@@ -1,6 +1,6 @@
 ---
 seo:
-  title: mongoose-zod
+  title: zod-mongoose
   description: Seamlessly integrate Zod with Mongoose for full type safety.
 ---
 
@@ -12,10 +12,10 @@ orientation: horizontal
 :hero-background
 
 #title
-Define [Mongoose]{.text-primary} schemas with [Zod]{.text-primary}.
+Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
 
 #description
-`mongoose-zod` provides a single source of truth for your data models with full TypeScript type safety. No more duplicate definitions.
+`zod-mongoose` provides a single source of truth for your data models with full TypeScript type safety. No more duplicate definitions.
 
 #links
   :::u-button
@@ -33,7 +33,7 @@ Define [Mongoose]{.text-primary} schemas with [Zod]{.text-primary}.
   color: neutral
   variant: outline
   size: xl
-  to: https://github.com/harmzeinstra/mongoose-zod
+  to: https://github.com/harm-nullix/zod-mongoose
   target: _blank
   ---
   GitHub
@@ -149,7 +149,7 @@ Powerful features for developers
       to: '/getting-started'
       trailingIcon: i-lucide-arrow-right
     - label: View on GitHub
-      to: 'https://github.com/harmzeinstra/mongoose-zod'
+      to: 'https://github.com/harm-nullix/zod-mongoose'
       target: _blank
       variant: subtle
       icon: i-simple-icons-github

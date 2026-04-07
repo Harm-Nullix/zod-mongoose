@@ -1,5 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  extends: [
+    '@nullix/zod-mongoose-studio'
+  ],
   modules: [
     '@nuxt/eslint',
     '@nuxt/image',
@@ -12,6 +15,13 @@ export default defineNuxtConfig({
 
   devtools: {
     enabled: true
+  },
+
+  runtimeConfig: {
+    public: {
+      isDocsMode: true,
+      isLocalMode: false
+    }
   },
 
   css: ['~/assets/css/main.css'],
@@ -35,10 +45,19 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       routes: [
-        '/'
+        '/',
+        '/playground'
       ],
       crawlLinks: true,
       autoSubfolderIndex: false
+    }
+  },
+
+  hooks: {
+    'nitro:config'(config) {
+      config.externals = config.externals || {}
+      config.externals.inline = config.externals.inline || []
+      config.externals.inline.push('esbuild')
     }
   },
 
@@ -56,12 +75,12 @@ export default defineNuxtConfig({
   },
 
   llms: {
-    domain: 'https://mongoose-zod.nullix.nl',
-    title: 'mongoose-zod',
+    domain: 'https://zod-mongoose.nullix.nl',
+    title: 'zod-mongoose',
     description: 'Seamlessly integrate Zod with Mongoose for full type safety.',
     full: {
-      title: 'mongoose-zod - Full Documentation',
-      description: 'This is the full documentation for mongoose-zod.'
+      title: 'zod-mongoose - Full Documentation',
+      description: 'This is the full documentation for zod-mongoose.'
     },
     sections: [
       {
@@ -82,6 +101,6 @@ export default defineNuxtConfig({
   },
 
   mcp: {
-    name: 'mongoose-zod'
+    name: 'zod-mongoose'
   }
 })

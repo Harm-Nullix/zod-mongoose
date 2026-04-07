@@ -26,6 +26,7 @@
     "nuxt-llms": "0.2.0",
     "nuxt-og-image": "^5.1.13",
     "tailwindcss": "^4.2.2",
+    "@nullix/zod-mongoose-studio": "workspace:*",
     "ufo": "^1.6.3",
     "unist-util-visit": "^5.1.0",
     "zod": "^4.3.6"

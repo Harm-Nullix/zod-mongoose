@@ -13,13 +13,13 @@ export default defineAppConfig({
     },
   },
   seo: {
-    siteName: "mongoose-zod",
+    siteName: "zod-mongoose",
   },
   header: {
-    title: "mongoose-zod",
+    title: "zod-mongoose",
     to: "/",
     logo: {
-      alt: "mongoose-zod logo",
+      alt: "zod-mongoose logo",
       light: "/zodmongoose.svg",
       dark: "/zodmongoose.svg",
     },
@@ -27,20 +27,24 @@ export default defineAppConfig({
     colorMode: true,
     links: [
       {
+        label: "Playground",
+        to: "/playground",
+      },
+      {
         icon: "i-simple-icons-github",
-        to: "https://github.com/harmzeinstra/mongoose-zod",
+        to: "https://github.com/harm-nullix/zod-mongoose",
         target: "_blank",
         "aria-label": "GitHub",
       },
     ],
   },
   footer: {
-    credits: `Built with Nuxt UI • © ${new Date().getFullYear()} mongoose-zod`,
+    credits: `Built with Nuxt UI • © ${new Date().getFullYear()} zod-mongoose`,
     colorMode: false,
     links: [
       {
         icon: "i-simple-icons-github",
-        to: "https://github.com/harmzeinstra/mongoose-zod",
+        to: "https://github.com/harm-nullix/zod-mongoose",
         target: "_blank",
         "aria-label": "GitHub",
       },
@@ -50,12 +54,12 @@ export default defineAppConfig({
     title: "Table of Contents",
     bottom: {
       title: "Community",
-      edit: "https://github.com/harmzeinstra/mongoose-zod/edit/main/packages/docs/content",
+      edit: "https://github.com/harm-nullix/zod-mongoose/edit/main/packages/docs/content",
       links: [
         {
           icon: "i-lucide-star",
           label: "Star on GitHub",
-          to: "https://github.com/harmzeinstra/mongoose-zod",
+          to: "https://github.com/harm-nullix/zod-mongoose",
           target: "_blank",
         },
       ],
