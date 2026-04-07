@@ -32,7 +32,7 @@ export default defineAppConfig({
       },
       {
         icon: "i-simple-icons-github",
-        to: "https://github.com/harm-nullix/zod-mongoose",
+        to: "https://github.com/Harm-Nullix/zod-mongoose",
         target: "_blank",
         "aria-label": "GitHub",
       },
@@ -44,7 +44,7 @@ export default defineAppConfig({
     links: [
       {
         icon: "i-simple-icons-github",
-        to: "https://github.com/harm-nullix/zod-mongoose",
+        to: "https://github.com/Harm-Nullix/zod-mongoose",
         target: "_blank",
         "aria-label": "GitHub",
       },
@@ -54,12 +54,12 @@ export default defineAppConfig({
     title: "Table of Contents",
     bottom: {
       title: "Community",
-      edit: "https://github.com/harm-nullix/zod-mongoose/edit/main/packages/docs/content",
+      edit: "https://github.com/Harm-Nullix/zod-mongoose/edit/main/packages/docs/content",
       links: [
         {
           icon: "i-lucide-star",
           label: "Star on GitHub",
-          to: "https://github.com/harm-nullix/zod-mongoose",
+          to: "https://github.com/Harm-Nullix/zod-mongoose",
           target: "_blank",
         },
       ],

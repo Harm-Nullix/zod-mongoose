@@ -1,13 +1,13 @@
 ![Logo](./public/zodmongoose.svg)
 
-[![Release](https://github.com/harm-nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/harm-nullix/zod-mongoose/actions/workflows/release.yml)
+[![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
 [![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose-studio)
-[![License](https://img.shields.io/npm/l/@nullix/zod-mongoose.svg)](https://github.com/harm-nullix/zod-mongoose/blob/main/packages/core/LICENSE.md)
+[![License](https://img.shields.io/npm/l/@nullix/zod-mongoose.svg)](https://github.com/Harm-Nullix/zod-mongoose/blob/main/packages/core/LICENSE.md)
 
 
 # @nullix/zod-mongoose-studio
 
-A Monaco-powered TypeScript playground for [@nullix/zod-mongoose](https://github.com/harm-nullix/zod-mongoose). 
+A Monaco-powered TypeScript playground for [@nullix/zod-mongoose](https://github.com/Harm-Nullix/zod-mongoose). 
 
 The Studio provides a powerful web-integrated interface to experiment with Zod-to-Mongoose transformations. It supports local development via a CLI with full filesystem access and a sandboxed mode for documentation and live demos.
 

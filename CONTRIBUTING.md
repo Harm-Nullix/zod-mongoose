@@ -21,7 +21,7 @@ This repository is a monorepo managed with `pnpm` workspaces.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/harm-nullix/zod-mongoose.git
+   git clone https://github.com/Harm-Nullix/zod-mongoose.git
    cd zod-mongoose
    ```
 

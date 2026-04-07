@@ -1,8 +1,8 @@
 ![Logo](./packages/docs/public/zodmongoose.svg)
 
-[![Release](https://github.com/harm-nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/harm-nullix/zod-mongoose/actions/workflows/release.yml)
+[![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
 [![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose)
-[![License](https://img.shields.io/npm/l/@nullix/zod-mongoose.svg)](https://github.com/harm-nullix/zod-mongoose/blob/main/packages/core/LICENSE.md)
+[![License](https://img.shields.io/npm/l/@nullix/zod-mongoose.svg)](https://github.com/Harm-Nullix/zod-mongoose/blob/main/packages/core/LICENSE.md)
 
 # zod-mongoose
 

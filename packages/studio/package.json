@@ -6,6 +6,21 @@
   "bin": {
     "zod-mongoose-studio": "./bin/index.mjs"
   },
+  "homepage": "https://zodmongoose.com/studio",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Harm-Nullix/zod-mongoose"
+  },
+  "bugs": {
+    "url": "https://github.com/Harm-Nullix/zod-mongoose/issues/new"
+  },
+  "keywords": [
+    "mongoose",
+    "zod",
+    "mongodb",
+    "studio",
+    "playground"
+  ],
   "type": "module",
   "files": [
     "app",

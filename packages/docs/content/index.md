@@ -33,7 +33,7 @@ Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
   color: neutral
   variant: outline
   size: xl
-  to: https://github.com/harm-nullix/zod-mongoose
+  to: https://github.com/Harm-Nullix/zod-mongoose
   target: _blank
   ---
   GitHub
@@ -149,7 +149,7 @@ Powerful features for developers
       to: '/getting-started'
       trailingIcon: i-lucide-arrow-right
     - label: View on GitHub
-      to: 'https://github.com/harm-nullix/zod-mongoose'
+      to: 'https://github.com/Harm-Nullix/zod-mongoose'
       target: _blank
       variant: subtle
       icon: i-simple-icons-github
