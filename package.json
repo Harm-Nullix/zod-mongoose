@@ -8,7 +8,7 @@
     "test": "pnpm --filter \"*\" run test",
     "build": "pnpm --filter \"*\" --filter \"!docs\" run build",
     "dev": "pnpm --filter \"*playground*\" run dev",
-    "release": "pnpm build && changeset publish --provenance --access public"
+    "release": "pnpm build && changeset publish --access public"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
