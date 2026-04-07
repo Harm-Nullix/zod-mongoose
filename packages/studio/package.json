@@ -22,7 +22,7 @@
   "scripts": {
     "build": "nuxt build",
     "prepublishOnly": "pnpm run build",
-    "publish": "bumpp && pnpm publish --access public",
+    "publish": "pnpm publish --access public",
     "dev": "nuxt dev -p 34003",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
