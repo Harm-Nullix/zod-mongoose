@@ -1,3 +1,9 @@
+## 1.0.2
+
+### Patch Changes
+
+- 9d754b9: update npm registry
+
 ## 1.0.1
 
 ### Patch Changes

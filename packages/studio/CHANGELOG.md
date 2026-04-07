@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.2
+
+### Patch Changes
+
+- 9d754b9: update npm registry
+- Updated dependencies [9d754b9]
+  - @nullix/zod-mongoose@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
