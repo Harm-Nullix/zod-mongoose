@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.3
+
+### Patch Changes
+
+- bae8d27: update repo url and captial
+- Updated dependencies [bae8d27]
+  - @nullix/zod-mongoose@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes
