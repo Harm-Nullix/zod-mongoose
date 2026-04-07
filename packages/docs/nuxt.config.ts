@@ -37,7 +37,8 @@ export default defineNuxtConfig({
   },
 
   experimental: {
-    asyncContext: true
+    asyncContext: true,
+    payloadExtraction: false
   },
 
   compatibilityDate: '2024-07-11',
@@ -49,7 +50,15 @@ export default defineNuxtConfig({
         '/playground'
       ],
       crawlLinks: true,
-      autoSubfolderIndex: false
+      autoSubfolderIndex: false,
+      failOnError: false
+    }
+  },
+
+  vite: {
+    optimizeDeps: {
+      include: ['estree-walker'],
+      exclude: ['monaco-editor']
     }
   },
 
