@@ -1,5 +1,15 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.4
+
+### Patch Changes
+
+- 2f60bea: add acces public to release step
+- 2f60bea: v6 for release
+- Updated dependencies [2f60bea]
+- Updated dependencies [2f60bea]
+  - @nullix/zod-mongoose@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes
