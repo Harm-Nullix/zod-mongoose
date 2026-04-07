@@ -35,7 +35,8 @@
   },
   "packageManager": "pnpm@10.33.0",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "type": "module",
   "main": "dist/index.cjs",
