@@ -21,8 +21,8 @@ This repository is a monorepo managed with `pnpm` workspaces.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/nullix-be/mongoose-zod.git
-   cd mongoose-zod
+   git clone https://github.com/harm-nullix/zod-mongoose.git
+   cd zod-mongoose
    ```
 
 2. Install dependencies:

@@ -84,7 +84,7 @@ export default defineNuxtConfig({
   },
 
   llms: {
-    domain: 'https://zod-mongoose.nullix.nl',
+    domain: 'https://zodmongoose.com',
     title: 'zod-mongoose',
     description: 'Seamlessly integrate Zod with Mongoose for full type safety.',
     full: {

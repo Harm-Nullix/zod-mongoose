@@ -1,62 +1,62 @@
-# Nuxt Docs Template
+# @nullix/zod-mongoose-docs
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+The documentation site for `zod-mongoose`, powered by [Nuxt UI Pro](https://ui.nuxt.com/pro) and [Nuxt Content](https://content.nuxt.com).
 
-Use this template to build your own documentation with [Nuxt UI](https://ui.nuxt.com) quickly.
+## Features
 
-- [Live demo](https://docs-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+- **Nuxt 4 Ready**: Built using the latest Nuxt features and directory structure.
+- **Interactive Playground**: Integrated `zod-mongoose-studio` for real-time Zod-to-Mongoose schema conversion.
+- **Comprehensive API Docs**: Auto-generated and manually curated documentation for all core functions and specialized helpers.
+- **Nuxt UI Pro**: Styled with the official Nuxt documentation template.
 
-<a href="https://docs-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/docs-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/docs-light.png">
-    <img alt="Nuxt Docs Template" src="https://ui.nuxt.com/assets/templates/nuxt/docs-light.png">
-  </picture>
-</a>
+## Development
 
-## Quick Start
+### Setup
 
-```bash [Terminal]
-npm create nuxt@latest -- -t ui/docs
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=docs&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fdocs&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fdocs-dark.png&demo-url=https%3A%2F%2Fdocs-template.nuxt.dev%2F&demo-title=Nuxt%20Docs%20Template&demo-description=A%20documentation%20template%20powered%20by%20Nuxt%20Content.)
-
-## Setup
-
-Make sure to install the dependencies:
+Install the dependencies from the project root:
 
 ```bash
 pnpm install
 ```
 
-## Development Server
+### Local Development
 
-Start the development server on `http://localhost:3000`:
-
-```bash
-pnpm dev
-```
-
-## Production
-
-Build the application for production:
+Start the development server with the documentation:
 
 ```bash
-pnpm build
+pnpm --filter docs dev
 ```
 
-Locally preview production build:
+The documentation will be available at `http://localhost:3000`.
+
+### Build
+
+Build the documentation for production:
 
 ```bash
-pnpm preview
+pnpm --filter docs build
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+### Preview
 
-## Renovate integration
+Locally preview the production build:
 
-Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
+```bash
+pnpm --filter docs preview
+```
+
+## Structure
+
+- `app/`: Contains the Nuxt application code, including custom pages and components.
+- `content/`: The markdown source for the documentation.
+- `public/`: Static assets like logos and images.
+- `nuxt.config.ts`: Configuration for Nuxt and its modules.
+- `app.config.ts`: UI and navigation configuration.
+
+## Contribution
+
+Feel free to open a Pull Request if you'd like to improve the documentation. For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+[Main README](../../README.md) | [zod-mongoose-studio](../studio/README.md)
