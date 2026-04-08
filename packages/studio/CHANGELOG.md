@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.12
+
+### Patch Changes
+
+- 46f3323: Update tag checking
+- Updated dependencies [46f3323]
+  - @nullix/zod-mongoose@1.0.12
+
 ## 1.0.11
 
 ### Patch Changes
