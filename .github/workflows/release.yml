@@ -60,16 +60,22 @@ jobs:
 
       # TAGGING FALLBACK
       - name: Manual Tagging Fallback
-        if: steps.changesets.outputs.published == 'true'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[] | .name + "@" + .version' | while read tag; do
-            if ! git rev-parse "$tag" >/dev/null 2>&1; then
-              git tag "$tag"
-              git push origin "$tag"
-            fi
-          done
+
+          # Haal versie uit de core package
+          VERSION=$(node -p "require('./packages/core/package.json').version")
+          TAG="@nullix/zod-mongoose@$VERSION"
+
+          echo "Checking if tag $TAG exists..."
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag does not exist. Creating tag..."
+            git tag "$TAG"
+            git push origin "$TAG"
+          else
+            echo "Tag already exists. Skipping."
+          fi
 
       # DOCS & ARTIFACTS
       - name: Build docs
@@ -89,15 +95,13 @@ jobs:
 
       # GITHUB PAGES DEPLOY
       - name: Setup Pages
-        if: steps.changesets.outputs.published == 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages Artifact
-        if: steps.changesets.outputs.published == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: packages/docs/.output/
 
       - name: Deploy to GitHub Pages
-        if: steps.changesets.outputs.published == 'true'
+        id: deployment
         uses: actions/deploy-pages@v4
