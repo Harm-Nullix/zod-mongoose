@@ -1,3 +1,9 @@
+## 1.0.9
+
+### Patch Changes
+
+- 47118c7: manual git tags
+
 ## 1.0.8
 
 ### Patch Changes
