@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.9
+
+### Patch Changes
+
+- 47118c7: manual git tags
+- Updated dependencies [47118c7]
+  - @nullix/zod-mongoose@1.0.9
+
 ## 1.0.8
 
 ### Patch Changes
