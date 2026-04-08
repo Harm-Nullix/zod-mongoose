@@ -1,3 +1,9 @@
+## 1.0.7
+
+### Patch Changes
+
+- b756ee6: update relawsee steps
+
 ## 1.0.6
 
 ### Patch Changes

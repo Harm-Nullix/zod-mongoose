@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.7
+
+### Patch Changes
+
+- b756ee6: update relawsee steps
+- Updated dependencies [b756ee6]
+  - @nullix/zod-mongoose@1.0.7
+
 ## 1.0.6
 
 ### Patch Changes
