@@ -63,6 +63,14 @@ For the automated release process to work correctly, the following settings must
 
 This allows the `changesets/action` to create the "Version Packages" PR automatically.
 
+### 2. Secrets
+
+1. Go to **Settings** > **Secrets and variables** > **Actions**.
+2. Add a new **Repository secret** named `NPM_TOKEN`.
+3. Generate a "Granular access token" (or "Classic" with Automation permissions) on [npmjs.com](https://www.npmjs.com/settings/your-username/tokens) and paste it here.
+
+This token is used for the automated publication process.
+
 ## Security & Configuration
 
 ### Trusted Publishing (OIDC)
