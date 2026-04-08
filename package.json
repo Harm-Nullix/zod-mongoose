@@ -18,7 +18,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "bun"
+      "bun",
+      "better-sqlite3"
     ]
   }
 }

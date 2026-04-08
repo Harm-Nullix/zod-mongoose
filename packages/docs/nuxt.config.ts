@@ -55,9 +55,12 @@ export default defineNuxtConfig({
     }
   },
 
+  build: {
+    transpile: ['estree-walker']
+  },
+
   vite: {
     optimizeDeps: {
-      include: ['estree-walker'],
       exclude: ['monaco-editor']
     }
   },
