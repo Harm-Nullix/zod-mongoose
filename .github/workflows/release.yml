@@ -49,25 +49,29 @@ jobs:
       - name: Run tests
         run: pnpm run test
 
+      # PR OR PUBLISH
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: pnpm release --no-git-checks || true
+          publish: pnpm release:ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # TAGGING FALLBACK
       - name: Manual Tagging Fallback
         if: steps.changesets.outputs.published == 'true'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # De action output 'publishedPackages' is een JSON array van de gepubliceerde pakketten
           echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[] | .name + "@" + .version' | while read tag; do
-            git tag "$tag"
-            git push origin "$tag"
+            if ! git rev-parse "$tag" >/dev/null 2>&1; then
+              git tag "$tag"
+              git push origin "$tag"
+            fi
           done
 
+      # DOCS & ARTIFACTS
       - name: Build docs
         run: pnpm --filter docs run build
 
@@ -82,3 +86,18 @@ jobs:
           name: documentation-site
           path: docs-build/
           retention-days: 7
+
+      # GITHUB PAGES DEPLOY
+      - name: Setup Pages
+        if: steps.changesets.outputs.published == 'true'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        if: steps.changesets.outputs.published == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/docs/.output/
+
+      - name: Deploy to GitHub Pages
+        if: steps.changesets.outputs.published == 'true'
+        uses: actions/deploy-pages@v4
