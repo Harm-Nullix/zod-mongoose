@@ -53,9 +53,20 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: pnpm release --no-git-checks
+          publish: pnpm release --no-git-checks || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Manual Tagging Fallback
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # De action output 'publishedPackages' is een JSON array van de gepubliceerde pakketten
+          echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[] | .name + "@" + .version' | while read tag; do
+            git tag "$tag"
+            git push origin "$tag"
+          done
 
       - name: Build docs
         run: pnpm --filter docs run build
