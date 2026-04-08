@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.11
+
+### Patch Changes
+
+- 9525d1e: try fixing parse.post
+- Updated dependencies [9525d1e]
+  - @nullix/zod-mongoose@1.0.11
+
 ## 1.0.10
 
 ### Patch Changes
