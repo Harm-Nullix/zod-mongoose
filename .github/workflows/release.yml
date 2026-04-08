@@ -68,13 +68,15 @@ jobs:
           VERSION=$(node -p "require('./packages/core/package.json').version")
           TAG="@nullix/zod-mongoose@$VERSION"
 
-          echo "Checking if tag $TAG exists..."
-          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag does not exist. Creating tag..."
+          echo "Checking if tag $TAG exists on remote..."
+
+          # Check of de tag op de server staat
+          if ! git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
+            echo "Tag does not exist on remote. Creating tag..."
             git tag "$TAG"
             git push origin "$TAG"
           else
-            echo "Tag already exists. Skipping."
+            echo "Tag already exists on remote. Skipping push to avoid error."
           fi
 
       # DOCS & ARTIFACTS
