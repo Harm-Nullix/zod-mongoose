@@ -1,3 +1,10 @@
+## 1.0.6
+
+### Patch Changes
+
+- cdda32f: Docs are now build with release for synced deployment later on, try fix wierd pnpm static error code
+- 7f5f372: update doc build
+
 ## 1.0.5
 
 ### Patch Changes
