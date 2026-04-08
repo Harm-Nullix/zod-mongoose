@@ -1,6 +1,6 @@
 {
   "name": "@nullix/zod-mongoose-studio",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Monaco-powered TypeScript playground for @nullix/zod-mongoose",
   "main": "./nuxt.config.ts",
   "bin": {
