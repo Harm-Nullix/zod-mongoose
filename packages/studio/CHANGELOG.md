@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.8
+
+### Patch Changes
+
+- 6451775: update doc actions
+- Updated dependencies [6451775]
+  - @nullix/zod-mongoose@1.0.8
+
 ## 1.0.7
 
 ### Patch Changes

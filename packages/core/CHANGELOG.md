@@ -1,3 +1,9 @@
+## 1.0.8
+
+### Patch Changes
+
+- 6451775: update doc actions
+
 ## 1.0.7
 
 ### Patch Changes
