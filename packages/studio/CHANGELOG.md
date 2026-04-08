@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.5
+
+### Patch Changes
+
+- 12bbcad: update playground and relasese steps
+- Updated dependencies [12bbcad]
+  - @nullix/zod-mongoose@1.0.5
+
 ## 1.0.4
 
 ### Patch Changes
