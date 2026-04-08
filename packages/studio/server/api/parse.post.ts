@@ -6,7 +6,11 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 
 import * as zod from "zod";
+import * as mongoose from "mongoose";
 import * as mongooseZod from "@nullix/zod-mongoose";
+
+// Initialize Mongoose in ESM environment
+mongooseZod.setMongoose(mongoose.default || mongoose);
 
 // Shim __filename and __dirname for ESM environments (Nitro)
 let _filename = "/sandbox/main.ts";
@@ -64,6 +68,7 @@ export default defineEventHandler(async (event) => {
   const sandboxRequire = (moduleName: string) => {
     if (moduleName === "zod" || moduleName === "zod/v4") return zod;
     if (moduleName === "@nullix/zod-mongoose") return mongooseZod;
+    if (moduleName === "mongoose") return mongoose.default || mongoose;
     throw new Error(`Security Exception: Module "${moduleName}" is blocked.`);
   };
 
@@ -113,7 +118,11 @@ export default defineEventHandler(async (event) => {
       if (Array.isArray(val)) {
         return val.map(formatValue);
       }
-      if (val !== null && typeof val === "object" && val.constructor === Object) {
+      if (
+        val !== null &&
+        typeof val === "object" &&
+        val.constructor === Object
+      ) {
         const formatted: any = {};
         for (const key in val) {
           formatted[key] = formatValue(val[key]);

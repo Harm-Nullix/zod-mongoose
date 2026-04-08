@@ -62,6 +62,11 @@ type PopulatedSchema<T, K extends keyof T> = Omit<T, K> & {
 };
 declare const bufferMongooseGetter: (value: unknown) => any;
 
+/**
+ * Manually set the Mongoose instance.
+ * Useful in ESM environments where automatic detection via require() might fail.
+ */
+declare const setMongoose: (m: any) => void;
 declare const getMongoose: () => any;
 /**
  * Enable or disable frontend mode.
@@ -242,5 +247,5 @@ declare const hooks: hookable.Hookable<MongooseZodHooks, hookable.HookKeys<Mongo
  */
 declare function callHookSync<Name extends keyof MongooseZodHooks>(name: Name, ...args: Parameters<MongooseZodHooks[Name]>): void;
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, hooks, mongooseRegistry, setFrontendMode, toMongooseSchema, withMongoose, zBuffer, zObjectId, zPopulated };
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, hooks, mongooseRegistry, setFrontendMode, setMongoose, toMongooseSchema, withMongoose, zBuffer, zObjectId, zPopulated };
 export type { MongooseMeta, MongooseZodHooks, PopulatedSchema, ToMongooseSchemaOptions, ToMongooseType };

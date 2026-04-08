@@ -303,8 +303,19 @@ features = { required: true }, visited = new Set()) {
     return { schema, features };
 }
 
+let mongooseInstance = null;
+/**
+ * Manually set the Mongoose instance.
+ * Useful in ESM environments where automatic detection via require() might fail.
+ */
+const setMongoose = (m) => {
+    mongooseInstance = m;
+};
 // Helper to get mongoose instance safely
 const getMongoose = () => {
+    if (mongooseInstance) {
+        return mongooseInstance;
+    }
     try {
         // eslint-disable-next-line global-require
         const m = require('mongoose');
@@ -1143,5 +1154,5 @@ const genTimestampsSchema = (createdAtField = 'createdAt', updatedAtField = 'upd
 };
 const bufferMongooseGetter = (value) => value != null && value._bsontype === 'Binary' ? value.buffer : value;
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, hooks, mongooseRegistry, setFrontendMode, toMongooseSchema, withMongoose, zBuffer, zObjectId, zPopulated };
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, hooks, mongooseRegistry, setFrontendMode, setMongoose, toMongooseSchema, withMongoose, zBuffer, zObjectId, zPopulated };
 //# sourceMappingURL=index.js.map

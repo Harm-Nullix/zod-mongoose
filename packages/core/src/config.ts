@@ -1,5 +1,18 @@
+let mongooseInstance: any = null;
+
+/**
+ * Manually set the Mongoose instance.
+ * Useful in ESM environments where automatic detection via require() might fail.
+ */
+export const setMongoose = (m: any) => {
+  mongooseInstance = m;
+};
+
 // Helper to get mongoose instance safely
 export const getMongoose = () => {
+  if (mongooseInstance) {
+    return mongooseInstance;
+  }
   try {
     // eslint-disable-next-line global-require
     const m = require('mongoose');

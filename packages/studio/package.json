@@ -52,6 +52,7 @@
     "@nullix/zod-mongoose": "workspace:*",
     "esbuild": "0.28.0",
     "get-port-please": "3.2.0",
+    "mongoose": "8.23.0",
     "open": "11.0.0",
     "zod": "4.3.6"
   },

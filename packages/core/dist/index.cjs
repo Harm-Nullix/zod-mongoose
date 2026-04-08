@@ -305,8 +305,19 @@ features = { required: true }, visited = new Set()) {
     return { schema, features };
 }
 
+let mongooseInstance = null;
+/**
+ * Manually set the Mongoose instance.
+ * Useful in ESM environments where automatic detection via require() might fail.
+ */
+const setMongoose = (m) => {
+    mongooseInstance = m;
+};
 // Helper to get mongoose instance safely
 const getMongoose = () => {
+    if (mongooseInstance) {
+        return mongooseInstance;
+    }
     try {
         // eslint-disable-next-line global-require
         const m = require('mongoose');
@@ -1154,6 +1165,7 @@ exports.getMongoose = getMongoose;
 exports.hooks = hooks;
 exports.mongooseRegistry = mongooseRegistry;
 exports.setFrontendMode = setFrontendMode;
+exports.setMongoose = setMongoose;
 exports.toMongooseSchema = toMongooseSchema;
 exports.withMongoose = withMongoose;
 exports.zBuffer = zBuffer;
