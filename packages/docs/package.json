@@ -15,6 +15,7 @@
     "@iconify-json/simple-icons": "^1.2.75",
     "@iconify-json/vscode-icons": "^1.2.45",
     "@nullix/zod-mongoose-studio": "workspace:*",
+    "mongoose": "8.23.0",
     "@nuxt/content": "^3.12.0",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.6.0",
@@ -28,7 +29,7 @@
     "tailwindcss": "^4.2.2",
     "ufo": "^1.6.3",
     "unist-util-visit": "^5.1.0",
-    "zod": "^4.3.6"
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
