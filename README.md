@@ -1,4 +1,4 @@
-![Logo](./packages/docs/public/zodmongoose.svg)
+<img src="https://raw.githubusercontent.com/Harm-Nullix/zod-mongoose/HEAD/logo.svg" width="200" alt="Logo">
 
 [![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
 [![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose)
