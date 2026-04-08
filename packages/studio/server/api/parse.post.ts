@@ -2,9 +2,33 @@ import { defineEventHandler, readBody, createError } from "h3";
 import vm from "node:vm";
 import { transformSync } from "esbuild";
 import util from "node:util";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 
 import * as zod from "zod";
 import * as mongooseZod from "@nullix/zod-mongoose";
+
+// Shim __filename and __dirname for ESM environments (Nitro)
+let _filename = "/sandbox/main.ts";
+let _dirname = "/sandbox";
+
+try {
+  _filename = fileURLToPath(import.meta.url);
+  _dirname = dirname(_filename);
+} catch {
+  // Fallback if import.meta.url is not available or valid in the current context
+}
+
+// @ts-ignore
+if (typeof __filename === "undefined") {
+  // @ts-ignore
+  globalThis.__filename = _filename;
+}
+// @ts-ignore
+if (typeof __dirname === "undefined") {
+  // @ts-ignore
+  globalThis.__dirname = _dirname;
+}
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
@@ -22,6 +46,11 @@ export default defineEventHandler(async (event) => {
       loader: "ts",
       format: "cjs",
       target: "esnext",
+      // Provide these globals during transpilation just in case
+      define: {
+        __filename: '"/sandbox/main.ts"',
+        __dirname: '"/sandbox"',
+      },
     });
     jsCode = result.code;
   } catch (e: any) {
@@ -48,14 +77,14 @@ export default defineEventHandler(async (event) => {
 
   try {
     const script = new vm.Script(`
-      (() => {
+      ((__filename, __dirname) => {
         let exports = {};
         let module = { exports };
 
         ${jsCode}
 
         return module.exports;
-      })();
+      })("/sandbox/main.ts", "/sandbox");
     `);
 
     // 3. Execute code and grab the default export
@@ -77,9 +106,30 @@ export default defineEventHandler(async (event) => {
     const formatOpts = { depth: null, showHidden: false, colors: false };
 
     // Mongoose schemas are massive class instances, so we extract the raw .obj definition to display
+    const formatValue = (val: any): any => {
+      if (typeof val === "function") {
+        return val.name || val.toString();
+      }
+      if (Array.isArray(val)) {
+        return val.map(formatValue);
+      }
+      if (val !== null && typeof val === "object" && val.constructor === Object) {
+        const formatted: any = {};
+        for (const key in val) {
+          formatted[key] = formatValue(val[key]);
+        }
+        return formatted;
+      }
+      return val;
+    };
+
+    const formattedDef = formatValue(extractedDef);
+    // schemaObj is a Mongoose Schema instance, we only care about its .obj for display
+    const formattedSchema = formatValue(mongooseSchema.obj);
+
     return {
-      definition: util.inspect(extractedDef, formatOpts),
-      schemaObj: util.inspect(mongooseSchema, formatOpts),
+      definition: util.inspect(formattedDef, formatOpts),
+      schemaObj: util.inspect(formattedSchema, formatOpts),
     };
   } catch (err: any) {
     throw createError({

@@ -5,6 +5,7 @@ let debounceTimer: any;
 
 const config = useRuntimeConfig();
 const isLocalMode = ref(config.public.isLocalMode);
+const isDocsMode = ref(config.public.isDocsMode);
 
 const sourceCode = ref(`import { z } from 'zod/v4';
 import { extractMongooseDef, toMongooseSchema } from '@nullix/zod-mongoose';
@@ -44,11 +45,16 @@ const handleCompile = async () => {
 watch(
   sourceCode,
   () => {
+    if (isDocsMode.value) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(handleCompile, 600);
-  },
-  { immediate: true },
+  }
 );
+
+// Initial compile for Docs Mode
+if (isDocsMode.value) {
+  handleCompile();
+}
 </script>
 
 <template>
@@ -66,7 +72,16 @@ watch(
         <UBadge v-else color="info" variant="soft">Docs Mode</UBadge>
       </div>
       <div class="flex items-center gap-2">
-        <span v-if="isCompiling" class="text-sm text-gray-500"
+        <UButton
+          v-if="isDocsMode"
+          icon="i-heroicons-play-solid"
+          color="primary"
+          :loading="isCompiling"
+          @click="handleCompile"
+        >
+          Run
+        </UButton>
+        <span v-else-if="isCompiling" class="text-sm text-gray-500"
           >Transforming...</span
         >
       </div>

@@ -65,8 +65,8 @@ export default defineNuxtConfig({
   hooks: {
     'nitro:config'(config) {
       config.externals = config.externals || {}
-      config.externals.inline = config.externals.inline || []
-      config.externals.inline.push('esbuild')
+      config.externals.external = config.externals.external || []
+      config.externals.external.push('esbuild')
     }
   },
 
