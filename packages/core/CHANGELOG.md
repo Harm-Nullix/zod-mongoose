@@ -1,3 +1,9 @@
+## 1.0.10
+
+### Patch Changes
+
+- a3f1f4e: github pages and manul tagging
+
 ## 1.0.9
 
 ### Patch Changes

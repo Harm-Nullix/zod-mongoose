@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.10
+
+### Patch Changes
+
+- a3f1f4e: github pages and manul tagging
+- Updated dependencies [a3f1f4e]
+  - @nullix/zod-mongoose@1.0.10
+
 ## 1.0.9
 
 ### Patch Changes
