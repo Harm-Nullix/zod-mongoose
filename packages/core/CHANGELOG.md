@@ -1,3 +1,9 @@
+## 1.0.11
+
+### Patch Changes
+
+- 9525d1e: try fixing parse.post
+
 ## 1.0.10
 
 ### Patch Changes
