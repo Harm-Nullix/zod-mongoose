@@ -18,6 +18,18 @@ Declaring mongoose schemas in TypeScript environment has always been tricky in t
 
 This library aims to solve many of the aforementioned problems utilizing `zod` as a schema authoring tool.
 
+# 1. Install
+
+```bash
+pnpm add @nullix/zod-mongoose
+```
+
+with dependencies:
+
+```bash
+pnpm add @nullix/zod-mongoose zod/v4 mongoose
+```
+
 # Documentation
 See the [full documentation](https://zodmongoose.com) for detailed usage examples and API reference.
 
