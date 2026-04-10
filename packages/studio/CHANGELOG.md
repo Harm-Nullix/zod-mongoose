@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 1.0.13
+
+### Patch Changes
+
+- 170518d: remove test from prepublishOnly script
+- Updated dependencies [170518d]
+  - @nullix/zod-mongoose@1.0.13
+
 ## 1.0.12
 
 ### Patch Changes

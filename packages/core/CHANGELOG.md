@@ -1,3 +1,9 @@
+## 1.0.13
+
+### Patch Changes
+
+- 170518d: remove test from prepublishOnly script
+
 ## 1.0.12
 
 ### Patch Changes
