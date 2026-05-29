@@ -102,7 +102,9 @@ describe('MegaZodSchema conversion', () => {
     expect(mongooseSchema.path('_id')).toBeInstanceOf(mongoose.Schema.Types.ObjectId);
     expect(mongooseSchema.path('refs')).toBeDefined();
     expect((mongooseSchema.path('refs') as any).instance).toBe('Array');
-    expect((mongooseSchema.path('refs') as any).caster).toBeInstanceOf(mongoose.Schema.Types.ObjectId);
+    expect((mongooseSchema.path('refs') as any).embeddedSchemaType).toBeInstanceOf(
+      mongoose.Schema.Types.ObjectId,
+    );
   });
 
   test('should verify buffer field', () => {

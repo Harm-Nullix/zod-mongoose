@@ -37,8 +37,8 @@ describe('Advanced Zod Transformation and Validation', () => {
     // Mongoose schema for array of strings
     const path = mongooseSchema.path('tags');
     expect(path).toBeInstanceOf(mongoose.Schema.Types.Array);
-    // @ts-expect-error - access internal caster
-    expect(path.caster).toBeInstanceOf(mongoose.Schema.Types.String);
+    // @ts-expect-error - access internal embeddedSchemaType
+    expect(path.embeddedSchemaType).toBeInstanceOf(mongoose.Schema.Types.String);
   });
 
   test('should preserve Mongoose metadata through transformations', () => {

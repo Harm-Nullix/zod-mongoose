@@ -73,7 +73,7 @@ describe('zPopulated helper', () => {
     const tagsPath = mongooseSchema.path('tags') as any;
 
     expect(tagsPath.instance).toBe('Array');
-    expect(tagsPath.caster.instance).toBe('ObjectId');
-    expect(tagsPath.caster.options.ref).toBe('Tag');
+    expect(tagsPath.embeddedSchemaType.instance).toBe('ObjectId');
+    expect(tagsPath.embeddedSchemaType.options.ref).toBe('Tag');
   });
 });
