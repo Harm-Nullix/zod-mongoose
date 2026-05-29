@@ -1,3 +1,9 @@
+## 2.0.0
+
+### Major Changes
+
+- Major release for Mongoose 9 support.
+
 ## 1.0.13
 
 ### Patch Changes

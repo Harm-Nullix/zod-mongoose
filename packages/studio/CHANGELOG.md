@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 2.0.0
+
+### Major Changes
+
+- Major release for Mongoose 9 support.
+
+### Patch Changes
+
+- Updated dependencies
+  - @nullix/zod-mongoose@2.0.0
+
 ## 1.0.13
 
 ### Patch Changes
