@@ -197,6 +197,7 @@ const mongooseRegistry = z.registry();
  * A clean wrapper to attach Mongoose metadata to any Zod schema.
  */
 function withMongoose(schema, meta) {
+    meta ??= {};
     callHookSync('registry:get:before', { schema });
     const existing = mongooseRegistry.get(schema) || {};
     callHookSync('registry:get', { schema, meta: existing });
@@ -468,9 +469,28 @@ function handleObject(unwrapped, mongooseProp, visited, extractMongooseDef) {
     }
     // If the developer didn't provide a strict Mongoose type override, return the shape
     let result;
+    // Handle explicit subschema request
+    if (mongooseProp.schema && !mongooseProp.type) {
+        const mongoose = getMongoose();
+        if (mongoose) {
+            const options = typeof mongooseProp.schema === 'object' ? mongooseProp.schema : {};
+            const { plugins, ...schemaOptions } = options;
+            const subSchema = new mongoose.Schema(objDef, schemaOptions);
+            if (plugins && Array.isArray(plugins)) {
+                for (const plugin of plugins) {
+                    subSchema.plugin(plugin);
+                }
+            }
+            mongooseProp.type = subSchema;
+        }
+    }
     if (mongooseProp.type) {
-        // If there is a type override, merge the object definition into the result
-        Object.assign(mongooseProp, objDef);
+        const mongoose = getMongoose();
+        const isSchema = mongoose && (mongooseProp.type instanceof mongoose.Schema || mongooseProp.type.constructor?.name === 'Schema');
+        // If there is a type override, merge the object definition into the result unless it's a Schema
+        if (!isSchema) {
+            Object.assign(mongooseProp, objDef);
+        }
         result = mongooseProp;
     }
     else {
@@ -485,6 +505,7 @@ function handleObject(unwrapped, mongooseProp, visited, extractMongooseDef) {
             '_id',
             'minimize',
             'validateBeforeSave',
+            'schema',
         ]);
         const hasFieldMetadata = Object.keys(mongooseProp).some((k) => {
             if (Object.prototype.hasOwnProperty.call(objDef, k))

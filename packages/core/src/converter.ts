@@ -2,6 +2,7 @@ import {z} from 'zod/v4';
 import type mongoose from 'mongoose';
 import type {SchemaOptions} from 'mongoose';
 import {mongooseRegistry} from './registry.js';
+import type {ToMongooseSchemaOptions} from './registry.js';
 import {unwrapZodSchema} from './zod-helpers.js';
 import {getMongoose} from './config.js';
 import {extractMongooseDef} from './extract-mongoose-def.js';
@@ -9,10 +10,7 @@ import {callHookSync} from './hooks.js';
 
 export {extractMongooseDef} from './extract-mongoose-def.js';
 export type {ToMongooseType} from './extract-mongoose-def.js';
-
-export interface ToMongooseSchemaOptions extends SchemaOptions {
-  plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
-}
+export type {ToMongooseSchemaOptions} from './registry.js';
 
 /**
  * Converts a Zod schema to a Mongoose Schema instance.

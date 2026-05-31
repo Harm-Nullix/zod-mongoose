@@ -2,6 +2,9 @@ import { z } from 'zod/v4';
 import mongoose, { SchemaOptions } from 'mongoose';
 import * as hookable from 'hookable';
 
+interface ToMongooseSchemaOptions extends SchemaOptions {
+    plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
+}
 /**
  * DEFINE THE METADATA SHAPE
  * This interface represents all the Mongoose-specific options you want to
@@ -11,6 +14,7 @@ import * as hookable from 'hookable';
  */
 interface MongooseMeta extends Record<string, any> {
     explicitId?: boolean;
+    schema?: any;
 }
 /**
  * This securely stores our Mongoose metadata alongside the Zod schema instances
@@ -20,7 +24,7 @@ declare const mongooseRegistry: z.core.$ZodRegistry<MongooseMeta, z.core.$ZodTyp
 /**
  * A clean wrapper to attach Mongoose metadata to any Zod schema.
  */
-declare function withMongoose<T extends z.ZodTypeAny>(schema: T, meta: MongooseMeta): T;
+declare function withMongoose<T extends z.ZodTypeAny>(schema: T, meta?: MongooseMeta): T;
 
 /**
  * Type-level mapping from Zod to Mongoose Schema Definitions
@@ -37,9 +41,6 @@ type ToMongooseType<T extends z.ZodTypeAny> = T extends z.ZodObject<infer Shape>
  */
 declare function extractMongooseDef<T extends z.ZodTypeAny>(schema: T, visited?: Map<z.ZodTypeAny, any>, isField?: boolean): ToMongooseType<T> & Record<string, any>;
 
-interface ToMongooseSchemaOptions extends SchemaOptions {
-    plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
-}
 /**
  * Converts a Zod schema to a Mongoose Schema instance.
  */

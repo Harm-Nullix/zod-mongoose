@@ -1,5 +1,11 @@
 import {z} from 'zod/v4';
+import type mongoose from 'mongoose';
+import type {SchemaOptions} from 'mongoose';
 import {callHookSync} from './hooks.js';
+
+export interface ToMongooseSchemaOptions extends SchemaOptions {
+  plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
+}
 
 /**
  * DEFINE THE METADATA SHAPE
@@ -10,6 +16,7 @@ import {callHookSync} from './hooks.js';
  */
 export interface MongooseMeta extends Record<string, any> {
   explicitId?: boolean;
+  schema?: any;
 }
 
 /**
@@ -21,7 +28,8 @@ export const mongooseRegistry = z.registry<MongooseMeta>();
 /**
  * A clean wrapper to attach Mongoose metadata to any Zod schema.
  */
-export function withMongoose<T extends z.ZodTypeAny>(schema: T, meta: MongooseMeta): T {
+export function withMongoose<T extends z.ZodTypeAny>(schema: T, meta?: MongooseMeta): T {
+  meta ??= {};
   callHookSync('registry:get:before', {schema});
   const existing = mongooseRegistry.get(schema) || {};
   callHookSync('registry:get', {schema, meta: existing});

@@ -68,9 +68,32 @@ export function handleObject(
 
   // If the developer didn't provide a strict Mongoose type override, return the shape
   let result;
+
+  // Handle explicit subschema request
+  if (mongooseProp.schema && !mongooseProp.type) {
+    const mongoose = getMongoose();
+    if (mongoose) {
+      const options = typeof mongooseProp.schema === 'object' ? mongooseProp.schema : {};
+      const {plugins, ...schemaOptions} = options as any;
+      const subSchema = new mongoose.Schema(objDef, schemaOptions);
+
+      if (plugins && Array.isArray(plugins)) {
+        for (const plugin of plugins) {
+          subSchema.plugin(plugin);
+        }
+      }
+      mongooseProp.type = subSchema;
+    }
+  }
+
   if (mongooseProp.type) {
-    // If there is a type override, merge the object definition into the result
-    Object.assign(mongooseProp, objDef);
+    const mongoose = getMongoose();
+    const isSchema = mongoose && (mongooseProp.type instanceof mongoose.Schema || mongooseProp.type.constructor?.name === 'Schema');
+
+    // If there is a type override, merge the object definition into the result unless it's a Schema
+    if (!isSchema) {
+      Object.assign(mongooseProp, objDef);
+    }
     result = mongooseProp;
   } else {
     Object.assign(mongooseProp, objDef);
@@ -85,6 +108,7 @@ export function handleObject(
       '_id',
       'minimize',
       'validateBeforeSave',
+      'schema',
     ]);
 
     const hasFieldMetadata = Object.keys(mongooseProp).some((k) => {
