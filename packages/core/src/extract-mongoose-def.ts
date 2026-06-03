@@ -133,7 +133,10 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
   if (type === 'object') {
     const wrapperFn = (s: z.ZodTypeAny, v: Map<z.ZodTypeAny, any>) =>
       extractMongooseDef(s, v, true);
-    const result = handleObject(unwrapped as any, mongooseProp, visited, wrapperFn);
+    const result = handleObject(unwrapped as any, mongooseProp, visited, wrapperFn, {
+      isField,
+      isOptional: features.isOptional === true,
+    });
     callHookSync('converter:after', {
       schema: schema as z.ZodTypeAny,
       mongooseProp: result,

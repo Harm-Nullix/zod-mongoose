@@ -12,6 +12,7 @@ export function handleObject(
   mongooseProp: any,
   visited: Map<z.ZodTypeAny, any>,
   extractMongooseDef: (schema: z.ZodTypeAny, visited: Map<z.ZodTypeAny, any>) => any,
+  ctx: {isField?: boolean; isOptional?: boolean} = {},
 ) {
   callHookSync('schema:object:before', {schema: unwrapped, mongooseProp, visited});
   const {shape} = unwrapped;
@@ -119,6 +120,24 @@ export function handleObject(
     });
 
     result = hasFieldMetadata ? mongooseProp : objDef;
+  }
+
+  // If this is an optional nested object field, wrap it as a real subschema so that
+  // Mongoose does not auto-materialize an empty `{}` on fetched documents (nested-path behavior).
+  if (
+    ctx.isField &&
+    ctx.isOptional &&
+    result &&
+    typeof result === 'object' &&
+    !Array.isArray(result) &&
+    !(result as any).type &&
+    !(result as any).__isDiscriminatorUnion
+  ) {
+    const mongoose = getMongoose();
+    if (mongoose) {
+      const subSchema = new mongoose.Schema(objDef, {_id: false});
+      result = {type: subSchema, required: false};
+    }
   }
 
   callHookSync('schema:object:after', {schema: unwrapped, mongooseProp, objDef, result});
