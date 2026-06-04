@@ -1,5 +1,18 @@
 # @nullix/zod-mongoose-studio
 
+## 2.1.0
+
+### Minor Changes
+
+- 986bb88: z.object to subschema unless speficfied
+
+### Patch Changes
+
+- 986bb88: make meta for withMongoose optional
+- Updated dependencies [986bb88]
+- Updated dependencies [986bb88]
+  - @nullix/zod-mongoose@2.1.0
+
 ## 2.0.0
 
 ### Major Changes

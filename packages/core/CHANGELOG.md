@@ -1,3 +1,13 @@
+## 2.1.0
+
+### Minor Changes
+
+- 986bb88: z.object to subschema unless speficfied
+
+### Patch Changes
+
+- 986bb88: make meta for withMongoose optional
+
 ## 2.0.0
 
 ### Major Changes
