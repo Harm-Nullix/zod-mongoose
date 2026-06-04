@@ -37,7 +37,8 @@ describe('extractMongooseDef', () => {
       }),
     });
     const def = extractMongooseDef(schema);
-    expect(def.user.name.type).toBe(String);
+    // Nested objects are now subschemas by default
+    expect(def.user.type.obj.name.type).toBe(String);
   });
 
   it('should handle metadata from withMongoose', () => {

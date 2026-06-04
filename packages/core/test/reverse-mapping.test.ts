@@ -91,8 +91,8 @@ describe('Reverse Mapping: Zod to Mongoose (based on test/mongoose-model.ts)', (
     expect(def.installedBy.ref).toBe('User');
     expect(def.dateInstalled.type).toBe(Date);
     expect(def.accessory).toBeDefined();
-    // In our converter, nested objects are returned as POJOs, not nested Schema objects unless specified
-    expect(def.accessory.filename.type).toBe(String);
+    // In our converter, nested objects are now returned as subschemas by default
+    expect(def.accessory.type.obj.filename.type).toBe(String);
   });
 
   it('should convert VehicleZodSchema and include timestamps and discriminatorKey metadata', () => {
@@ -143,10 +143,11 @@ describe('Reverse Mapping: Zod to Mongoose (based on test/mongoose-model.ts)', (
     expect(def.approvalHistory).toBeDefined();
     expect(Array.isArray((def.approvalHistory as any).type)).toBe(true);
     const approvalHistoryItem = (def.approvalHistory as any).type[0];
-    expect(approvalHistoryItem.inspector.type).toBe(String);
-    expect(approvalHistoryItem.inspector.ref).toBe('User');
-    expect(approvalHistoryItem.date.type).toBe(Date);
-    expect(approvalHistoryItem.approved.type).toBe(Boolean);
+    // Since it's an array of objects, it's now an array of schemas
+    expect(approvalHistoryItem.obj.inspector.type).toBe(String);
+    expect(approvalHistoryItem.obj.inspector.ref).toBe('User');
+    expect(approvalHistoryItem.obj.date.type).toBe(Date);
+    expect(approvalHistoryItem.obj.approved.type).toBe(Boolean);
   });
 
   it('should correctly handle nested inspections in CarZodSchema', () => {
@@ -154,9 +155,9 @@ describe('Reverse Mapping: Zod to Mongoose (based on test/mongoose-model.ts)', (
     expect(def.inspections).toBeDefined();
     expect(Array.isArray((def.inspections as any).type)).toBe(true);
     const inspectionItem = (def.inspections as any).type[0];
-    expect(inspectionItem.inspectionStandardId.type).toBe(mongoose.Schema.Types.ObjectId);
-    expect(inspectionItem.inspectionStandardId.ref).toBe('Standard');
-    expect(Array.isArray(inspectionItem.approvalHistory.type)).toBe(true);
+    expect(inspectionItem.obj.inspectionStandardId.type).toBe(mongoose.Schema.Types.ObjectId);
+    expect(inspectionItem.obj.inspectionStandardId.ref).toBe('Standard');
+    expect(Array.isArray(inspectionItem.obj.approvalHistory.type)).toBe(true);
   });
 
   it('should include discriminatorKey in metadata', () => {

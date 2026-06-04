@@ -29,17 +29,17 @@ declare function withMongoose<T extends z.ZodTypeAny>(schema: T, meta?: Mongoose
 /**
  * Type-level mapping from Zod to Mongoose Schema Definitions
  */
-type ToMongooseType<T extends z.ZodTypeAny> = T extends z.ZodObject<infer Shape> ? {
+type ToMongooseType<T extends z.ZodTypeAny> = (T extends z.ZodObject<infer Shape> ? {
     [K in keyof Shape]: Shape[K] extends z.ZodTypeAny ? ToMongooseType<Shape[K]> : any;
 } : T extends z.ZodArray<infer Element> ? Element extends z.ZodTypeAny ? Array<ToMongooseType<Element>> | {
     type: Array<any>;
     [key: string]: any;
-} : Array<any> : T extends z.ZodOptional<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodDefault<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodNullable<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : any;
+} : Array<any> : T extends z.ZodOptional<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodDefault<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodNullable<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : any) & Record<string, any>;
 /**
  * THE CONVERTER (Safe AST Walker)
  * We extract the Zod type and merge it with any registered Mongoose metadata.
  */
-declare function extractMongooseDef<T extends z.ZodTypeAny>(schema: T, visited?: Map<z.ZodTypeAny, any>, isField?: boolean): ToMongooseType<T> & Record<string, any>;
+declare function extractMongooseDef<T extends z.ZodTypeAny>(schema: T, visited?: Map<z.ZodTypeAny, any>, isField?: boolean, noWrap?: boolean): ToMongooseType<T>;
 
 /**
  * Converts a Zod schema to a Mongoose Schema instance.

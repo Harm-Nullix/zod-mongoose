@@ -9,7 +9,7 @@ import {callHookSync} from './hooks.js';
 /**
  * Type-level mapping from Zod to Mongoose Schema Definitions
  */
-export type ToMongooseType<T extends z.ZodTypeAny> =
+export type ToMongooseType<T extends z.ZodTypeAny> = (
   T extends z.ZodObject<infer Shape>
     ? {[K in keyof Shape]: Shape[K] extends z.ZodTypeAny ? ToMongooseType<Shape[K]> : any}
     : T extends z.ZodArray<infer Element>
@@ -28,7 +28,8 @@ export type ToMongooseType<T extends z.ZodTypeAny> =
             ? Inner extends z.ZodTypeAny
               ? ToMongooseType<Inner>
               : any
-            : any;
+            : any
+) & Record<string, any>;
 
 /**
  * THE CONVERTER (Safe AST Walker)
@@ -38,7 +39,8 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
   schema: T,
   visited: Map<z.ZodTypeAny, any> = new Map(),
   isField = false,
-): ToMongooseType<T> & Record<string, any> {
+  noWrap = false,
+): ToMongooseType<T> {
   // Only call converter:before at the very beginning of a run
   if (visited.size === 0) {
     callHookSync('converter:before', {schema: schema as z.ZodTypeAny, visited});
@@ -133,7 +135,7 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
   if (type === 'object') {
     const wrapperFn = (s: z.ZodTypeAny, v: Map<z.ZodTypeAny, any>) =>
       extractMongooseDef(s, v, true);
-    const result = handleObject(unwrapped as any, mongooseProp, visited, wrapperFn);
+    const result = handleObject(unwrapped as any, mongooseProp, visited, wrapperFn, isField && !noWrap);
     callHookSync('converter:after', {
       schema: schema as z.ZodTypeAny,
       mongooseProp: result,
@@ -154,11 +156,36 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
 
   // Handle Intersections
   if (type === 'intersection') {
-    const left = extractMongooseDef((unwrapped as any)._def.left, visited, isField);
-    const right = extractMongooseDef((unwrapped as any)._def.right, visited, isField);
+    const left = extractMongooseDef((unwrapped as any)._def.left, visited, isField, true);
+    const right = extractMongooseDef((unwrapped as any)._def.right, visited, isField, true);
 
     if (typeof left === 'object' && typeof right === 'object') {
       Object.assign(mongooseProp, left, right);
+
+      if (isField && !noWrap && mongooseProp.schema !== false && !mongooseProp.type) {
+        const mongoose = getMongoose();
+        if (mongoose) {
+          const options = typeof mongooseProp.schema === 'object' ? mongooseProp.schema : {};
+          const {plugins, ...schemaOptions} = options as any;
+          const definition = {...mongooseProp};
+          // Remove metadata fields that shouldn't be in the schema definition if they are top-level
+          delete definition.schema;
+
+          const subSchema = new mongoose.Schema(definition, schemaOptions);
+
+          if (plugins && Array.isArray(plugins)) {
+            for (const plugin of plugins) {
+              subSchema.plugin(plugin);
+            }
+          }
+          mongooseProp.type = subSchema;
+
+          // Clear other fields since they are now in subSchema
+          for (const key of Object.keys(mongooseProp)) {
+            if (key !== 'type') delete mongooseProp[key];
+          }
+        }
+      }
     } else if (!mongooseProp.type) {
       mongooseProp.type = getMongoose()?.Schema.Types.Mixed || 'Mixed';
     }
@@ -213,7 +240,7 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
           (unwrappedDisc as any)._def.value ?? (unwrappedDisc as any)._def.values?.[0];
 
         // Use a fresh Map for each option to avoid cross-contamination of visited nodes
-        const optionDef = extractMongooseDef(option, new Map(), true);
+        const optionDef = extractMongooseDef(option, new Map(), true, true);
         if (optionDef && typeof optionDef === 'object' && !Array.isArray(optionDef)) {
           const cleanOptionDef = {...optionDef};
           delete cleanOptionDef[discriminatorKey];
@@ -297,14 +324,14 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
     ) {
       mongooseProp.type = mongoose.Schema.Types.Union;
       mongooseProp.of = options.map((opt: any) => {
-        const def = extractMongooseDef(opt, visited, true);
+        const def = extractMongooseDef(opt, visited, true, true);
         return (def as any).type || (def as any);
       });
     } else if (unionCtx.isObjectUnion && options.length > 0) {
       // Merge all object properties into a single schema object
       const mergedDef: any = {};
       for (const opt of options) {
-        const def = extractMongooseDef(opt, new Map(), true);
+        const def = extractMongooseDef(opt, new Map(), true, true);
         if (typeof def === 'object' && def !== null) {
           for (const [key, prop] of Object.entries(def)) {
             if (typeof prop === 'object' && prop !== null && !Array.isArray(prop)) {

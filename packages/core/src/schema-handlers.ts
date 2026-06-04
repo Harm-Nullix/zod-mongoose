@@ -12,6 +12,7 @@ export function handleObject(
   mongooseProp: any,
   visited: Map<z.ZodTypeAny, any>,
   extractMongooseDef: (schema: z.ZodTypeAny, visited: Map<z.ZodTypeAny, any>) => any,
+  isField = false,
 ) {
   callHookSync('schema:object:before', {schema: unwrapped, mongooseProp, visited});
   const {shape} = unwrapped;
@@ -69,8 +70,10 @@ export function handleObject(
   // If the developer didn't provide a strict Mongoose type override, return the shape
   let result;
 
-  // Handle explicit subschema request
-  if (mongooseProp.schema && !mongooseProp.type) {
+  // Handle explicit or default subschema request
+  const shouldBeSubSchema = isField && mongooseProp.schema !== false;
+
+  if (shouldBeSubSchema && !mongooseProp.type) {
     const mongoose = getMongoose();
     if (mongoose) {
       const options = typeof mongooseProp.schema === 'object' ? mongooseProp.schema : {};

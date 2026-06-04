@@ -92,8 +92,10 @@ describe('MegaZodSchema conversion', () => {
     // Let's verify the parent path exists and is a sub-document (or has the fields)
     expect(mongooseSchema.path('eventPayload')).toBeDefined();
 
-    // Intersections currently flatten or fall back to Mixed
-    expect(mongooseSchema.path('personWithEmployeeData')).toBeInstanceOf(mongoose.Schema.Types.Mixed);
+    // Intersections of objects are now subschemas by default
+    expect(mongooseSchema.path('personWithEmployeeData')).toBeDefined();
+    expect(mongooseSchema.path('personWithEmployeeData')).not.toBeInstanceOf(mongoose.Schema.Types.Mixed);
+    expect(mongooseSchema.path('personWithEmployeeData.firstName')).toBeDefined();
   });
 
   test('should verify new _id and refs fields', () => {

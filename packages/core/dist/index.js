@@ -196,8 +196,7 @@ const mongooseRegistry = z.registry();
 /**
  * A clean wrapper to attach Mongoose metadata to any Zod schema.
  */
-function withMongoose(schema, meta) {
-    meta ??= {};
+function withMongoose(schema, meta = {}) {
     callHookSync('registry:get:before', { schema });
     const existing = mongooseRegistry.get(schema) || {};
     callHookSync('registry:get', { schema, meta: existing });
@@ -415,7 +414,7 @@ function mapZodChecksToMongoose(checks, mongooseProp) {
 /**
  * Handles ZodObject conversion to Mongoose Schema definition.
  */
-function handleObject(unwrapped, mongooseProp, visited, extractMongooseDef) {
+function handleObject(unwrapped, mongooseProp, visited, extractMongooseDef, isField = false) {
     callHookSync('schema:object:before', { schema: unwrapped, mongooseProp, visited });
     const { shape } = unwrapped;
     const objDef = {};
@@ -469,8 +468,9 @@ function handleObject(unwrapped, mongooseProp, visited, extractMongooseDef) {
     }
     // If the developer didn't provide a strict Mongoose type override, return the shape
     let result;
-    // Handle explicit subschema request
-    if (mongooseProp.schema && !mongooseProp.type) {
+    // Handle explicit or default subschema request
+    const shouldBeSubSchema = isField && mongooseProp.schema !== false;
+    if (shouldBeSubSchema && !mongooseProp.type) {
         const mongoose = getMongoose();
         if (mongoose) {
             const options = typeof mongooseProp.schema === 'object' ? mongooseProp.schema : {};
@@ -594,7 +594,7 @@ function handleRecord(unwrapped, mongooseProp, visited, extractMongooseDef) {
  * THE CONVERTER (Safe AST Walker)
  * We extract the Zod type and merge it with any registered Mongoose metadata.
  */
-function extractMongooseDef(schema, visited = new Map(), isField = false) {
+function extractMongooseDef(schema, visited = new Map(), isField = false, noWrap = false) {
     // Only call converter:before at the very beginning of a run
     if (visited.size === 0) {
         callHookSync('converter:before', { schema: schema, visited });
@@ -674,7 +674,7 @@ function extractMongooseDef(schema, visited = new Map(), isField = false) {
     // Handle recursion and specific types via separate handlers
     if (type === 'object') {
         const wrapperFn = (s, v) => extractMongooseDef(s, v, true);
-        const result = handleObject(unwrapped, mongooseProp, visited, wrapperFn);
+        const result = handleObject(unwrapped, mongooseProp, visited, wrapperFn, isField && !noWrap);
         callHookSync('converter:after', {
             schema: schema,
             mongooseProp: result,
@@ -692,10 +692,32 @@ function extractMongooseDef(schema, visited = new Map(), isField = false) {
     }
     // Handle Intersections
     if (type === 'intersection') {
-        const left = extractMongooseDef(unwrapped._def.left, visited, isField);
-        const right = extractMongooseDef(unwrapped._def.right, visited, isField);
+        const left = extractMongooseDef(unwrapped._def.left, visited, isField, true);
+        const right = extractMongooseDef(unwrapped._def.right, visited, isField, true);
         if (typeof left === 'object' && typeof right === 'object') {
             Object.assign(mongooseProp, left, right);
+            if (isField && !noWrap && mongooseProp.schema !== false && !mongooseProp.type) {
+                const mongoose = getMongoose();
+                if (mongoose) {
+                    const options = typeof mongooseProp.schema === 'object' ? mongooseProp.schema : {};
+                    const { plugins, ...schemaOptions } = options;
+                    const definition = { ...mongooseProp };
+                    // Remove metadata fields that shouldn't be in the schema definition if they are top-level
+                    delete definition.schema;
+                    const subSchema = new mongoose.Schema(definition, schemaOptions);
+                    if (plugins && Array.isArray(plugins)) {
+                        for (const plugin of plugins) {
+                            subSchema.plugin(plugin);
+                        }
+                    }
+                    mongooseProp.type = subSchema;
+                    // Clear other fields since they are now in subSchema
+                    for (const key of Object.keys(mongooseProp)) {
+                        if (key !== 'type')
+                            delete mongooseProp[key];
+                    }
+                }
+            }
         }
         else if (!mongooseProp.type) {
             mongooseProp.type = getMongoose()?.Schema.Types.Mixed || 'Mixed';
@@ -740,7 +762,7 @@ function extractMongooseDef(schema, visited = new Map(), isField = false) {
                 const { schema: unwrappedDisc } = unwrapZodSchema(discriminatorProp);
                 const discriminatorValue = unwrappedDisc._def.value ?? unwrappedDisc._def.values?.[0];
                 // Use a fresh Map for each option to avoid cross-contamination of visited nodes
-                const optionDef = extractMongooseDef(option, new Map(), true);
+                const optionDef = extractMongooseDef(option, new Map(), true, true);
                 if (optionDef && typeof optionDef === 'object' && !Array.isArray(optionDef)) {
                     const cleanOptionDef = { ...optionDef };
                     delete cleanOptionDef[discriminatorKey];
@@ -816,7 +838,7 @@ function extractMongooseDef(schema, visited = new Map(), isField = false) {
             !unionCtx.isXor) {
             mongooseProp.type = mongoose.Schema.Types.Union;
             mongooseProp.of = options.map((opt) => {
-                const def = extractMongooseDef(opt, visited, true);
+                const def = extractMongooseDef(opt, visited, true, true);
                 return def.type || def;
             });
         }
@@ -824,7 +846,7 @@ function extractMongooseDef(schema, visited = new Map(), isField = false) {
             // Merge all object properties into a single schema object
             const mergedDef = {};
             for (const opt of options) {
-                const def = extractMongooseDef(opt, new Map(), true);
+                const def = extractMongooseDef(opt, new Map(), true, true);
                 if (typeof def === 'object' && def !== null) {
                     for (const [key, prop] of Object.entries(def)) {
                         if (typeof prop === 'object' && prop !== null && !Array.isArray(prop)) {
