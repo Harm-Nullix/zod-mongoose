@@ -135,10 +135,16 @@ export default defineEventHandler(async (event) => {
     const formattedDef = formatValue(extractedDef);
     // schemaObj is a Mongoose Schema instance, we only care about its .obj for display
     const formattedSchema = formatValue(mongooseSchema.obj);
+    // @ts-ignore
+    const formattedTree = formatValue(mongooseSchema.tree);
+    // @ts-ignore
+    const formattedPaths = formatValue(mongooseSchema.paths);
 
     return {
       definition: util.inspect(formattedDef, formatOpts),
       schemaObj: util.inspect(formattedSchema, formatOpts),
+      schemaTree: util.inspect(formattedTree, formatOpts),
+      schemaPaths: util.inspect(formattedPaths, formatOpts),
     };
   } catch (err: any) {
     throw createError({

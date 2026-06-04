@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@nuxt/ui": "^4.6.0",
-    "mongoose": "^8.23.0",
+    "mongoose": "9.6.3",
     "@nullix/zod-mongoose": "workspace:*",
     "nuxt": "^4.4.2",
     "tailwindcss": "^4.2.2",
