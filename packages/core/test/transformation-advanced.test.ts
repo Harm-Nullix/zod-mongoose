@@ -67,9 +67,9 @@ describe('Advanced Zod Transformation and Validation', () => {
     });
 
     const mongooseSchema = toMongooseSchema(zodSchema);
-    // In zod v4 pipe(z.coerce.date()), the 'in' is string.
-    // Our converter extracts the 'in' type for Mongoose mapping.
-    expect(mongooseSchema.path('coercedDate')).toBeInstanceOf(mongoose.Schema.Types.String);
+    // In zod v4 pipe(z.coerce.date()), the 'out' is date.
+    // Our converter extracts the 'out' type for Mongoose mapping.
+    expect(mongooseSchema.path('coercedDate')).toBeInstanceOf(mongoose.Schema.Types.Date);
   });
 
   test('should handle transformations on nested objects', () => {

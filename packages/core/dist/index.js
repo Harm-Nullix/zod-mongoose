@@ -266,20 +266,36 @@ features = { required: true }, visited = new Set()) {
         }
         if (outType === 'transform' || outType === 'refinement') {
             // It's a transform or refine (in is schema, out is logic)
-            return unwrapZodSchema(def.in, features, visited);
+            // We should still collect transformations from the 'out' part
+            const transformFeatures = { ...features };
+            const outDef = def.out?._def;
+            const effects = outDef?.effects || outDef?.transformations || (outType === 'transform' ? [outDef] : []);
+            if (effects && Array.isArray(effects)) {
+                transformFeatures.transformations = [
+                    ...(transformFeatures.transformations || []),
+                    ...effects,
+                ];
+            }
+            return unwrapZodSchema(def.in, transformFeatures, visited);
         }
-        // Default pipe behavior (extract the input part)
-        return unwrapZodSchema(def.in, features, visited);
+        // Default pipe behavior (extract the output part)
+        return unwrapZodSchema(def.out, features, visited);
     }
     if (type === 'transform' ||
         type === 'preprocess' ||
         type === 'refinement' ||
         type === 'effects') {
+        const transformFeatures = { ...features };
+        const effects = def.effects || def.transformations || (def.type === 'transform' || type === 'transform' ? [def] : []);
+        if (effects && Array.isArray(effects)) {
+            transformFeatures.transformations = [
+                ...(transformFeatures.transformations || []),
+                ...effects,
+            ];
+        }
         const inner = def.schema || def.innerType;
         if (inner) {
-            const result = unwrapZodSchema(inner, features, visited);
-            // Ensure we check registry for intermediate schemas if needed,
-            // but the registry check is now in extractMongooseDef.
+            const result = unwrapZodSchema(inner, transformFeatures, visited);
             return result;
         }
     }
@@ -636,8 +652,8 @@ function extractMongooseDef(schema, visited = new Map(), isField = false, noWrap
     if (features.isOptional === true && mongooseProp.type && mongooseProp.required !== true) {
         mongooseProp.required = false;
     }
-    if (visited.has(unwrapped)) {
-        const existing = visited.get(unwrapped);
+    if (visited.has(schema)) {
+        const existing = visited.get(schema);
         if (existing === mongooseProp) {
             return existing;
         }
@@ -647,7 +663,7 @@ function extractMongooseDef(schema, visited = new Map(), isField = false, noWrap
         }
         return existing;
     }
-    visited.set(unwrapped, mongooseProp);
+    visited.set(schema, mongooseProp);
     // console.log('Visited set for', (unwrapped as any)._def.type, mongooseProp);
     if (features.default !== undefined) {
         mongooseProp.default = features.default;
@@ -983,7 +999,10 @@ function extractMongooseDef(schema, visited = new Map(), isField = false, noWrap
         case 'number':
         case 'boolean':
         case 'date':
-        case 'bigint': {
+        case 'bigint':
+        case 'stringbool':
+        case 'boolstring':
+        case 'booleanstring': {
             if (!mongooseProp.type) {
                 if (type === 'bigint') {
                     mongooseProp.type = typeof BigInt === 'undefined' ? Number : BigInt;
@@ -994,8 +1013,42 @@ function extractMongooseDef(schema, visited = new Map(), isField = false, noWrap
                         number: Number,
                         boolean: Boolean,
                         date: Date,
+                        stringbool: Boolean,
+                        boolstring: Boolean,
+                        booleanstring: Boolean,
                     };
                     mongooseProp.type = typeMap[type];
+                    // Clever inference: If a transform occurred (which we know if the Zod type
+                    // is different from the default value type), prefer the default's type.
+                    if (mongooseProp.default !== undefined) {
+                        const defaultType = typeof mongooseProp.default;
+                        if (defaultType === 'boolean' && type !== 'boolean') {
+                            mongooseProp.type = Boolean;
+                        }
+                        else if (defaultType === 'number' && type !== 'number') {
+                            mongooseProp.type = Number;
+                        }
+                        else if (defaultType === 'string' && type !== 'string') {
+                            mongooseProp.type = String;
+                        }
+                        else if (mongooseProp.default instanceof Date && type !== 'date') {
+                            mongooseProp.type = Date;
+                        }
+                    }
+                    // Even cleverer: Check transformations for clues (e.g., stringbool, boolstring)
+                    if (mongooseProp.type === String && features.transformations) {
+                        for (const tx of features.transformations) {
+                            const txStr = tx.transform?.toString() || tx.toString();
+                            if (txStr.includes('stringbool') || txStr.includes('boolstring') || txStr.includes('booleanstring')) {
+                                mongooseProp.type = Boolean;
+                                break;
+                            }
+                            if (txStr.includes('=== "true"') || txStr.includes('=== \'true\'')) {
+                                mongooseProp.type = Boolean;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             if (mongooseProp.required !== false)

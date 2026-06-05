@@ -87,8 +87,8 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
     mongooseProp.required = false;
   }
 
-  if (visited.has(unwrapped)) {
-    const existing = visited.get(unwrapped);
+  if (visited.has(schema)) {
+    const existing = visited.get(schema);
     if (existing === mongooseProp) {
       return existing as any;
     }
@@ -99,7 +99,7 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
     return existing as any;
   }
 
-  visited.set(unwrapped, mongooseProp);
+  visited.set(schema, mongooseProp);
   // console.log('Visited set for', (unwrapped as any)._def.type, mongooseProp);
 
   if (features.default !== undefined) {
@@ -474,7 +474,10 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
     case 'number':
     case 'boolean':
     case 'date':
-    case 'bigint': {
+    case 'bigint':
+    case 'stringbool':
+    case 'boolstring':
+    case 'booleanstring': {
       if (!mongooseProp.type) {
         if (type === 'bigint') {
           mongooseProp.type = typeof BigInt === 'undefined' ? Number : BigInt;
@@ -484,8 +487,41 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
             number: Number,
             boolean: Boolean,
             date: Date,
+            stringbool: Boolean,
+            boolstring: Boolean,
+            booleanstring: Boolean,
           };
           mongooseProp.type = typeMap[type];
+
+          // Clever inference: If a transform occurred (which we know if the Zod type
+          // is different from the default value type), prefer the default's type.
+          if (mongooseProp.default !== undefined) {
+            const defaultType = typeof mongooseProp.default;
+            if (defaultType === 'boolean' && type !== 'boolean') {
+              mongooseProp.type = Boolean;
+            } else if (defaultType === 'number' && type !== 'number') {
+              mongooseProp.type = Number;
+            } else if (defaultType === 'string' && type !== 'string') {
+              mongooseProp.type = String;
+            } else if (mongooseProp.default instanceof Date && type !== 'date') {
+              mongooseProp.type = Date;
+            }
+          }
+
+          // Even cleverer: Check transformations for clues (e.g., stringbool, boolstring)
+          if (mongooseProp.type === String && features.transformations) {
+            for (const tx of features.transformations) {
+              const txStr = tx.transform?.toString() || tx.toString();
+              if (txStr.includes('stringbool') || txStr.includes('boolstring') || txStr.includes('booleanstring')) {
+                mongooseProp.type = Boolean;
+                break;
+              }
+              if (txStr.includes('=== "true"') || txStr.includes('=== \'true\'')) {
+                mongooseProp.type = Boolean;
+                break;
+              }
+            }
+          }
         }
       }
       if (mongooseProp.required !== false) mongooseProp.required = true;

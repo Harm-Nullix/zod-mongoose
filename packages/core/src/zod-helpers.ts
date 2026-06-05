@@ -7,6 +7,7 @@ export interface SchemaFeatures {
   isNullable?: boolean;
   readOnly?: boolean;
   checks?: any;
+  transformations?: any[];
 }
 
 /**
@@ -90,11 +91,21 @@ export function unwrapZodSchema(
 
     if (outType === 'transform' || outType === 'refinement') {
       // It's a transform or refine (in is schema, out is logic)
-      return unwrapZodSchema(def.in, features, visited);
+      // We should still collect transformations from the 'out' part
+      const transformFeatures = {...features};
+      const outDef = def.out?._def;
+      const effects = outDef?.effects || outDef?.transformations || (outType === 'transform' ? [outDef] : []);
+      if (effects && Array.isArray(effects)) {
+        transformFeatures.transformations = [
+          ...(transformFeatures.transformations || []),
+          ...effects,
+        ];
+      }
+      return unwrapZodSchema(def.in, transformFeatures, visited);
     }
 
-    // Default pipe behavior (extract the input part)
-    return unwrapZodSchema(def.in, features, visited);
+    // Default pipe behavior (extract the output part)
+    return unwrapZodSchema(def.out, features, visited);
   }
 
   if (
@@ -103,11 +114,17 @@ export function unwrapZodSchema(
     type === 'refinement' ||
     type === 'effects'
   ) {
+    const transformFeatures = {...features};
+    const effects = def.effects || def.transformations || (def.type === 'transform' || type === 'transform' ? [def] : []);
+    if (effects && Array.isArray(effects)) {
+      transformFeatures.transformations = [
+        ...(transformFeatures.transformations || []),
+        ...effects,
+      ];
+    }
     const inner = def.schema || def.innerType;
     if (inner) {
-      const result = unwrapZodSchema(inner, features, visited);
-      // Ensure we check registry for intermediate schemas if needed,
-      // but the registry check is now in extractMongooseDef.
+      const result = unwrapZodSchema(inner, transformFeatures, visited);
       return result;
     }
   }

@@ -19,9 +19,9 @@ describe('Zod Transformation and Validation Pipelines', () => {
     });
 
     const mongooseSchema = toMongooseSchema(zodSchema);
-    // .pipe(z.coerce.number()) in zod v4 usually has the 'in' schema as the first one
-    // our converter should extract the 'in' part (string)
-    expect(mongooseSchema.path('age')).toBeInstanceOf(mongoose.Schema.Types.String);
+    // .pipe(z.coerce.number()) in zod v4 usually has the 'out' schema as the second one
+    // our converter should extract the 'out' part (number)
+    expect(mongooseSchema.path('age')).toBeInstanceOf(mongoose.Schema.Types.Number);
   });
 
   test('should handle .preprocess()', () => {
