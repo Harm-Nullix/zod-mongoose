@@ -4,6 +4,7 @@ import type { ContentNavigationItem } from "@nuxt/content";
 const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
 
 const { header } = useAppConfig();
+console.error(header);
 </script>
 
 <template>
@@ -14,14 +15,11 @@ const { header } = useAppConfig();
       class="w-full"
     />
 
-    <template v-if="header?.title" #title>
-      {{ header.title }}
-    </template>
-
     <template #left>
       <NuxtLink :to="header?.to || '/'">
         <AppLogo class="w-auto h-8 shrink-0" />
       </NuxtLink>
+      <UBadge> v{{ header.version }} </UBadge>
     </template>
 
     <template #right>

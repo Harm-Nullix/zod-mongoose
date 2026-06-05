@@ -1,3 +1,5 @@
+import pck from "../../core/package.json";
+
 export default defineAppConfig({
   ui: {
     colors: {
@@ -17,6 +19,7 @@ export default defineAppConfig({
   },
   header: {
     title: "zod-mongoose",
+    version: pck.version,
     to: "/",
     logo: {
       alt: "zod-mongoose logo",
