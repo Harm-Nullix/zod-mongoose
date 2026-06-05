@@ -73,9 +73,19 @@ describe('schema-handlers', () => {
   });
 
   describe('handleRecord', () => {
-    it('should convert a record to a Map', () => {
+    it('should convert a record to an Object (POJO)', () => {
       const schema = z.record(z.string(), z.string());
-      const mongooseProp: any = { type: Map };
+      const mongooseProp: any = {};
+      const visited = new Map();
+
+      handleRecord(schema, mongooseProp, visited, extractMongooseDef as any);
+
+      expect(mongooseProp.type).toBe(Object);
+    });
+
+    it('should convert a map to a Map instance', () => {
+      const schema = z.map(z.string(), z.string());
+      const mongooseProp: any = {};
       const visited = new Map();
 
       handleRecord(schema, mongooseProp, visited, extractMongooseDef as any);

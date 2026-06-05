@@ -38,10 +38,10 @@ describe('Improved Types behavior', () => {
     expect(def.discriminators.b.b.type).toBe(Number);
   });
 
-  test('z.record should map to Mongoose Map', () => {
+  test('z.record should map to Mongoose Object (POJO)', () => {
     const schema = z.record(z.string(), z.number());
     const def = extractMongooseDef(schema) as any;
-    expect(def.type).toBe(Map);
+    expect(def.type).toBe(Object);
     expect(def.of).toBe(Number);
   });
 

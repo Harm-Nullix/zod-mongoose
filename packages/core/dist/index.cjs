@@ -575,14 +575,17 @@ function handleArray(unwrapped, mongooseProp, visited, extractMongooseDef) {
  */
 function handleRecord(unwrapped, mongooseProp, visited, extractMongooseDef) {
     callHookSync('schema:record:before', { schema: unwrapped, mongooseProp, visited });
+    const type = unwrapped._def?.type;
+    const isMap = type === 'map';
     const valueType = unwrapped.valueType ||
         unwrapped.valueSchema ||
         unwrapped._def.valueType ||
         unwrapped._def.valueSchema ||
         unwrapped._def.innerType; // For some Zod versions
     let innerDef;
-    if (!mongooseProp.type || mongooseProp.type === Map) {
-        mongooseProp.type = Map;
+    if (!mongooseProp.type || mongooseProp.type === Map || mongooseProp.type === Object) {
+        // z.record() maps to a POJO (Object/Mixed), while z.map() maps to a Mongoose Map
+        mongooseProp.type = isMap ? Map : Object;
         const finalValueType = valueType || unwrapped.valueSchema || unwrapped._def?.valueSchema;
         if (finalValueType) {
             innerDef = extractMongooseDef(finalValueType, visited);

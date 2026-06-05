@@ -74,9 +74,16 @@ if (isDocsMode.value) {
 </script>
 
 <template>
-  <div class="h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+  <div
+    class="flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden relative"
+    :class="[
+      isDocsMode
+        ? 'h-[calc(100vh-var(--ui-header-height,64px))] sticky top-[var(--ui-header-height,64px)]'
+        : 'h-screen',
+    ]"
+  >
     <header
-      class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 py-3 px-4 flex justify-between items-center shrink-0"
+      class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 py-3 px-4 flex justify-between items-center shrink-0 z-20"
     >
       <div class="flex items-center gap-4">
         <h1 class="text-xl font-bold text-primary">
@@ -103,7 +110,10 @@ if (isDocsMode.value) {
       </div>
     </header>
 
-    <UDashboardGroup class="flex-1 min-h-0" storage-key="studio-layout">
+    <UDashboardGroup
+      class="flex-1 min-h-0 !relative !inset-auto"
+      storage-key="studio-layout"
+    >
       <!-- Left: Editor -->
       <UDashboardPanel id="editor" collapsible resizable :min-size="20">
         <div class="h-full relative bg-white dark:bg-gray-950">

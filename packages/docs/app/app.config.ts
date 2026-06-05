@@ -36,6 +36,12 @@ export default defineAppConfig({
         target: "_blank",
         "aria-label": "GitHub",
       },
+      {
+        icon: "i-simple-icons-npm",
+        to: "https://www.npmjs.com/package/@nullix/zod-mongoose",
+        target: "_blank",
+        "aria-label": "NPM",
+      },
     ],
   },
   footer: {
