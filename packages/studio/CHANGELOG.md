@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 2.3.0
+
+### Minor Changes
+
+- dd50bd6: Replace `zPopulated` with `zRef`, add `populateZodSchema`, and refactor metadata extraction with `getMongooseMeta`
+
+### Patch Changes
+
+- Updated dependencies [dd50bd6]
+  - @nullix/zod-mongoose@2.3.0
+
 ## 2.2.0
 
 ### Minor Changes

@@ -1,3 +1,9 @@
+## 2.3.0
+
+### Minor Changes
+
+- dd50bd6: Replace `zPopulated` with `zRef`, add `populateZodSchema`, and refactor metadata extraction with `getMongooseMeta`
+
 ## 2.2.0
 
 ### Minor Changes
