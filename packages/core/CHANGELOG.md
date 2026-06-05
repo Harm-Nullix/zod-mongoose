@@ -1,3 +1,13 @@
+## 2.2.0
+
+### Minor Changes
+
+- 80db1a8: Records are now POJO instead of converted to maps
+
+### Patch Changes
+
+- 76c7732: Transform and coarce fixes
+
 ## 2.1.0
 
 ### Minor Changes
