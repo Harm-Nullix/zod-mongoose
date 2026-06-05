@@ -4,7 +4,6 @@ import type { ContentNavigationItem } from "@nuxt/content";
 const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
 
 const { header } = useAppConfig();
-console.error(header);
 </script>
 
 <template>
