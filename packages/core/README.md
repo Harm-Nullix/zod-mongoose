@@ -101,7 +101,7 @@ The following table shows how Zod types are mapped to Mongoose types by default.
 | `z.discriminatedUnion()` | `Mongoose Discriminator` | Maps to native Mongoose discriminators. Common fields are automatically moved to the base schema. |
 | `zObjectId()` | `mongoose.Schema.Types.ObjectId` | Specialized helper for ObjectIds. By default, it is omitted from the generated Mongoose schema to let Mongoose handle its auto-generation. |
 | `zBuffer()` | `mongoose.Schema.Types.Buffer` | Specialized helper for Buffers. |
-| `zPopulated()` | `mongoose.Schema.Types.ObjectId` | Helper for fields that can be either an `ObjectId` or a populated object. |
+| `zRef()` | `mongoose.Schema.Types.ObjectId` | Helper for fields that can be either an `ObjectId` or a populated object. |
 | `z.instanceof(Buffer)` | `mongoose.Schema.Types.Buffer` | |
 | `z.instanceof(ObjectId)` | `mongoose.Schema.Types.ObjectId` | |
 | `z.literal()` | `String` / `Number` / `Boolean` | Mapped to the literal's type with a Mongoose `enum` constraint. |
@@ -399,10 +399,10 @@ const LogSchema = withMongoose(
 ```
 
 ### `PopulatedSchema<T, K>`
-TypeScript utility type to extract the populated object type from a `zPopulated` union within a larger type. This is useful for typing Mongoose results after calling `.populate()`.
+TypeScript utility type to extract the populated object type from a `zRef` union within a larger type. This is useful for typing Mongoose results after calling `.populate()`.
 
 - `T`: The Zod-inferred type (e.g., `z.infer<typeof PostSchema>`).
-- `K`: The key(s) to populate (optional). If omitted, it will try to populate all `zPopulated` fields in the object.
+- `K`: The key(s) to populate (optional). If omitted, it will try to populate all `zRef` fields in the object.
 
 ```typescript
 import { PopulatedSchema } from '@nullix/zod-mongoose';
@@ -418,7 +418,7 @@ type FullPost = PopulatedSchema<z.infer<typeof PostSchema>>;
 Helper to create a Zod schema representing a Mongoose `ObjectId`.
 - `options`: Optional `MongooseMeta` for this field.
 
-### `zPopulated(ref, schema, options?)`
+### `zRef(ref, schema, options?)`
 Helper for fields that can be either an `ObjectId` (unpopulated) or a populated object.
 - `ref`: The name of the Mongoose model being referenced.
 - `schema`: The Zod schema representing the populated object.
@@ -427,7 +427,7 @@ Helper for fields that can be either an `ObjectId` (unpopulated) or a populated 
 ```typescript
 const UserSchema = z.object({ name: z.string() });
 const PostSchema = z.object({
-  author: zPopulated('User', UserSchema),
+  author: zRef('User', UserSchema),
 });
 ```
 

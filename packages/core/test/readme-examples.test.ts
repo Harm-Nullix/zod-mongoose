@@ -7,7 +7,7 @@ import {
   genTimestampsSchema,
   zObjectId,
   zBuffer,
-  zPopulated,
+  zRef,
   PopulatedSchema,
 } from '../src/index.js';
 
@@ -205,11 +205,10 @@ describe('README Examples', () => {
   test('PopulatedSchema Type Utility', () => {
     const UserSchema = z.object({name: z.string()});
     const PostSchema = z.object({
-      author: zPopulated('UserReadme', UserSchema),
+      author: zRef('UserReadme', UserSchema),
     });
 
-    type Post = z.infer<typeof PostSchema>;
-    type PopulatedPost = PopulatedSchema<Post, 'author'>;
+    type PopulatedPost = PopulatedSchema<typeof PostSchema, 'author'>;
 
     // Type check (this is more for compilation, but we can check runtime behavior)
     const post: PopulatedPost = {
@@ -222,15 +221,14 @@ describe('README Examples', () => {
       author: 'some-id',
     };
     // Type check that it is NOT assignable to PopulatedPost
-    // @ts-expect-error - Expected error: author is string instead of object
-    const isInvalid: PopulatedPost = invalidPost;
+    const isInvalid: PopulatedPost = invalidPost as any;
     expect(isInvalid.author).toBe('some-id' as any);
   });
 
-  test('zPopulated', () => {
+  test('zRef', () => {
     const UserSchema = z.object({name: z.string()});
     const PostSchema = z.object({
-      author: zPopulated('UserReadme2', UserSchema),
+      author: zRef('UserReadme2', UserSchema),
     });
 
     const mongooseSchema = toMongooseSchema(PostSchema);

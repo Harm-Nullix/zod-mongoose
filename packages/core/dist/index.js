@@ -206,6 +206,29 @@ function withMongoose(schema, meta = {}) {
     callHookSync('registry:added', { schema, meta: merged });
     return schema;
 }
+/**
+ * Recursively collect Mongoose metadata from a Zod schema and its wrappers.
+ */
+function getMongooseMeta(schema) {
+    const def = schema._def;
+    if (!def)
+        return {};
+    let meta = mongooseRegistry.get(schema) || {};
+    // If it has an inner type (Optional, Nullable, Default, etc.), collect from it too
+    if (def.innerType) {
+        meta = { ...getMongooseMeta(def.innerType), ...meta };
+    }
+    else if (def.schema) {
+        meta = { ...getMongooseMeta(def.schema), ...meta };
+    }
+    // Handle pipes (like z.codec)
+    if (def.type === 'pipe') {
+        // Collect from both 'in' and 'out' parts, preferring metadata from 'out' if it exists,
+        // but the pipe itself usually holds the metadata we want.
+        meta = { ...getMongooseMeta(def.in), ...getMongooseMeta(def.out), ...meta };
+    }
+    return meta;
+}
 
 /**
  * Recursively unwrap Zod schemas (Optional, Nullable, Default, Effects, Pipelines)
@@ -620,33 +643,14 @@ function extractMongooseDef(schema, visited = new Map(), isField = false, noWrap
     }
     callHookSync('converter:start', { schema: schema, visited });
     const { schema: unwrapped, features } = unwrapZodSchema(schema);
-    // Pull any explicitly registered Mongoose metadata
-    callHookSync('registry:get:before', { schema: schema });
+    // Pull any explicitly registered Mongoose metadata (including from wrappers)
     const meta = mongooseRegistry.get(schema) || {};
-    callHookSync('registry:get', { schema: schema, meta });
-    callHookSync('registry:get:before', { schema: unwrapped });
-    const unwrappedMeta = mongooseRegistry.get(unwrapped) || {};
-    callHookSync('registry:get', { schema: unwrapped, meta: unwrappedMeta });
-    // If we have a chain of wrappers, collect metadata from all of them.
-    let currentMeta = { ...unwrappedMeta, ...meta };
-    if (schema._def.innerType) {
-        let inner = schema._def.innerType;
-        while (inner) {
-            callHookSync('registry:get:before', { schema: inner });
-            const innerMeta = mongooseRegistry.get(inner);
-            callHookSync('registry:get', { schema: inner, meta: innerMeta });
-            if (innerMeta) {
-                currentMeta = { ...innerMeta, ...currentMeta };
-            }
-            inner = inner._def?.innerType || inner._def?.schema;
-        }
-    }
-    const mongooseProp = currentMeta;
+    const mongooseProp = getMongooseMeta(schema);
     callHookSync('converter:unwrapped', {
         schema: schema,
         unwrapped,
         features,
-        meta: currentMeta,
+        meta: mongooseProp,
         mongooseProp: mongooseProp,
     });
     if (features.isOptional === true && mongooseProp.type && mongooseProp.required !== true) {
@@ -1222,19 +1226,66 @@ const zBuffer = (options) => {
         ...options,
     });
 };
-const zPopulated = (ref, schema, options) => {
+const zRef = (ref, schema, options) => {
     const isFrontend = getFrontendMode();
     const mongoose = getMongoose();
-    const objectIdSchema = isFrontend
-        ? z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId')
-        : z.custom((val) => (mongoose && val instanceof mongoose.Types.ObjectId) ||
-            (typeof val === 'string' && /^[\dA-Fa-f]{24}$/.test(val)));
-    return withMongoose(z.union([objectIdSchema, schema]), {
+    const objectIdSchema = zObjectId();
+    const base = z.codec(z.union([objectIdSchema, schema]), objectIdSchema, {
+        decode: (val) => (typeof val === 'object' && val !== null && '_id' in val ? val._id : val),
+        encode: (val) => val,
+    });
+    const result = withMongoose(base, {
         type: isFrontend ? 'ObjectId' : mongoose?.Schema.Types.ObjectId || 'ObjectId',
         ref,
+        refSchema: schema,
         ...options,
     });
+    return result;
 };
+/**
+ * Helper to create a populated version of a Zod schema.
+ * Replaces zRef fields with their corresponding refSchema.
+ * If no keys are provided, it attempts to populate all zRef fields.
+ */
+function populateZodSchema(schema, keys) {
+    const { shape } = schema;
+    const newShape = { ...shape };
+    const keysToPopulate = keys || Object.keys(shape);
+    const populateField = (field) => {
+        const meta = getMongooseMeta(field);
+        const { schema: unwrapped, features } = unwrapZodSchema(field);
+        let result = field;
+        if (meta?.refSchema) {
+            result = meta.refSchema;
+        }
+        else if (unwrapped instanceof z.ZodArray) {
+            const populatedInner = populateField(unwrapped.element);
+            if (populatedInner !== unwrapped.element) {
+                result = z.array(populatedInner);
+            }
+        }
+        else if (unwrapped instanceof z.ZodObject) {
+            result = populateZodSchema(unwrapped);
+        }
+        if (result !== field && result !== unwrapped) {
+            // Re-apply common wrappers if they were lost during unwrap
+            if (features.isOptional && !(result instanceof z.ZodOptional)) {
+                result = result.optional();
+            }
+            if (features.isNullable && !(result instanceof z.ZodNullable)) {
+                result = result.nullable();
+            }
+            if (features.default !== undefined && !(result instanceof z.ZodDefault)) {
+                result = result.default(features.default);
+            }
+        }
+        return result;
+    };
+    for (const key of keysToPopulate) {
+        newShape[key] = populateField(shape[key]);
+    }
+    return z.object(newShape);
+}
 const DateFieldZod = () => z.date().default(() => new Date());
 const genTimestampsSchema = (createdAtField = 'createdAt', updatedAtField = 'updatedAt') => {
     if (createdAtField != null &&
@@ -1253,5 +1304,5 @@ const genTimestampsSchema = (createdAtField = 'createdAt', updatedAtField = 'upd
 };
 const bufferMongooseGetter = (value) => value != null && value._bsontype === 'Binary' ? value.buffer : value;
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, hooks, mongooseRegistry, setFrontendMode, setMongoose, toMongooseSchema, withMongoose, zBuffer, zObjectId, zPopulated };
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, withMongoose, zBuffer, zObjectId, zRef };
 //# sourceMappingURL=index.js.map

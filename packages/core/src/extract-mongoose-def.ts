@@ -1,7 +1,7 @@
 import {z} from 'zod/v4';
 import {getMongoose} from './config.js';
 import {unwrapZodSchema} from './zod-helpers.js';
-import {mongooseRegistry} from './registry.js';
+import {mongooseRegistry, getMongooseMeta} from './registry.js';
 import {mapZodChecksToMongoose} from './validation-mappers.js';
 import {handleObject, handleArray, handleRecord} from './schema-handlers.js';
 import {callHookSync} from './hooks.js';
@@ -49,37 +49,15 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
 
   const {schema: unwrapped, features} = unwrapZodSchema(schema);
 
-  // Pull any explicitly registered Mongoose metadata
-  callHookSync('registry:get:before', {schema: schema as z.ZodTypeAny});
+  // Pull any explicitly registered Mongoose metadata (including from wrappers)
   const meta = mongooseRegistry.get(schema) || {};
-  callHookSync('registry:get', {schema: schema as z.ZodTypeAny, meta});
-
-  callHookSync('registry:get:before', {schema: unwrapped});
-  const unwrappedMeta = mongooseRegistry.get(unwrapped) || {};
-  callHookSync('registry:get', {schema: unwrapped, meta: unwrappedMeta});
-
-  // If we have a chain of wrappers, collect metadata from all of them.
-  let currentMeta = {...unwrappedMeta, ...meta};
-  if ((schema as any)._def.innerType) {
-    let inner = (schema as any)._def.innerType;
-    while (inner) {
-      callHookSync('registry:get:before', {schema: inner});
-      const innerMeta = mongooseRegistry.get(inner);
-      callHookSync('registry:get', {schema: inner, meta: innerMeta});
-
-      if (innerMeta) {
-        currentMeta = {...innerMeta, ...currentMeta};
-      }
-      inner = inner._def?.innerType || inner._def?.schema;
-    }
-  }
-  const mongooseProp: any = currentMeta;
+  const mongooseProp: any = getMongooseMeta(schema);
 
   callHookSync('converter:unwrapped', {
     schema: schema as z.ZodTypeAny,
     unwrapped,
     features,
-    meta: currentMeta,
+    meta: mongooseProp,
     mongooseProp: mongooseProp as any,
   });
 

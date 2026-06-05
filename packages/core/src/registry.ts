@@ -17,6 +17,8 @@ export interface ToMongooseSchemaOptions extends SchemaOptions {
 export interface MongooseMeta extends Record<string, any> {
   explicitId?: boolean;
   schema?: any;
+  ref?: string;
+  refSchema?: any;
 }
 
 /**
@@ -38,4 +40,30 @@ export function withMongoose<T extends z.ZodTypeAny>(schema: T, meta: MongooseMe
   mongooseRegistry.add(schema, merged);
   callHookSync('registry:added', {schema, meta: merged});
   return schema;
+}
+
+/**
+ * Recursively collect Mongoose metadata from a Zod schema and its wrappers.
+ */
+export function getMongooseMeta(schema: z.ZodTypeAny): MongooseMeta {
+  const def = (schema as any)._def;
+  if (!def) return {};
+
+  let meta = mongooseRegistry.get(schema) || {};
+
+  // If it has an inner type (Optional, Nullable, Default, etc.), collect from it too
+  if (def.innerType) {
+    meta = {...getMongooseMeta(def.innerType), ...meta};
+  } else if (def.schema) {
+    meta = {...getMongooseMeta(def.schema), ...meta};
+  }
+
+  // Handle pipes (like z.codec)
+  if (def.type === 'pipe') {
+    // Collect from both 'in' and 'out' parts, preferring metadata from 'out' if it exists,
+    // but the pipe itself usually holds the metadata we want.
+    meta = {...getMongooseMeta(def.in), ...getMongooseMeta(def.out), ...meta};
+  }
+
+  return meta;
 }

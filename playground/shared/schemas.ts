@@ -1,6 +1,11 @@
-import {z} from 'zod/v4';
-import {zObjectId, zPopulated, zBuffer, type PopulatedSchema} from '@nullix/zod-mongoose';
-import {withMongoose} from '@nullix/zod-mongoose';
+import { z } from "zod/v4";
+import {
+  zObjectId,
+  zRef,
+  zBuffer,
+  type PopulatedSchema,
+} from "@nullix/zod-mongoose";
+import { withMongoose } from "@nullix/zod-mongoose";
 
 export const UserZodSchema = z
   .object({
@@ -17,33 +22,37 @@ export const UserZodSchema = z
     fullName: z.string().optional(),
     // Intersection example
     profile: z.intersection(
-      z.object({bio: z.string().optional()}),
-      z.object({website: z.url().optional()}),
+      z.object({ bio: z.string().optional() }),
+      z.object({ website: z.url().optional() }),
     ),
     // XOR example
     contact: z
       .xor([
-        z.object({type: z.literal('phone'), phoneNumber: z.string()}),
-        z.object({type: z.literal('slack'), slackId: z.string()}),
+        z.object({ type: z.literal("phone"), phoneNumber: z.string() }),
+        z.object({ type: z.literal("slack"), slackId: z.string() }),
       ])
       .optional(),
   })
-  .describe('User');
+  .describe("User");
 
 export type User = z.infer<typeof UserZodSchema>;
 
 // Discriminated Union example
 export const ActivityZodSchema = z
-  .discriminatedUnion('type', [
-    z.object({type: z.literal('login'), timestamp: z.coerce.date()}),
-    z.object({type: z.literal('post_create'), postId: zObjectId(), timestamp: z.coerce.date()}),
+  .discriminatedUnion("type", [
+    z.object({ type: z.literal("login"), timestamp: z.coerce.date() }),
     z.object({
-      type: z.literal('comment_create'),
+      type: z.literal("post_create"),
+      postId: zObjectId(),
+      timestamp: z.coerce.date(),
+    }),
+    z.object({
+      type: z.literal("comment_create"),
       commentId: z.string(),
       timestamp: z.coerce.date(),
     }),
   ])
-  .describe('Activity');
+  .describe("Activity");
 
 export type Activity = z.infer<typeof ActivityZodSchema>;
 
@@ -58,7 +67,7 @@ export const SettingsZodSchema = z
     // Explicit Map example
     metadata: z.map(z.string(), z.any()).optional(),
   })
-  .describe('Settings');
+  .describe("Settings");
 
 export type Settings = z.infer<typeof SettingsZodSchema>;
 
@@ -67,11 +76,11 @@ export const AssetZodSchema = z
   .object({
     _id: zObjectId(),
     name: z.string(),
-    type: z.union([z.literal('image'), z.literal('pdf'), z.literal('text')]),
+    type: z.union([z.literal("image"), z.literal("pdf"), z.literal("text")]),
     data: zBuffer(),
     tags: z.array(z.string()).default([]),
   })
-  .describe('Asset');
+  .describe("Asset");
 
 export type Asset = z.infer<typeof AssetZodSchema>;
 
@@ -83,13 +92,13 @@ export const TaskZodSchema = z
         orgId: z.string(),
         taskId: z.number(),
       }),
-      {includeId: true},
+      { includeId: true },
     ),
     title: z.string(),
     description: z.string().optional(),
-    assignedTo: zPopulated('User', UserZodSchema).optional(),
+    assignedTo: zRef("User", UserZodSchema).optional(),
   })
-  .describe('Task');
+  .describe("Task");
 
 export type Task = z.infer<typeof TaskZodSchema>;
 
@@ -98,13 +107,13 @@ export const PostZodSchema = z
     _id: zObjectId(),
     title: z.string().min(5).max(100),
     content: z.string().min(10),
-    author: zPopulated('User', UserZodSchema),
-    mentions: z.array(zPopulated('User', UserZodSchema)).default([]),
+    author: zRef("User", UserZodSchema),
+    mentions: z.array(zRef("User", UserZodSchema)).default([]),
     published: z.boolean().default(false),
     createdAt: z.date().optional(),
     updatedAt: z.date().optional(),
   })
-  .describe('Post');
+  .describe("Post");
 
 export type Post = z.infer<typeof PostZodSchema>;
 
@@ -126,4 +135,4 @@ export const PostInputSchema = PostZodSchema.omit({
 export type PostInput = z.infer<typeof PostInputSchema>;
 
 // Use the Populated helper to define PopulatedPost
-export type PopulatedPost = PopulatedSchema<Post, 'author' | 'mentions'>;
+export type PopulatedPost = PopulatedSchema<Post, "author" | "mentions">;

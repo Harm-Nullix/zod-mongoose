@@ -15,6 +15,8 @@ interface ToMongooseSchemaOptions extends SchemaOptions {
 interface MongooseMeta extends Record<string, any> {
     explicitId?: boolean;
     schema?: any;
+    ref?: string;
+    refSchema?: any;
 }
 /**
  * This securely stores our Mongoose metadata alongside the Zod schema instances
@@ -25,6 +27,10 @@ declare const mongooseRegistry: z.core.$ZodRegistry<MongooseMeta, z.core.$ZodTyp
  * A clean wrapper to attach Mongoose metadata to any Zod schema.
  */
 declare function withMongoose<T extends z.ZodTypeAny>(schema: T, meta?: MongooseMeta): T;
+/**
+ * Recursively collect Mongoose metadata from a Zod schema and its wrappers.
+ */
+declare function getMongooseMeta(schema: z.ZodTypeAny): MongooseMeta;
 
 /**
  * Type-level mapping from Zod to Mongoose Schema Definitions
@@ -49,18 +55,49 @@ declare function toMongooseSchema<T extends z.ZodTypeAny>(schema: T, options?: T
 type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
 declare const zObjectId: (options?: MongooseMeta) => z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodString> | z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>>;
 declare const zBuffer: (options?: MongooseMeta) => z.ZodCustom<Uint8Array<ArrayBuffer>, Uint8Array<ArrayBuffer>> | z.ZodCustom<Buffer<ArrayBufferLike>, Buffer<ArrayBufferLike>>;
-declare const zPopulated: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => z.ZodUnion<readonly [z.ZodString | z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>, T]>;
+type ZRefBrand<S extends z.ZodTypeAny> = {
+    _isZRef: true;
+    _refSchema: S;
+};
+type UnwrapZRef<T> = T extends {
+    _isZRef: true;
+    _refSchema: infer R;
+} ? R extends z.ZodTypeAny ? z.infer<R> : T : T extends {
+    _isZRef?: true;
+    _refSchema?: infer R;
+} ? NonNullable<R> extends z.ZodTypeAny ? z.infer<NonNullable<R>> : T : T extends z.ZodOptional<infer U> ? UnwrapZRef<U> | undefined : T extends z.ZodNullable<infer U> ? UnwrapZRef<U> | null : T extends z.ZodArray<infer U> ? Array<UnwrapZRef<U>> : T extends Array<infer U> ? Array<UnwrapZRef<U>> : T extends z.ZodDefault<infer U> ? UnwrapZRef<U> : T extends z.ZodObject<infer Shape> ? {
+    [P in keyof Shape]: UnwrapZRef<Shape[P]>;
+} : T extends z.ZodType<any, any, any> ? z.infer<T> : T;
+type UnwrapZRefSchema<T> = T extends {
+    _isZRef: true;
+    _refSchema: infer R;
+} ? R extends z.ZodTypeAny ? R : T : T extends {
+    _isZRef?: true;
+    _refSchema?: infer R;
+} ? NonNullable<R> extends z.ZodTypeAny ? NonNullable<R> : T : T extends z.ZodOptional<infer U> ? z.ZodOptional<UnwrapZRefSchema<U>> : T extends z.ZodNullable<infer U> ? z.ZodNullable<UnwrapZRefSchema<U>> : T extends z.ZodArray<infer U> ? z.ZodArray<UnwrapZRefSchema<U>> : T extends z.ZodObject<infer Shape> ? z.ZodObject<{
+    [P in keyof Shape]: UnwrapZRefSchema<Shape[P]>;
+}> : T;
+declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => z.ZodType<z.output<z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodString> | z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>>> & Partial<ZRefBrand<T>>, any> & ZRefBrand<T>;
+/**
+ * Helper to create a populated version of a Zod schema.
+ * Replaces zRef fields with their corresponding refSchema.
+ * If no keys are provided, it attempts to populate all zRef fields.
+ */
+declare function populateZodSchema<S extends z.ZodObject<any>, K extends keyof S['shape']>(schema: S, keys?: K[]): z.ZodObject<{ [P in keyof S["shape"]]: P extends (K extends never ? any : K) ? UnwrapZRefSchema<S["shape"][P]> : S["shape"][P]; }>;
 declare const genTimestampsSchema: <CrAt = "createdAt", UpAt = "updatedAt">(createdAtField?: StringLiteral<CrAt | "createdAt"> | null, updatedAtField?: StringLiteral<UpAt | "updatedAt"> | null) => any;
 /**
  * Utility type to extract the populated object type from a Zod schema field
- * that uses `zPopulated`. It excludes string and ObjectId from the union,
- * assuming the field is already populated.
+ * that uses `zRef`.
+ * Note: Use this with the Zod schema type, e.g. PopulatedSchema<typeof PostSchema, 'author'>
+ * If no keys are provided, it populates all fields.
  */
-type PopulatedSchema<T, K extends keyof T> = Omit<T, K> & {
-    [P in K]: T[P] extends Array<infer U> ? Array<Exclude<U, string | mongoose.Types.ObjectId>> : Exclude<T[P], string | mongoose.Types.ObjectId>;
+type PopulatedSchema<T, K extends string = any> = T extends z.ZodObject<infer Shape> ? {
+    [P in keyof Shape]: P extends K ? UnwrapZRef<Shape[P]> : z.infer<Shape[P]>;
 } & {
     _id?: any;
-};
+} : T extends object ? {
+    [P in keyof T]: P extends K ? UnwrapZRef<T[P]> : T[P];
+} : T;
 declare const bufferMongooseGetter: (value: unknown) => any;
 
 /**
@@ -248,5 +285,5 @@ declare const hooks: hookable.Hookable<MongooseZodHooks, hookable.HookKeys<Mongo
  */
 declare function callHookSync<Name extends keyof MongooseZodHooks>(name: Name, ...args: Parameters<MongooseZodHooks[Name]>): void;
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, hooks, mongooseRegistry, setFrontendMode, setMongoose, toMongooseSchema, withMongoose, zBuffer, zObjectId, zPopulated };
-export type { MongooseMeta, MongooseZodHooks, PopulatedSchema, ToMongooseSchemaOptions, ToMongooseType };
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, withMongoose, zBuffer, zObjectId, zRef };
+export type { MongooseMeta, MongooseZodHooks, PopulatedSchema, ToMongooseSchemaOptions, ToMongooseType, ZRefBrand };

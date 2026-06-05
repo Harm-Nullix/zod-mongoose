@@ -61,7 +61,7 @@ onMounted(async () => {
 
       export declare const zObjectId: (options?: MongooseMeta) => any;
       export declare const zBuffer: (options?: MongooseMeta) => any;
-      export declare const zPopulated: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => any;
+      export declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => any;
       export declare const genTimestampsSchema: <CrAt = "createdAt", UpAt = "updatedAt">(createdAtField?: any, updatedAtField?: any) => any;
 
       export type PopulatedSchema<T, K extends keyof T> = any;
