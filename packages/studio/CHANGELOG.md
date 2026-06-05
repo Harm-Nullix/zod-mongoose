@@ -1,5 +1,18 @@
 # @nullix/zod-mongoose-studio
 
+## 2.2.0
+
+### Minor Changes
+
+- 80db1a8: Records are now POJO instead of converted to maps
+
+### Patch Changes
+
+- 76c7732: Transform and coarce fixes
+- Updated dependencies [76c7732]
+- Updated dependencies [80db1a8]
+  - @nullix/zod-mongoose@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes
