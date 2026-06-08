@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 2.4.0
+
+### Minor Changes
+
+- 7038069: Add `toStrictModel` for type-safe population in Mongoose models with Zod validation.
+
+### Patch Changes
+
+- Updated dependencies [7038069]
+  - @nullix/zod-mongoose@2.4.0
+
 ## 2.3.0
 
 ### Minor Changes
