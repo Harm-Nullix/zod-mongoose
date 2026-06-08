@@ -69,6 +69,7 @@ Key features:
 - **Nuxt 4 Ready**: Fully compatible with Nuxt 4 and Nitro, supporting best practices like `readValidatedBody` with Zod schemas.
 - **Hookable**: Extensible conversion process using `unjs/hookable`. Developers can hook into 15+ points (e.g., `schema:object:before`, `schema:union:before`).
 - **Populated Helper**: `PopulatedSchema<T>` utility for perfect TypeScript inference of populated documents.
+- **Strict Model**: `toStrictModel<T>` for advanced, fluent type-safe population (see [Strict Model documentation](./STRICT_MODEL.md)).
 
 ### Type Conversion Table
 

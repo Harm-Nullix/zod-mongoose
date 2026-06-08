@@ -6,109 +6,145 @@ import {unwrapZodSchema} from './zod-helpers.js';
 
 type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
 
+// ============================================================================
+// 1. LIGHTWEIGHT BRANDING & HIGH-PERFORMANCE DUAL-MODE ENGINES
+// ============================================================================
+
+export type ZRefBrand<S extends z.ZodTypeAny> = {
+  readonly _isZRef: true;
+  readonly _refSchema: S;
+};
+
+/**
+ * Extracts the targeted Zod Schema from either a Zod Class definition
+ * OR a raw TypeScript primitive type intersection (Partial<ZRefBrand>).
+ */
+type ExtractRefSchema<T> =
+  T extends ZRefBrand<infer S>
+    ? S
+    : T extends {_refSchema: infer S}
+      ? S extends z.ZodTypeAny
+        ? S
+        : T
+      : T extends {_isZRef?: true; _refSchema?: infer S}
+        ? NonNullable<S> extends z.ZodTypeAny
+          ? NonNullable<S>
+          : T
+        : T extends z.ZodTypeAny
+          ? T extends {unwrap: () => infer U}
+            ? ExtractRefSchema<U>
+            : T extends {_def: {innerType: infer I}}
+              ? ExtractRefSchema<I>
+              : T
+          : T;
+
+/**
+ * Fast look-ahead check. Sweeps the field to see if a ZRef brand exists
+ * anywhere in the type hierarchy so the compiler can short-circuit non-relational fields.
+ */
+type HasZRef<T> =
+  T extends ZRefBrand<any>
+    ? true
+    : T extends {_refSchema: any}
+      ? true
+      : T extends {_isZRef?: true; _refSchema?: any}
+        ? true
+        : T extends z.ZodObject<any>
+          ? true
+          : T extends z.ZodArray<any>
+            ? true
+            : T extends Array<any>
+              ? true
+              : T extends {_def: {innerType: any}}
+                ? true
+                : false;
+
+/**
+ * Deeply traverses schemas and inferred primitives to unpack zRefs, maintaining
+ * structural layouts (arrays, objects, optionals) along the way.
+ */
+type DeepUnwrapZRef<T> =
+  HasZRef<T> extends false
+    ? T extends z.ZodTypeAny
+      ? z.infer<T>
+      : T
+    : T extends z.ZodArray<infer E>
+      ? Array<DeepUnwrapZRef<E>>
+      : T extends Array<infer E>
+        ? Array<DeepUnwrapZRef<E>> // Recursively processes raw inferred array elements
+        : T extends z.ZodObject<infer Shape>
+          ? {[P in keyof Shape]: DeepUnwrapZRef<Shape[P]>}
+          : T extends {_def: {innerType: infer I}}
+            ? T extends z.ZodOptional<any>
+              ? DeepUnwrapZRef<I> | undefined
+              : T extends z.ZodNullable<any>
+                ? DeepUnwrapZRef<I> | null
+                : DeepUnwrapZRef<I>
+            : T extends {unwrap: () => infer U}
+              ? DeepUnwrapZRef<U>
+              : ExtractRefSchema<T> extends z.ZodTypeAny
+                ? z.infer<ExtractRefSchema<T>>
+                : T;
+
+type UnwrapZRefSchema<T> =
+  T extends z.ZodArray<infer E>
+    ? z.ZodArray<UnwrapZRefSchema<E>>
+    : T extends z.ZodObject<infer Shape>
+      ? z.ZodObject<{[P in keyof Shape]: UnwrapZRefSchema<Shape[P]>}>
+      : ExtractRefSchema<T> extends z.ZodTypeAny
+        ? ExtractRefSchema<T>
+        : T;
+
+// ============================================================================
+// 2. PRIMITIVE TYPES (ObjectId & Buffer)
+// ============================================================================
+
+const preprocessFn = (val: unknown) => (val === null ? undefined : val);
 export const zObjectId = (options?: MongooseMeta) => {
-  if (getFrontendMode()) {
+  const isFrontend = getFrontendMode();
+
+  if (isFrontend) {
     return withMongoose(
-      z.preprocess(
-        (val) => (val === null ? undefined : val),
-        z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId'),
-      ),
-      {
-        type: 'ObjectId', // String representation for metadata
-        ...options,
-      },
+      z.preprocess(preprocessFn, z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId')),
+      {type: 'ObjectId', ...options},
     );
   }
 
-  const mongoose = getMongoose();
-
+  const mongooseInstance = getMongoose();
   return withMongoose(
     z.preprocess(
-      (val) => (val === null ? undefined : val),
+      preprocessFn,
       z.custom<mongoose.Types.ObjectId>(
         (val) =>
-          (mongoose && val instanceof mongoose.Types.ObjectId) ||
+          (mongooseInstance && val instanceof mongooseInstance.Types.ObjectId) ||
           (typeof val === 'string' && /^[\dA-Fa-f]{24}$/.test(val)),
       ),
     ),
-    {
-      type: mongoose?.Schema.Types.ObjectId || 'ObjectId',
-      ...options,
-    },
+    {type: mongooseInstance?.Schema.Types.ObjectId || 'ObjectId', ...options},
   );
 };
 
 export const zBuffer = (options?: MongooseMeta) => {
   if (getFrontendMode()) {
-    return withMongoose(z.instanceof(Uint8Array), {
-      type: 'Buffer',
-      ...options,
-    });
+    return withMongoose(z.instanceof(Uint8Array), {type: 'Buffer', ...options});
   }
 
-  const mongoose = getMongoose();
-
+  const mongooseInstance = getMongoose();
   return withMongoose(
-    z.custom<Buffer>((val) => (mongoose && val instanceof Buffer) || val instanceof Uint8Array),
-    {
-      type: mongoose?.Schema.Types.Buffer || 'Buffer',
-      ...options,
-    },
+    z.custom<Buffer>(
+      (val) => (mongooseInstance && val instanceof Buffer) || val instanceof Uint8Array,
+    ),
+    {type: mongooseInstance?.Schema.Types.Buffer || 'Buffer', ...options},
   );
 };
 
-export type ZRefBrand<S extends z.ZodTypeAny> = {
-  _isZRef: true;
-  _refSchema: S;
-};
-
-type UnwrapZRef<T> = T extends {_isZRef: true; _refSchema: infer R}
-  ? R extends z.ZodTypeAny
-    ? z.infer<R>
-    : T
-  : T extends {_isZRef?: true; _refSchema?: infer R}
-    ? NonNullable<R> extends z.ZodTypeAny
-      ? z.infer<NonNullable<R>>
-      : T
-    : T extends z.ZodOptional<infer U>
-      ? UnwrapZRef<U> | undefined
-      : T extends z.ZodNullable<infer U>
-        ? UnwrapZRef<U> | null
-        : T extends z.ZodArray<infer U>
-          ? Array<UnwrapZRef<U>>
-          : T extends Array<infer U>
-            ? Array<UnwrapZRef<U>>
-            : T extends z.ZodDefault<infer U>
-              ? UnwrapZRef<U>
-              : T extends z.ZodObject<infer Shape>
-                ? {[P in keyof Shape]: UnwrapZRef<Shape[P]>}
-                : T extends z.ZodType<any, any, any>
-                  ? z.infer<T>
-                  : T;
-
-type UnwrapZRefSchema<T> = T extends {_isZRef: true; _refSchema: infer R}
-  ? R extends z.ZodTypeAny
-    ? R
-    : T
-  : T extends {_isZRef?: true; _refSchema?: infer R}
-    ? NonNullable<R> extends z.ZodTypeAny
-      ? NonNullable<R>
-      : T
-    : T extends z.ZodOptional<infer U>
-      ? z.ZodOptional<UnwrapZRefSchema<U>>
-      : T extends z.ZodNullable<infer U>
-        ? z.ZodNullable<UnwrapZRefSchema<U>>
-        : T extends z.ZodArray<infer U>
-          ? z.ZodArray<UnwrapZRefSchema<U>>
-          : T extends z.ZodObject<infer Shape>
-            ? z.ZodObject<{[P in keyof Shape]: UnwrapZRefSchema<Shape[P]>}>
-            : T;
+// ============================================================================
+// 3. REF SCHEMAS & DYNAMIC POPULATION
+// ============================================================================
 
 export const zRef = <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => {
   const isFrontend = getFrontendMode();
-
-  const mongoose = getMongoose();
-
+  const mongooseInstance = getMongoose();
   const objectIdSchema = zObjectId();
 
   const base = z.codec(z.union([objectIdSchema, schema]), objectIdSchema as any, {
@@ -117,7 +153,7 @@ export const zRef = <T extends z.ZodTypeAny>(ref: string, schema: T, options?: M
   });
 
   const result = withMongoose(base as any, {
-    type: isFrontend ? 'ObjectId' : mongoose?.Schema.Types.ObjectId || 'ObjectId',
+    type: isFrontend ? 'ObjectId' : mongooseInstance?.Schema.Types.ObjectId || 'ObjectId',
     ref,
     refSchema: schema,
     ...options,
@@ -130,11 +166,6 @@ export const zRef = <T extends z.ZodTypeAny>(ref: string, schema: T, options?: M
     ZRefBrand<T>;
 };
 
-/**
- * Helper to create a populated version of a Zod schema.
- * Replaces zRef fields with their corresponding refSchema.
- * If no keys are provided, it attempts to populate all zRef fields.
- */
 export function populateZodSchema<S extends z.ZodObject<any>, K extends keyof S['shape']>(
   schema: S,
   keys?: K[],
@@ -152,7 +183,7 @@ export function populateZodSchema<S extends z.ZodObject<any>, K extends keyof S[
       result = meta.refSchema;
     } else if (unwrapped instanceof z.ZodArray) {
       const populatedInner = populateField((unwrapped as any).element);
-      if (populatedInner !== (unwrapped as any).element) {
+      if (populatedInner !== unwrapped.element) {
         result = z.array(populatedInner);
       }
     } else if (unwrapped instanceof z.ZodObject) {
@@ -160,16 +191,9 @@ export function populateZodSchema<S extends z.ZodObject<any>, K extends keyof S[
     }
 
     if (result !== field && result !== unwrapped) {
-      // Re-apply common wrappers if they were lost during unwrap
-      if (features.isOptional && !(result instanceof z.ZodOptional)) {
-        result = (result as any).optional();
-      }
-      if (features.isNullable && !(result instanceof z.ZodNullable)) {
-        result = (result as any).nullable();
-      }
-      if (features.default !== undefined && !(result instanceof z.ZodDefault)) {
-        result = (result as any).default(features.default);
-      }
+      if (features.isOptional && !(result instanceof z.ZodOptional)) result = result.optional();
+      if (features.isNullable && !(result instanceof z.ZodNullable)) result = result.nullable();
+      if (features.default !== undefined && !(result instanceof z.ZodDefault)) result = result.default(features.default);
     }
 
     return result;
@@ -186,6 +210,10 @@ export function populateZodSchema<S extends z.ZodObject<any>, K extends keyof S[
   }>;
 }
 
+// ============================================================================
+// 4. TIMESTAMPS & OUTPUT FORMATTING
+// ============================================================================
+
 const DateFieldZod = () => z.date().default(() => new Date());
 
 export const genTimestampsSchema = <CrAt = 'createdAt', UpAt = 'updatedAt'>(
@@ -201,32 +229,28 @@ export const genTimestampsSchema = <CrAt = 'createdAt', UpAt = 'updatedAt'>(
   }
 
   const shape: any = {};
-  if (createdAtField != null) {
-    shape[createdAtField as string] = withMongoose(DateFieldZod(), {immutable: true, index: true});
-  }
-  if (updatedAtField != null) {
-    shape[updatedAtField as string] = withMongoose(DateFieldZod(), {index: true});
-  }
+  if (createdAtField != null) shape[createdAtField as string] = withMongoose(DateFieldZod(), {immutable: true, index: true});
+  if (updatedAtField != null) shape[updatedAtField as string] = withMongoose(DateFieldZod(), {index: true});
 
   return shape;
 };
 
-/**
- * Utility type to extract the populated object type from a Zod schema field
- * that uses `zRef`.
- * Note: Use this with the Zod schema type, e.g. PopulatedSchema<typeof PostSchema, 'author'>
- * If no keys are provided, it populates all fields.
- */
 export type PopulatedSchema<T, K extends string = any> =
   T extends z.ZodObject<infer Shape>
     ? {
-        [P in keyof Shape]: P extends K ? UnwrapZRef<Shape[P]> : z.infer<Shape[P]>;
-      } & {
-        _id?: any;
-      }
+        [P in keyof Shape]: [K] extends [any]
+          ? DeepUnwrapZRef<Shape[P]>
+          : P extends K
+            ? DeepUnwrapZRef<Shape[P]>
+            : z.infer<Shape[P]>;
+      } & {_id?: any}
     : T extends object
       ? {
-          [P in keyof T]: P extends K ? UnwrapZRef<T[P]> : T[P];
+          [P in keyof T]: [K] extends [any]
+            ? DeepUnwrapZRef<T[P]>
+            : P extends K
+              ? DeepUnwrapZRef<T[P]>
+              : T[P];
         }
       : T;
 

@@ -3,6 +3,7 @@
 ### Minor Changes
 
 - dd50bd6: Replace `zPopulated` with `zRef`, add `populateZodSchema`, and refactor metadata extraction with `getMongooseMeta`
+- Added `toStrictModel` for automatic type-safe population based on `zRef` metadata.
 
 ## 2.2.0
 
