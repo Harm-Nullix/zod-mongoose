@@ -1,3 +1,9 @@
+## 2.4.0
+
+### Minor Changes
+
+- 7038069: Add `toStrictModel` for type-safe population in Mongoose models with Zod validation.
+
 ## 2.3.0
 
 ### Minor Changes
