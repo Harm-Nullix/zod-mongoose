@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 2.4.1
+
+### Patch Changes
+
+- 8a58fa4: Refactor: split `mongoose-helpers` for isomorphic usage, enhance `zObjectId`/`zRef`, and update docs formatting.
+- Updated dependencies [8a58fa4]
+  - @nullix/zod-mongoose@2.4.1
+
 ## 2.4.0
 
 ### Minor Changes
