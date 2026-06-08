@@ -64,8 +64,8 @@ Key features:
 - **Native BigInt**: Maps Zod `bigint` to native Mongoose `BigInt` (or `Number` as fallback). If you need Mongoose `Long` (64-bit integer), you can specify it via `withMongoose(z.bigint(), { type: 'Long' })`.
 - **Specialized Types**: Direct support for `Buffer` and `ObjectId` via `zObjectId()` and `zBuffer()` helpers (or `z.instanceof()`).
 - **Composite IDs**: Full support for object-based `_id` fields via `{ includeId: true }` metadata.
-- **Isomorphic Support**: Use `setFrontendMode(true)` to allow schemas to be used in frontend environments where Mongoose is not available. Specialized types will automatically fall back to strings/Uint8Arrays while preserving Mongoose metadata for the backend.
-- **Frontend Safe**: The package treats `mongoose` as an optional peer dependency. Core Zod schema definition and metadata helpers (`withMongoose`, `zObjectId`, etc.) are safe to use in the browser without installing `mongoose`.
+- **Isomorphic Support**: The package treats `mongoose` as an optional peer dependency. Core Zod schema definition and metadata helpers (`withMongoose`, `zObjectId`, etc.) are safe to use in the browser without installing `mongoose`. Specialized types like `ObjectId` and `Buffer` automatically fall back to browser-compatible representations (strings and Uint8Arrays) while preserving Mongoose metadata for the backend.
+- **Automatic Browser Detection**: Utilizing `package.json` exports, the library automatically serves a frontend-optimized bundle when imported in browser environments, eliminating the need for manual configuration.
 - **Nuxt 4 Ready**: Fully compatible with Nuxt 4 and Nitro, supporting best practices like `readValidatedBody` with Zod schemas.
 - **Hookable**: Extensible conversion process using `unjs/hookable`. Developers can hook into 15+ points (e.g., `schema:object:before`, `schema:union:before`).
 - **Populated Helper**: `PopulatedSchema<T>` utility for perfect TypeScript inference of populated documents.
@@ -436,11 +436,30 @@ const PostSchema = z.object({
 Helper to create a Zod schema representing a Mongoose `Buffer`.
 - `options`: Optional `MongooseMeta` for this field.
 
-### `setFrontendMode(enabled)`
-Enable or disable frontend mode.
-- `enabled`: `boolean`.
-- In frontend mode, `zObjectId` falls back to a regex-validated string, and `zBuffer` falls back to `Uint8Array`.
-- This allows schemas to be shared between frontend and backend without requiring Mongoose on the client.
+### Isomorphic Support
+
+`@nullix/zod-mongoose` is designed to be isomorphic, meaning you can use the same Zod schemas on both the frontend (browser) and backend (Node.js).
+
+#### Automatic Frontend Mode
+
+The library automatically detects the environment using `package.json` conditional exports. When you import from `@nullix/zod-mongoose` in a browser environment (detected by bundlers like Vite, Webpack, or Nuxt), it uses a specialized frontend bundle that:
+- Does not depend on `mongoose`.
+- Maps `zObjectId()` to a regex-validated string.
+- Maps `zBuffer()` to `Uint8Array`.
+- Preserves all Mongoose metadata so the same schema can be used to generate a Mongoose schema on the backend.
+
+#### Manual Configuration (Optional)
+
+If you are in an environment where automatic detection fails, or you want to force a specific mode, you can still use the `setFrontendMode` helper.
+
+```typescript
+import { setFrontendMode } from '@nullix/zod-mongoose';
+
+// Force frontend mode (e.g. in tests or specialized environments)
+setFrontendMode(true);
+```
+
+> **Note:** In most modern projects (Vite, Nuxt 3+, Webpack 5+), this is handled automatically and you don't need to call `setFrontendMode`.
 
 ### `genTimestampsSchema(createdAtField?, updatedAtField?)`
 Returns a plain object (Zod shape) with timestamp fields. This allows for easy spreading into `z.object()`.

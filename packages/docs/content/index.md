@@ -126,7 +126,7 @@ Powerful features for developers
   Isomorphic
 
   #description
-  Use the same schemas on both the frontend and the backend thanks to the built-in frontend mode.
+  Use the same schemas on both the frontend and the backend with automatic environment detection.
   :::
 
   :::u-page-feature

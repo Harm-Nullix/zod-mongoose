@@ -2,6 +2,8 @@ import {expect, test, describe} from 'bun:test';
 import {z} from 'zod/v4';
 import {zRef, populateZodSchema, type PopulatedSchema} from '../src/index.js';
 
+import mongoose from 'mongoose';
+
 describe('populateZodSchema helper', () => {
   const UserSchema = z.object({
     _id: z.string(),
@@ -21,11 +23,11 @@ describe('populateZodSchema helper', () => {
   test('should return a schema where specified keys are populated', () => {
     const PopulatedPostSchema = populateZodSchema(PostSchema, ['author', 'mentions']);
 
-    const id = '507f1f77bcf86cd799439011';
+    const id = new mongoose.Types.ObjectId('507f1f77bcf86cd799439011');
     const populatedData = {
       title: 'Hello World',
-      author: {_id: id, name: 'John'},
-      mentions: [{_id: id, name: 'Jane'}],
+      author: {_id: id.toString(), name: 'John'},
+      mentions: [{_id: id.toString(), name: 'Jane'}],
     };
 
     const parsed = PopulatedPostSchema.parse(populatedData);
@@ -36,15 +38,16 @@ describe('populateZodSchema helper', () => {
   test('should not populate keys not specified', () => {
     const SemiPopulatedSchema = populateZodSchema(PostSchema, ['author']);
 
-    const id = '507f1f77bcf86cd799439011';
+    const id = new mongoose.Types.ObjectId('507f1f77bcf86cd799439011');
     const data = {
       title: 'Hello World',
-      author: {_id: id, name: 'John'},
+      author: {_id: id.toString(), name: 'John'},
       mentions: [id],
     };
 
     const parsed = SemiPopulatedSchema.parse(data);
-    expect(parsed.author.name).toBe('John');
+    const {author} = parsed;
+    expect(author.name).toBe('John');
     expect(parsed.mentions[0]).toBe(id);
   });
 
@@ -117,7 +120,7 @@ describe('populateZodSchema helper', () => {
 
   test('populated schema should reject raw IDs (runtime)', () => {
     const PopulatedPostSchema = populateZodSchema(PostSchema, ['author']);
-    const id = '507f1f77bcf86cd799439011';
+    const id = new mongoose.Types.ObjectId('507f1f77bcf86cd799439011');
 
     // Should throw because 'author' expects an object now
     expect(() =>
@@ -132,21 +135,22 @@ describe('populateZodSchema helper', () => {
     const PopulatedPostSchema = populateZodSchema(PostSchema, ['author']);
     type PopulatedPost = z.infer<typeof PopulatedPostSchema>;
 
-    const id = '507f1f77bcf86cd799439011';
+    const userPopulatedId = '507f1f77bcf86cd799439011';
+    const userMongoId = new mongoose.Types.ObjectId('507f1f77bcf86cd799439011');
 
     const _invalid: PopulatedPost = {
       title: 'Fail',
       // @ts-expect-error - author should be object
-      author: id,
-      mentions: [id],
+      author: userMongoId,
+      mentions: [userMongoId],
     };
     // eslint-disable-next-line
     void _invalid;
 
     const valid: PopulatedPost = {
       title: 'Success',
-      author: {_id: id, name: 'John'},
-      mentions: [id],
+      author: {_id: userPopulatedId, name: 'John'},
+      mentions: [userMongoId],
     };
 
     expect(valid.author.name).toBe('John');

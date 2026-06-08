@@ -1201,44 +1201,8 @@ function toMongooseSchema(schema, options) {
 }
 
 // ============================================================================
-// 2. PRIMITIVE TYPES (ObjectId & Buffer)
+// 2. TIMESTAMPS & CORE HELPERS
 // ============================================================================
-const preprocessFn = (val) => (val === null ? undefined : val);
-const zObjectId = (options) => {
-    const isFrontend = getFrontendMode();
-    if (isFrontend) {
-        return withMongoose(z.preprocess(preprocessFn, z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId')), { type: 'ObjectId', ...options });
-    }
-    const mongooseInstance = getMongoose();
-    return withMongoose(z.preprocess(preprocessFn, z.custom((val) => (mongooseInstance && val instanceof mongooseInstance.Types.ObjectId) ||
-        (typeof val === 'string' && /^[\dA-Fa-f]{24}$/.test(val)))), { type: mongooseInstance?.Schema.Types.ObjectId || 'ObjectId', ...options });
-};
-const zBuffer = (options) => {
-    if (getFrontendMode()) {
-        return withMongoose(z.instanceof(Uint8Array), { type: 'Buffer', ...options });
-    }
-    const mongooseInstance = getMongoose();
-    return withMongoose(z.custom((val) => (mongooseInstance && val instanceof Buffer) || val instanceof Uint8Array), { type: mongooseInstance?.Schema.Types.Buffer || 'Buffer', ...options });
-};
-// ============================================================================
-// 3. REF SCHEMAS & DYNAMIC POPULATION
-// ============================================================================
-const zRef = (ref, schema, options) => {
-    const isFrontend = getFrontendMode();
-    const mongooseInstance = getMongoose();
-    const objectIdSchema = zObjectId();
-    const base = z.codec(z.union([objectIdSchema, schema]), objectIdSchema, {
-        decode: (val) => (typeof val === 'object' && val !== null && '_id' in val ? val._id : val),
-        encode: (val) => val,
-    });
-    const result = withMongoose(base, {
-        type: isFrontend ? 'ObjectId' : mongooseInstance?.Schema.Types.ObjectId || 'ObjectId',
-        ref,
-        refSchema: schema,
-        ...options,
-    });
-    return result;
-};
 function populateZodSchema(schema, keys) {
     const { shape } = schema;
     const newShape = { ...shape };
@@ -1274,10 +1238,6 @@ function populateZodSchema(schema, keys) {
     }
     return z.object(newShape);
 }
-// ============================================================================
-// 4. TIMESTAMPS & OUTPUT FORMATTING
-// ============================================================================
-const DateFieldZod = () => z.date().default(() => new Date());
 const genTimestampsSchema = (createdAtField = 'createdAt', updatedAtField = 'updatedAt') => {
     if (createdAtField != null &&
         updatedAtField != null &&
@@ -1286,12 +1246,56 @@ const genTimestampsSchema = (createdAtField = 'createdAt', updatedAtField = 'upd
     }
     const shape = {};
     if (createdAtField != null)
-        shape[createdAtField] = withMongoose(DateFieldZod(), { immutable: true, index: true });
+        shape[createdAtField] = z.date().default(() => new Date());
     if (updatedAtField != null)
-        shape[updatedAtField] = withMongoose(DateFieldZod(), { index: true });
+        shape[updatedAtField] = z.date().default(() => new Date());
     return shape;
 };
 const bufferMongooseGetter = (value) => value != null && value._bsontype === 'Binary' ? value.buffer : value;
+
+const preprocessFn = (val) => (val === null ? undefined : val);
+const zObjectId = (options) => {
+    const mongooseInstance = getMongoose();
+    const objectIdSchema = z.custom((val) => mongooseInstance && val instanceof mongooseInstance.Types.ObjectId);
+    const baseUnion = z.preprocess(preprocessFn, z.union([objectIdSchema, z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId')]));
+    // Define the input type validation (Accepts ObjectId OR String)
+    const inputSchema = z.codec(baseUnion, objectIdSchema, {
+        decode: (val) => {
+            if (!mongooseInstance)
+                return val;
+            // If it's already an instance, return it exactly as-is to preserve reference memory!
+            if (val instanceof mongooseInstance.Types.ObjectId) {
+                return val;
+            }
+            // Only construct a new one if it's a string representation
+            return new mongooseInstance.Types.ObjectId(val);
+        },
+        encode: (val) => val.toString(),
+    });
+    // we force the type signature using an explicit cast on the returned Zod schema.
+    return withMongoose(inputSchema, {
+        type: mongooseInstance?.Schema.Types.ObjectId || 'ObjectId',
+        ...options,
+    });
+};
+const zBuffer = (options) => {
+    const mongooseInstance = getMongoose();
+    return withMongoose(z.custom((val) => (mongooseInstance && val instanceof Buffer) || val instanceof Uint8Array), { type: mongooseInstance?.Schema.Types.Buffer || 'Buffer', ...options });
+};
+const zRef = (ref, schema, options) => {
+    const mongooseInstance = getMongoose();
+    const objectIdSchema = zObjectId();
+    const base = z.codec(z.union([objectIdSchema, schema]), objectIdSchema, {
+        decode: (val) => (typeof val === 'object' && val !== null && '_id' in val ? val._id : val),
+        encode: (val) => val,
+    });
+    return withMongoose(base, {
+        type: mongooseInstance?.Schema.Types.ObjectId || 'ObjectId',
+        ref,
+        refSchema: schema,
+        ...options,
+    });
+};
 
 // ============================================================================
 // 6. INITIALIZATION RUNTIME COMPONENT

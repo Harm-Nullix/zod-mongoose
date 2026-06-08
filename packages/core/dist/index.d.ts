@@ -57,10 +57,7 @@ type ZRefBrand<S extends z.ZodTypeAny> = {
     readonly _isZRef: true;
     readonly _refSchema: S;
 };
-/**
- * Extracts the targeted Zod Schema from either a Zod Class definition
- * OR a raw TypeScript primitive type intersection (Partial<ZRefBrand>).
- */
+type IsomorphicObjectId = string | mongoose.Types.ObjectId;
 type ExtractRefSchema<T> = T extends ZRefBrand<infer S> ? S : T extends {
     _refSchema: infer S;
 } ? S extends z.ZodTypeAny ? S : T : T extends {
@@ -72,11 +69,11 @@ type ExtractRefSchema<T> = T extends ZRefBrand<infer S> ? S : T extends {
     _def: {
         innerType: infer I;
     };
-} ? ExtractRefSchema<I> : T : T;
-/**
- * Fast look-ahead check. Sweeps the field to see if a ZRef brand exists
- * anywhere in the type hierarchy so the compiler can short-circuit non-relational fields.
- */
+} ? ExtractRefSchema<I> : T extends {
+    _def: {
+        schema: infer S;
+    };
+} ? ExtractRefSchema<S> : T : T;
 type HasZRef<T> = T extends ZRefBrand<any> ? true : T extends {
     _refSchema: any;
 } ? true : T extends {
@@ -87,11 +84,7 @@ type HasZRef<T> = T extends ZRefBrand<any> ? true : T extends {
         innerType: any;
     };
 } ? true : false;
-/**
- * Deeply traverses schemas and inferred primitives to unpack zRefs, maintaining
- * structural layouts (arrays, objects, optionals) along the way.
- */
-type DeepUnwrapZRef<T> = HasZRef<T> extends false ? T extends z.ZodTypeAny ? z.infer<T> : T : T extends z.ZodArray<infer E> ? Array<DeepUnwrapZRef<E>> : T extends Array<infer E> ? Array<DeepUnwrapZRef<E>> : T extends z.ZodObject<infer Shape> ? {
+type DeepUnwrapZRef<T> = HasZRef<T> extends false ? T extends z.ZodTypeAny ? z.infer<T> extends mongoose.Types.ObjectId ? IsomorphicObjectId : z.infer<T> : T extends mongoose.Types.ObjectId ? IsomorphicObjectId : T : T extends z.ZodArray<infer E> ? Array<DeepUnwrapZRef<E>> : T extends Array<infer E> ? Array<DeepUnwrapZRef<E>> : T extends z.ZodObject<infer Shape> ? {
     [P in keyof Shape]: DeepUnwrapZRef<Shape[P]>;
 } : T extends {
     _def: {
@@ -99,13 +92,14 @@ type DeepUnwrapZRef<T> = HasZRef<T> extends false ? T extends z.ZodTypeAny ? z.i
     };
 } ? T extends z.ZodOptional<any> ? DeepUnwrapZRef<I> | undefined : T extends z.ZodNullable<any> ? DeepUnwrapZRef<I> | null : DeepUnwrapZRef<I> : T extends {
     unwrap: () => infer U;
-} ? DeepUnwrapZRef<U> : ExtractRefSchema<T> extends z.ZodTypeAny ? z.infer<ExtractRefSchema<T>> : T;
+} ? DeepUnwrapZRef<U> : ExtractRefSchema<T> extends z.ZodTypeAny ? z.infer<ExtractRefSchema<T>> extends mongoose.Types.ObjectId ? IsomorphicObjectId : z.infer<ExtractRefSchema<T>> : T;
 type UnwrapZRefSchema<T> = T extends z.ZodArray<infer E> ? z.ZodArray<UnwrapZRefSchema<E>> : T extends z.ZodObject<infer Shape> ? z.ZodObject<{
     [P in keyof Shape]: UnwrapZRefSchema<Shape[P]>;
-}> : ExtractRefSchema<T> extends z.ZodTypeAny ? ExtractRefSchema<T> : T;
-declare const zObjectId: (options?: MongooseMeta) => z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodString> | z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>>;
-declare const zBuffer: (options?: MongooseMeta) => z.ZodCustom<Uint8Array<ArrayBuffer>, Uint8Array<ArrayBuffer>> | z.ZodCustom<Buffer<ArrayBufferLike>, Buffer<ArrayBufferLike>>;
-declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => z.ZodType<z.output<z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodString> | z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>>> & Partial<ZRefBrand<T>>, any> & ZRefBrand<T>;
+}> : T extends {
+    _def: {
+        schema: infer S;
+    };
+} ? UnwrapZRefSchema<S> : ExtractRefSchema<T> extends z.ZodTypeAny ? ExtractRefSchema<T> : T;
 declare function populateZodSchema<S extends z.ZodObject<any>, K extends keyof S['shape']>(schema: S, keys?: K[]): z.ZodObject<{ [P in keyof S["shape"]]: P extends (K extends never ? any : K) ? UnwrapZRefSchema<S["shape"][P]> : S["shape"][P]; }>;
 declare const genTimestampsSchema: <CrAt = "createdAt", UpAt = "updatedAt">(createdAtField?: StringLiteral<CrAt | "createdAt"> | null, updatedAtField?: StringLiteral<UpAt | "updatedAt"> | null) => any;
 type PopulatedSchema<T, K extends string = any> = T extends z.ZodObject<infer Shape> ? {
@@ -116,6 +110,10 @@ type PopulatedSchema<T, K extends string = any> = T extends z.ZodObject<infer Sh
     [P in keyof T]: [K] extends [any] ? DeepUnwrapZRef<T[P]> : P extends K ? DeepUnwrapZRef<T[P]> : T[P];
 } : T;
 declare const bufferMongooseGetter: (value: unknown) => any;
+
+declare const zObjectId: (options?: MongooseMeta) => z.ZodCodec<z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodUnion<readonly [z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>, z.ZodString]>>, z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>>;
+declare const zBuffer: (options?: MongooseMeta) => z.ZodCustom<Buffer<ArrayBufferLike>, Buffer<ArrayBufferLike>>;
+declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => z.ZodType<(string | mongoose.Types.ObjectId) & Partial<ZRefBrand<T>>, any> & ZRefBrand<T>;
 
 /**
  * Manually set the Mongoose instance.

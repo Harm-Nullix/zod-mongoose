@@ -17,13 +17,6 @@ export default defineNuxtConfig({
     enabled: true
   },
 
-  runtimeConfig: {
-    public: {
-      isDocsMode: true,
-      isLocalMode: false
-    }
-  },
-
   css: ['~/assets/css/main.css'],
 
   content: {
@@ -34,6 +27,17 @@ export default defineNuxtConfig({
         }
       }
     }
+  },
+
+  runtimeConfig: {
+    public: {
+      isDocsMode: true,
+      isLocalMode: false
+    }
+  },
+
+  build: {
+    transpile: ['estree-walker']
   },
 
   experimental: {
@@ -53,10 +57,6 @@ export default defineNuxtConfig({
       autoSubfolderIndex: false,
       failOnError: false
     }
-  },
-
-  build: {
-    transpile: ['estree-walker']
   },
 
   vite: {

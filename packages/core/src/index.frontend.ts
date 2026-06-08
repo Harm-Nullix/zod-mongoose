@@ -1,6 +1,6 @@
 export * from './registry.js';
 export * from './converter.js';
-export * from './mongoose-helpers.js';
+export * from './mongoose-helpers.frontend.js';
 export type {PopulatedSchema} from './mongoose-helpers.shared.js';
 export * from './config.js';
 export * from './hooks.js';
