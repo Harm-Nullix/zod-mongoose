@@ -1,3 +1,9 @@
+## 2.4.2
+
+### Patch Changes
+
+- d5d243c: Prevent mongoose from loading in frontend
+
 ## 2.4.1
 
 ### Patch Changes
