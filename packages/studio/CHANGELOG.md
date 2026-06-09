@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 2.4.2
+
+### Patch Changes
+
+- d5d243c: Prevent mongoose from loading in frontend
+- Updated dependencies [d5d243c]
+  - @nullix/zod-mongoose@2.4.2
+
 ## 2.4.1
 
 ### Patch Changes
