@@ -1259,43 +1259,16 @@ const genTimestampsSchema = (createdAtField = 'createdAt', updatedAtField = 'upd
 const bufferMongooseGetter = (value) => value != null && value._bsontype === 'Binary' ? value.buffer : value;
 
 const preprocessFn = (val) => (val === null ? undefined : val);
-const zObjectId = (options) => {
-    const mongooseInstance = getMongoose();
-    const objectIdSchema = z.custom((val) => mongooseInstance && val instanceof mongooseInstance.Types.ObjectId);
-    const baseUnion = z.preprocess(preprocessFn, z.union([objectIdSchema, z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId')]));
-    // Define the input type validation (Accepts ObjectId OR String)
-    const inputSchema = z.codec(baseUnion, objectIdSchema, {
-        decode: (val) => {
-            if (!mongooseInstance)
-                return val;
-            // If it's already an instance, return it exactly as-is to preserve reference memory!
-            if (val instanceof mongooseInstance.Types.ObjectId) {
-                return val;
-            }
-            // Only construct a new one if it's a string representation
-            return new mongooseInstance.Types.ObjectId(val);
-        },
-        encode: (val) => val.toString(),
-    });
-    // we force the type signature using an explicit cast on the returned Zod schema.
-    return withMongoose(inputSchema, {
-        type: mongooseInstance?.Schema.Types.ObjectId || 'ObjectId',
-        ...options,
-    });
-};
-const zBuffer = (options) => {
-    const mongooseInstance = getMongoose();
-    return withMongoose(z.custom((val) => (mongooseInstance && val instanceof Buffer) || val instanceof Uint8Array), { type: mongooseInstance?.Schema.Types.Buffer || 'Buffer', ...options });
-};
+const zObjectId = (options) => withMongoose(z.preprocess(preprocessFn, z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId')), { type: 'ObjectId', ...options });
+const zBuffer = (options) => withMongoose(z.instanceof(Uint8Array), { type: 'Buffer', ...options });
 const zRef = (ref, schema, options) => {
-    const mongooseInstance = getMongoose();
     const objectIdSchema = zObjectId();
     const base = z.codec(z.union([objectIdSchema, schema]), objectIdSchema, {
         decode: (val) => (typeof val === 'object' && val !== null && '_id' in val ? val._id : val),
         encode: (val) => val,
     });
     return withMongoose(base, {
-        type: mongooseInstance?.Schema.Types.ObjectId || 'ObjectId',
+        type: 'ObjectId',
         ref,
         refSchema: schema,
         ...options,
@@ -1330,4 +1303,4 @@ function toStrictModel(name, mongooseSchema) {
 }
 
 export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, withMongoose, zBuffer, zObjectId, zRef };
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.frontend.js.map

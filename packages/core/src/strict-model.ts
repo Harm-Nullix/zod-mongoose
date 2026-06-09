@@ -1,6 +1,8 @@
 import {z} from 'zod/v4';
-import mongoose, {QueryFilter, ProjectionType, QueryOptions, UpdateQuery, Query} from 'mongoose';
-import {ZRefBrand} from './mongoose-helpers.js';
+import type mongoose from 'mongoose';
+import type {QueryFilter, ProjectionType, QueryOptions, UpdateQuery, Query} from 'mongoose';
+import {ZRefBrand} from './mongoose-helpers.shared.js';
+import {getMongoose} from './config.js';
 
 // ============================================================================
 // 1. STRING PARSING & VALIDATION ENGINE
@@ -245,6 +247,10 @@ export type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOver
  * ```
  */
 export function toStrictModel<UserInferredType>(name: string, mongooseSchema: mongoose.Schema) {
-  const rawModel = mongoose.model(name, mongooseSchema);
+  const m = getMongoose();
+  if (!m) {
+    throw new Error('Mongoose must be installed to use toStrictModel.');
+  }
+  const rawModel = m.model(name, mongooseSchema);
   return rawModel as unknown as StrictModel<typeof rawModel, UserInferredType>;
 }

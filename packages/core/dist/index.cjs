@@ -1,7 +1,6 @@
 'use strict';
 
 var v4 = require('zod/v4');
-var mongoose = require('mongoose');
 
 //#region src/utils.ts
 function flatHooks(configHooks, hooks = {}, parentName) {
@@ -346,35 +345,7 @@ features = { required: true }, visited = new Set()) {
 }
 
 let mongooseInstance = null;
-/**
- * Manually set the Mongoose instance.
- * Useful in ESM environments where automatic detection via require() might fail.
- */
-const setMongoose = (m) => {
-    mongooseInstance = m;
-};
-// Helper to get mongoose instance safely
-const getMongoose = () => {
-    if (mongooseInstance) {
-        return mongooseInstance;
-    }
-    try {
-        // eslint-disable-next-line global-require
-        const m = require('mongoose');
-        if (m && (m.Schema || m.default?.Schema)) {
-            return m.default || m;
-        }
-        return m;
-    }
-    catch {
-        // Try to see if mongoose is globally available (e.g. in some environments)
-        if (globalThis.mongoose) {
-            return globalThis.mongoose;
-        }
-        return null;
-    }
-};
-let isFrontend = false;
+let isFrontend;
 /**
  * Enable or disable frontend mode.
  * In frontend mode, specialized types like ObjectId and Buffer fall back to
@@ -390,6 +361,40 @@ const getFrontendMode = () => {
         return globalThis.window !== undefined && globalThis.document !== undefined;
     }
     return isFrontend;
+};
+/**
+ * Manually set the Mongoose instance.
+ * Useful in ESM environments where automatic detection via require() might fail.
+ */
+const setMongoose = (m) => {
+    mongooseInstance = m;
+};
+// Helper to get mongoose instance safely
+const getMongoose = () => {
+    if (getFrontendMode()) {
+        return null;
+    }
+    if (mongooseInstance) {
+        return mongooseInstance;
+    }
+    try {
+        if (typeof require !== 'undefined') {
+            // eslint-disable-next-line global-require
+            const m = require('mongoose');
+            if (m && (m.Schema || m.default?.Schema)) {
+                return m.default || m;
+            }
+            return m;
+        }
+        return null;
+    }
+    catch {
+        // Try to see if mongoose is globally available (e.g. in some environments)
+        if (globalThis.mongoose) {
+            return globalThis.mongoose;
+        }
+        return null;
+    }
 };
 
 /**
@@ -1318,7 +1323,11 @@ const zRef = (ref, schema, options) => {
  * ```
  */
 function toStrictModel(name, mongooseSchema) {
-    const rawModel = mongoose.model(name, mongooseSchema);
+    const m = getMongoose();
+    if (!m) {
+        throw new Error('Mongoose must be installed to use toStrictModel.');
+    }
+    const rawModel = m.model(name, mongooseSchema);
     return rawModel;
 }
 
