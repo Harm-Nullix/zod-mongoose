@@ -1,35 +1,5 @@
 let mongooseInstance: any = null;
-
-/**
- * Manually set the Mongoose instance.
- * Useful in ESM environments where automatic detection via require() might fail.
- */
-export const setMongoose = (m: any) => {
-  mongooseInstance = m;
-};
-
-// Helper to get mongoose instance safely
-export const getMongoose = () => {
-  if (mongooseInstance) {
-    return mongooseInstance;
-  }
-  try {
-    // eslint-disable-next-line global-require
-    const m = require('mongoose');
-    if (m && (m.Schema || m.default?.Schema)) {
-      return m.default || m;
-    }
-    return m;
-  } catch {
-    // Try to see if mongoose is globally available (e.g. in some environments)
-    if ((globalThis as any).mongoose) {
-      return (globalThis as any).mongoose;
-    }
-    return null;
-  }
-};
-
-let isFrontend = false;
+let isFrontend: boolean | undefined;
 
 /**
  * Enable or disable frontend mode.
@@ -47,4 +17,39 @@ export const getFrontendMode = () => {
     return (globalThis as any).window !== undefined && (globalThis as any).document !== undefined;
   }
   return isFrontend;
+};
+
+/**
+ * Manually set the Mongoose instance.
+ * Useful in ESM environments where automatic detection via require() might fail.
+ */
+export const setMongoose = (m: any) => {
+  mongooseInstance = m;
+};
+
+// Helper to get mongoose instance safely
+export const getMongoose = () => {
+  if (getFrontendMode()) {
+    return null;
+  }
+  if (mongooseInstance) {
+    return mongooseInstance;
+  }
+  try {
+    if (typeof require !== 'undefined') {
+      // eslint-disable-next-line global-require
+      const m = require('mongoose');
+      if (m && (m.Schema || m.default?.Schema)) {
+        return m.default || m;
+      }
+      return m;
+    }
+    return null;
+  } catch {
+    // Try to see if mongoose is globally available (e.g. in some environments)
+    if ((globalThis as any).mongoose) {
+      return (globalThis as any).mongoose;
+    }
+    return null;
+  }
 };

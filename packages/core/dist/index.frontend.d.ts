@@ -111,8 +111,8 @@ type PopulatedSchema<T, K extends string = any> = T extends z.ZodObject<infer Sh
 } : T;
 declare const bufferMongooseGetter: (value: unknown) => any;
 
-declare const zObjectId: (options?: MongooseMeta) => z.ZodCodec<z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodUnion<readonly [z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>, z.ZodString]>>, z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>>;
-declare const zBuffer: (options?: MongooseMeta) => z.ZodCustom<Buffer, Buffer>;
+declare const zObjectId: (options?: MongooseMeta) => z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodString>;
+declare const zBuffer: (options?: MongooseMeta) => z.ZodCustom<Uint8Array<ArrayBuffer>, Uint8Array<ArrayBuffer>>;
 declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => z.ZodType<(string | mongoose.Types.ObjectId) & Partial<ZRefBrand<T>>, any> & ZRefBrand<T>;
 
 /**
