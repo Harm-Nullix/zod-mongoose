@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 2.5.0
+
+### Minor Changes
+
+- 4c261d5: validate before save
+
+### Patch Changes
+
+- Updated dependencies [4c261d5]
+  - @nullix/zod-mongoose@2.5.0
+
 ## 2.4.2
 
 ### Patch Changes

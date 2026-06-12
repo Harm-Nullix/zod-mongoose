@@ -1,3 +1,9 @@
+## 2.5.0
+
+### Minor Changes
+
+- 4c261d5: validate before save
+
 ## 2.4.2
 
 ### Patch Changes
