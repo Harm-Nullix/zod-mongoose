@@ -97,6 +97,28 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
     mongooseSchema = new mongoose.Schema(definition, mergedOptions);
   }
 
+  if(mergedOptions.validateBeforeSave !== false){
+    mongooseSchema.post('validate', function () {
+      try {
+        schema.parse(this.toObject());
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          e.message = JSON.stringify({
+            context: {
+              model:
+                (this.constructor as mongoose.Model<any>)?.modelName ||
+                this.constructor?.name ||
+                '_unknown_',
+              id: this._id?.toString() || this.id?.toString() || '_unknown_',
+            },
+            errors: (e as any).issues || (e as any).errors || [],
+          });
+        }
+        throw e;
+      }
+    });
+  }
+
   // Apply plugins if provided in options
   if (plugins && Array.isArray(plugins)) {
     for (const plugin of plugins) {

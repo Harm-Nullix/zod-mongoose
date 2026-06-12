@@ -5,6 +5,7 @@ import {callHookSync} from './hooks.js';
 
 export interface ToMongooseSchemaOptions extends SchemaOptions {
   plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
+  validateBeforeSave?: boolean;
 }
 
 /**
