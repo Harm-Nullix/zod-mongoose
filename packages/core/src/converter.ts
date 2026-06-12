@@ -97,7 +97,7 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
     mongooseSchema = new mongoose.Schema(definition, mergedOptions);
   }
 
-  if(mergedOptions.validateBeforeSave !== false){
+  if (mergedOptions.validateBeforeSave !== false) {
     mongooseSchema.post('validate', function () {
       try {
         schema.parse(this.toObject());

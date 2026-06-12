@@ -4,6 +4,7 @@ import * as hookable from 'hookable';
 
 interface ToMongooseSchemaOptions extends SchemaOptions {
     plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
+    validateBeforeSave?: boolean;
 }
 /**
  * DEFINE THE METADATA SHAPE

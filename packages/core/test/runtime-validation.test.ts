@@ -15,7 +15,7 @@ describe('Zod Runtime Validation (post-validate hook)', () => {
 
   test('should validate document using Zod schema on validate()', async () => {
     const zodSchema = z.object({
-      name: z.string().refine(val => val.length > 10, {
+      name: z.string().refine((val) => val.length > 10, {
         message: 'Name must be longer than 10 characters',
       }),
     });
@@ -70,7 +70,7 @@ describe('Zod Runtime Validation (post-validate hook)', () => {
     // Actually, z.string().min(5) maps to minlength: 5 in Mongoose.
     // Let's use a custom refinement that Mongoose definitely doesn't know about.
     const zodSchemaWithRefine = z.object({
-      name: z.string().refine(val => val === 'specific', {
+      name: z.string().refine((val) => val === 'specific', {
         message: 'Must be "specific"',
       }),
     });
@@ -90,7 +90,7 @@ describe('Zod Runtime Validation (post-validate hook)', () => {
 
   test('should include model name and id in error context', async () => {
     const zodSchema = z.object({
-      name: z.string().refine(val => val.length > 20, {
+      name: z.string().refine((val) => val.length > 20, {
         message: 'Too short for context test',
       }),
     });
@@ -141,8 +141,7 @@ describe('Zod Runtime Validation (post-validate hook)', () => {
     expect(error).toBeDefined();
     const parsedError = JSON.parse(error.message);
     const emailError = parsedError.errors.find((e: any) =>
-      e.path.includes('user') && e.path.includes('email')
-    );
+      e.path.includes('user') && e.path.includes('email'));
     expect(emailError).toBeDefined();
   });
 });
