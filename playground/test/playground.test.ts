@@ -50,6 +50,7 @@ describe('Playground Integration', () => {
     const invalidData = {
       username: 'xor-fail',
       email: 'xor@example.com',
+      profile: { bio: 'XOR test', website: 'https://test.com' },
       contact: {
         type: 'phone',
         phoneNumber: '1234567890',
@@ -66,7 +67,9 @@ describe('Playground Integration', () => {
       // If it doesn't throw, it might be because the extra fields are ignored by Mongoose
       // but Zod validator should catch them if they are passed.
     } catch (error: any) {
-      expect(error.errors.contact).toBeDefined();
+      const parsedError = JSON.parse(error.message);
+      const contactError = parsedError.errors.find((e: any) => e.path.includes('contact'));
+      expect(contactError).toBeDefined();
     }
   });
 
@@ -79,6 +82,7 @@ describe('Playground Integration', () => {
     const user = await UserModel.create({
       username: 'author',
       email: 'author@example.com',
+      profile: { bio: 'Author', website: 'https://author.com' },
     });
 
     let post;
@@ -92,7 +96,8 @@ describe('Playground Integration', () => {
       });
       expect(post.title).toBe('Valid Post Title');
     } catch (error: any) {
-      if (error.errors?.mentions) {
+      const parsedError = JSON.parse(error.message);
+      if (parsedError.errors?.some((e: any) => e.path.includes('mentions'))) {
         // Create without mentions to allow population check
         post = await PostModel.create({
           title: 'Valid Post Title',
