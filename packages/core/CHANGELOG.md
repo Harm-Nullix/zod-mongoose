@@ -1,3 +1,9 @@
+## 2.5.2
+
+### Patch Changes
+
+- 5b4fa25: import order issue fixed
+
 ## 2.5.1
 
 ### Patch Changes
