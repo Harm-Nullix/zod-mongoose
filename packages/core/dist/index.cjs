@@ -1283,12 +1283,15 @@ const bufferMongooseGetter = (value) => value != null && value._bsontype === 'Bi
 
 const preprocessFn = (val) => (val === null ? undefined : val);
 const zObjectId = (options) => {
-    const mongooseInstance = getMongoose();
-    const objectIdSchema = v4.z.custom((val) => mongooseInstance && val instanceof mongooseInstance.Types.ObjectId);
+    const objectIdSchema = v4.z.custom((val) => {
+        const mongooseInstance = getMongoose();
+        return mongooseInstance && val instanceof mongooseInstance.Types.ObjectId;
+    });
     const baseUnion = v4.z.preprocess(preprocessFn, v4.z.union([objectIdSchema, v4.z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId')]));
     // Define the input type validation (Accepts ObjectId OR String)
     const inputSchema = v4.z.codec(baseUnion, objectIdSchema, {
         decode: (val) => {
+            const mongooseInstance = getMongoose();
             if (!mongooseInstance)
                 return val;
             // If it's already an instance, return it exactly as-is to preserve reference memory!
@@ -1302,23 +1305,19 @@ const zObjectId = (options) => {
     });
     // we force the type signature using an explicit cast on the returned Zod schema.
     return withMongoose(inputSchema, {
-        type: mongooseInstance?.Schema.Types.ObjectId || 'ObjectId',
+        type: getMongoose()?.Schema.Types.ObjectId || 'ObjectId',
         ...options,
     });
 };
-const zBuffer = (options) => {
-    const mongooseInstance = getMongoose();
-    return withMongoose(v4.z.custom((val) => (mongooseInstance && val instanceof Buffer) || val instanceof Uint8Array), { type: mongooseInstance?.Schema.Types.Buffer || 'Buffer', ...options });
-};
+const zBuffer = (options) => withMongoose(v4.z.custom((val) => (getMongoose() && val instanceof Buffer) || val instanceof Uint8Array), { type: getMongoose()?.Schema.Types.Buffer || 'Buffer', ...options });
 const zRef = (ref, schema, options) => {
-    const mongooseInstance = getMongoose();
     const objectIdSchema = zObjectId();
     const base = v4.z.codec(v4.z.union([objectIdSchema, schema]), objectIdSchema, {
         decode: (val) => (typeof val === 'object' && val !== null && '_id' in val ? val._id : val),
         encode: (val) => val,
     });
     return withMongoose(base, {
-        type: mongooseInstance?.Schema.Types.ObjectId || 'ObjectId',
+        type: getMongoose()?.Schema.Types.ObjectId || 'ObjectId',
         ref,
         refSchema: schema,
         ...options,
