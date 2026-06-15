@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 2.5.2
+
+### Patch Changes
+
+- 5b4fa25: import order issue fixed
+- Updated dependencies [5b4fa25]
+  - @nullix/zod-mongoose@2.5.2
+
 ## 2.5.1
 
 ### Patch Changes
