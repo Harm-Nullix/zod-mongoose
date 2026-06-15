@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 2.5.1
+
+### Patch Changes
+
+- 44957ba: docs update auto validate feature
+- Updated dependencies [44957ba]
+  - @nullix/zod-mongoose@2.5.1
+
 ## 2.5.0
 
 ### Minor Changes

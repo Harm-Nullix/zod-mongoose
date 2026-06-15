@@ -1,3 +1,9 @@
+## 2.5.1
+
+### Patch Changes
+
+- 44957ba: docs update auto validate feature
+
 ## 2.5.0
 
 ### Minor Changes
