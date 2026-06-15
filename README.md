@@ -20,6 +20,7 @@ In modern TypeScript applications, you often find yourself defining the same sch
 
 - **Type Safety**: Full TypeScript support with inference from your Zod schemas.
 - **Automatic Mapping**: Zod validators like `.min()`, `.max()`, and `.regex()` are directly converted to Mongoose options.
+- **Full Zod Validation**: Automatically runs `schema.parse()` during Mongoose validation to support complex Zod features like `.refine()` and `.transform()`.
 - **Native Discriminators**: Automatically maps `z.discriminatedUnion` to native Mongoose discriminators.
 - **Advanced Types**: Built-in support for `ObjectId`, `Decimal128`, `BigInt`, and more.
 - **Isomorphic**: Share schemas between frontend and backend with `setFrontendMode`.
