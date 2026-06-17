@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 2.5.3
+
+### Patch Changes
+
+- ed34d59: Add frontend resolver for paths
+- Updated dependencies [ed34d59]
+  - @nullix/zod-mongoose@2.5.3
+
 ## 2.5.2
 
 ### Patch Changes

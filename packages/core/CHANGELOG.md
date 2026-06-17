@@ -1,3 +1,9 @@
+## 2.5.3
+
+### Patch Changes
+
+- ed34d59: Add frontend resolver for paths
+
 ## 2.5.2
 
 ### Patch Changes
