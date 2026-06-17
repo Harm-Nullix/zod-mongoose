@@ -54,6 +54,10 @@
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js"
       }
+    },
+    "./frontend": {
+      "types": "./dist/index.frontend.d.ts",
+      "import": "./dist/index.frontend.js"
     }
   },
   "main": "dist/index.cjs",
