@@ -1,4 +1,5 @@
-import {z} from 'zod/v4';
+import {z as zod} from 'zod/v4';
+import type mongoose from 'mongoose';
 
 export interface SchemaFeatures {
   default?: any;
@@ -15,11 +16,11 @@ export interface SchemaFeatures {
  * using Zod's public API and internal _def.type identifiers.
  */
 export function unwrapZodSchema(
-  schema: z.ZodTypeAny,
+  schema: zod.ZodTypeAny,
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   features: SchemaFeatures = {required: true},
-  visited: Set<z.ZodTypeAny> = new Set(),
-): {schema: z.ZodTypeAny; features: SchemaFeatures} {
+  visited: Set<zod.ZodTypeAny> = new Set(),
+): {schema: zod.ZodTypeAny; features: SchemaFeatures} {
   if (!schema) return {schema, features};
   if (visited.has(schema)) return {schema, features};
 
@@ -28,15 +29,15 @@ export function unwrapZodSchema(
 
   // Skip visited check for wrappers to allow deep unwrapping
   if (
-    !(schema instanceof z.ZodOptional) &&
-    !(schema instanceof z.ZodNullable) &&
-    !(schema instanceof z.ZodDefault) &&
+    !(schema instanceof zod.ZodOptional) &&
+    !(schema instanceof zod.ZodNullable) &&
+    !(schema instanceof zod.ZodDefault) &&
     def.type !== 'pipe'
   ) {
     visited.add(schema);
   }
 
-  if (schema instanceof z.ZodOptional) {
+  if (schema instanceof zod.ZodOptional) {
     const inner = schema.unwrap();
     return unwrapZodSchema(
       // @ts-expect-error Zod v4 schema.unwrap() return type mismatch
@@ -50,7 +51,7 @@ export function unwrapZodSchema(
     );
   }
 
-  if (schema instanceof z.ZodNullable) {
+  if (schema instanceof zod.ZodNullable) {
     return unwrapZodSchema(
       // @ts-expect-error Zod v4 schema.unwrap() return type mismatch
       schema.unwrap(),
@@ -62,7 +63,7 @@ export function unwrapZodSchema(
     );
   }
 
-  if (schema instanceof z.ZodDefault) {
+  if (schema instanceof zod.ZodDefault) {
     const defaultValue =
       typeof def.defaultValue === 'function' ? def.defaultValue() : def.defaultValue;
     return unwrapZodSchema(
@@ -94,7 +95,8 @@ export function unwrapZodSchema(
       // We should still collect transformations from the 'out' part
       const transformFeatures = {...features};
       const outDef = def.out?._def;
-      const effects = outDef?.effects || outDef?.transformations || (outType === 'transform' ? [outDef] : []);
+      const effects =
+        outDef?.effects || outDef?.transformations || (outType === 'transform' ? [outDef] : []);
       if (effects && Array.isArray(effects)) {
         transformFeatures.transformations = [
           ...(transformFeatures.transformations || []),
@@ -115,7 +117,10 @@ export function unwrapZodSchema(
     type === 'effects'
   ) {
     const transformFeatures = {...features};
-    const effects = def.effects || def.transformations || (def.type === 'transform' || type === 'transform' ? [def] : []);
+    const effects =
+      def.effects ||
+      def.transformations ||
+      (def.type === 'transform' || type === 'transform' ? [def] : []);
     if (effects && Array.isArray(effects)) {
       transformFeatures.transformations = [
         ...(transformFeatures.transformations || []),
@@ -155,3 +160,13 @@ export function unwrapZodSchema(
 
   return {schema, features};
 }
+
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+export type InputMongoose<T> = zod.input<T>;
+export type OutputMongoose<T> = T extends {_zod: {output: any}}
+  ? Prettify<Omit<zod.output<T>, '_id'> & {_id: mongoose.Types.ObjectId}>
+  : unknown;
+export type InferMongoose<T> = OutputMongoose<T>;

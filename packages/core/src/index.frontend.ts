@@ -5,3 +5,4 @@ export type {PopulatedSchema} from './mongoose-helpers.shared.js';
 export * from './config.js';
 export * from './hooks.js';
 export * from './strict-model.js';
+export * from './zod-helpers.js';

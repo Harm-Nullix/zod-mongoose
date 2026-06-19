@@ -311,7 +311,9 @@ features = { required: true }, visited = new Set()) {
         type === 'refinement' ||
         type === 'effects') {
         const transformFeatures = { ...features };
-        const effects = def.effects || def.transformations || (def.type === 'transform' || type === 'transform' ? [def] : []);
+        const effects = def.effects ||
+            def.transformations ||
+            (def.type === 'transform' || type === 'transform' ? [def] : []);
         if (effects && Array.isArray(effects)) {
             transformFeatures.transformations = [
                 ...(transformFeatures.transformations || []),
@@ -1365,6 +1367,7 @@ exports.setFrontendMode = setFrontendMode;
 exports.setMongoose = setMongoose;
 exports.toMongooseSchema = toMongooseSchema;
 exports.toStrictModel = toStrictModel;
+exports.unwrapZodSchema = unwrapZodSchema;
 exports.withMongoose = withMongoose;
 exports.zBuffer = zBuffer;
 exports.zObjectId = zObjectId;

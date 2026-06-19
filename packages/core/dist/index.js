@@ -309,7 +309,9 @@ features = { required: true }, visited = new Set()) {
         type === 'refinement' ||
         type === 'effects') {
         const transformFeatures = { ...features };
-        const effects = def.effects || def.transformations || (def.type === 'transform' || type === 'transform' ? [def] : []);
+        const effects = def.effects ||
+            def.transformations ||
+            (def.type === 'transform' || type === 'transform' ? [def] : []);
         if (effects && Array.isArray(effects)) {
             transformFeatures.transformations = [
                 ...(transformFeatures.transformations || []),
@@ -1349,5 +1351,5 @@ function toStrictModel(name, mongooseSchema) {
     return rawModel;
 }
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, withMongoose, zBuffer, zObjectId, zRef };
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zRef };
 //# sourceMappingURL=index.js.map

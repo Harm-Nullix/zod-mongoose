@@ -403,5 +403,35 @@ type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOverrides<D
  */
 declare function toStrictModel<UserInferredType>(name: string, mongooseSchema: mongoose.Schema): StrictModel<any, UserInferredType>;
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, withMongoose, zBuffer, zObjectId, zRef };
-export type { ExtractPopulatePaths, GetTargetSchema, HydrateMultiplePaths, HydratePopulatedPath, MongooseMeta, MongooseZodHooks, PopulateObject, PopulateOptions, PopulatedSchema, StrictDocument, StrictModel, StrictQuery, ToMongooseSchemaOptions, ToMongooseType, ZRefBrand };
+interface SchemaFeatures {
+    default?: any;
+    required?: boolean;
+    isOptional?: boolean;
+    isNullable?: boolean;
+    readOnly?: boolean;
+    checks?: any;
+    transformations?: any[];
+}
+/**
+ * Recursively unwrap Zod schemas (Optional, Nullable, Default, Effects, Pipelines)
+ * using Zod's public API and internal _def.type identifiers.
+ */
+declare function unwrapZodSchema(schema: z.ZodTypeAny, features?: SchemaFeatures, visited?: Set<z.ZodTypeAny>): {
+    schema: z.ZodTypeAny;
+    features: SchemaFeatures;
+};
+type Prettify<T> = {
+    [K in keyof T]: T[K];
+} & {};
+type InputMongoose<T> = z.input<T>;
+type OutputMongoose<T> = T extends {
+    _zod: {
+        output: any;
+    };
+} ? Prettify<Omit<z.output<T>, '_id'> & {
+    _id: mongoose.Types.ObjectId;
+}> : unknown;
+type InferMongoose<T> = OutputMongoose<T>;
+
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zRef };
+export type { ExtractPopulatePaths, GetTargetSchema, HydrateMultiplePaths, HydratePopulatedPath, InferMongoose, InputMongoose, MongooseMeta, MongooseZodHooks, OutputMongoose, PopulateObject, PopulateOptions, PopulatedSchema, SchemaFeatures, StrictDocument, StrictModel, StrictQuery, ToMongooseSchemaOptions, ToMongooseType, ZRefBrand };

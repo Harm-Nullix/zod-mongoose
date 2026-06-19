@@ -43,7 +43,7 @@ Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
   :::prose-pre
   ---
   code: |
-    import { z } from 'zod/v4';
+    import { z } from '@nullix/zod-mongoose';
     import { toMongooseSchema } from '@nullix/zod-mongoose';
 
     const UserZodSchema = z.object({
@@ -52,11 +52,14 @@ Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
     });
 
     const UserSchema = toMongooseSchema(UserZodSchema);
+
+    // Automatically includes { _id: ObjectId }
+    type User = z.infer<typeof UserZodSchema>;
   filename: example.ts
   ---
 
   ```ts [example.ts]
-  import { z } from 'zod/v4';
+  import { z } from '@nullix/zod-mongoose';
   import { toMongooseSchema } from '@nullix/zod-mongoose';
 
   const UserZodSchema = z.object({
@@ -65,6 +68,9 @@ Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
   });
 
   const UserSchema = toMongooseSchema(UserZodSchema);
+
+  // Automatically includes { _id: ObjectId }
+  type User = z.infer<typeof UserZodSchema>;
   ```
   :::
 :::

@@ -38,7 +38,7 @@ pnpm add @nullix/zod-mongoose zod/v4 mongoose
 ### 2. Define and Convert
 
 ```typescript
-import { z } from 'zod/v4';
+import { z } from '@nullix/zod-mongoose';
 import { toMongooseSchema } from '@nullix/zod-mongoose';
 import mongoose from 'mongoose';
 
@@ -61,6 +61,7 @@ export const UserModel = mongoose.model('User', UserSchema);
 
 ```typescript
 // Infer the TypeScript type from the Zod schema
+// It automatically includes { _id: mongoose.Types.ObjectId }
 type User = z.infer<typeof UserZodSchema>;
 
 async function createUser(data: User) {
