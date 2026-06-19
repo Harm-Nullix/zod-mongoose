@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 2.5.4
+
+### Patch Changes
+
+- 730becc: Added helpers for infer functions so z.infer makes a oBjectId
+- Updated dependencies [730becc]
+  - @nullix/zod-mongoose@2.5.4
+
 ## 2.5.3
 
 ### Patch Changes

@@ -1,3 +1,9 @@
+## 2.5.4
+
+### Patch Changes
+
+- 730becc: Added helpers for infer functions so z.infer makes a oBjectId
+
 ## 2.5.3
 
 ### Patch Changes
