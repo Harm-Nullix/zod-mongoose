@@ -1,5 +1,6 @@
 import {z as zod} from 'zod/v4';
 import type mongoose from 'mongoose';
+import {PrettifyType} from './index.js';
 
 export interface SchemaFeatures {
   default?: any;
@@ -161,12 +162,8 @@ export function unwrapZodSchema(
   return {schema, features};
 }
 
-type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
-
 export type InputMongoose<T> = zod.input<T>;
 export type OutputMongoose<T> = T extends {_zod: {output: any}}
-  ? Prettify<Omit<zod.output<T>, '_id'> & {_id: mongoose.Types.ObjectId}>
+  ? PrettifyType<Omit<zod.output<T>, '_id'> & {_id: mongoose.Types.ObjectId}>
   : unknown;
 export type InferMongoose<T> = OutputMongoose<T>;

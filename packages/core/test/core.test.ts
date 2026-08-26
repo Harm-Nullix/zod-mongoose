@@ -20,6 +20,27 @@ describe('@nullix/zod-mongoose core', () => {
     expect(mongooseSchema.path('createdAt')).toBeInstanceOf(mongoose.Schema.Types.Date);
   });
 
+  test('should allow converting the same zod schema twice', () => {
+    const zodSchema = z.object({
+      name: z.string(),
+    });
+
+    const firstMongooseSchema = toMongooseSchema(zodSchema);
+    const secondMongooseSchema = toMongooseSchema(zodSchema);
+
+    expect(firstMongooseSchema).toBeInstanceOf(mongoose.Schema);
+    expect(secondMongooseSchema).toBeInstanceOf(mongoose.Schema);
+    expect(firstMongooseSchema).not.toBe(secondMongooseSchema);
+
+    const modelName = 'TwiceConvertedSchema';
+    const model = mongoose.model(modelName, secondMongooseSchema);
+    const modelTwo = mongoose.model(modelName, secondMongooseSchema);
+
+    expect(model.modelName).toBe(modelName);
+    expect(model.modelName).toBe(modelTwo.modelName);
+    expect(model.schema.path('name')).toBeInstanceOf(mongoose.Schema.Types.String);
+  });
+
   test('should handle nested objects', () => {
     const zodSchema = z.object({
       profile: z.object({

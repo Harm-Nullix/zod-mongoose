@@ -2,7 +2,7 @@ import {describe, it, expect, beforeAll, afterAll} from 'bun:test';
 import {z} from 'zod';
 import mongoose from 'mongoose';
 import {MongoMemoryServer} from 'mongodb-memory-server';
-import {toMongooseSchema, extractMongooseDef} from '../src/index.js';
+import {toMongooseSchema, extractMongooseDef, zRef} from '../src/index.js';
 
 let mongoServer: MongoMemoryServer;
 
@@ -106,5 +106,78 @@ describe('Discriminator Unions', () => {
     expect(saved.entries).toHaveLength(2);
     expect(saved.entries[0]).toHaveProperty('message', 'All good');
     expect(saved.entries[1]).toHaveProperty('code', 500);
+  });
+
+  it('should handle discriminated unions with a shared complex base schema', () => {
+    const base = z.object({
+      name: z.string(),
+      calculation: z.object({
+        deductions: z.array(
+          z.union([
+            z.object({type: z.literal('fixed'), value: z.number()}),
+            z.object({type: z.literal('average')}),
+          ]),
+        ),
+      }),
+    });
+
+    const first = base.extend({
+      type: z.literal('first'),
+    });
+
+    const second = base.extend({
+      type: z.literal('second'),
+    });
+
+    const union = z.discriminatedUnion('type', [first, second]);
+
+    expect(() => toMongooseSchema(union)).not.toThrow();
+
+    const def = extractMongooseDef(union) as any;
+    expect(def.baseDef).toHaveProperty('calculation');
+    expect(def.discriminators.first).not.toHaveProperty('calculation');
+    expect(def.discriminators.second).not.toHaveProperty('calculation');
+  });
+
+  it('should keep different nested schemas in their discriminator branches', () => {
+    const first = z.object({
+      type: z.literal('first'),
+      details: z.object({name: z.string()}),
+    });
+
+    const second = z.object({
+      type: z.literal('second'),
+      details: z.object({name: z.number()}),
+    });
+
+    const def = extractMongooseDef(z.discriminatedUnion('type', [first, second])) as any;
+
+    expect(def.baseDef).not.toHaveProperty('details');
+    expect(def.discriminators.first).toHaveProperty('details');
+    expect(def.discriminators.second).toHaveProperty('details');
+    expect(def.discriminators.first.details.type.obj.name.type).toBe(String);
+    expect(def.discriminators.second.details.type.obj.name.type).toBe(Number);
+  });
+
+  it('should handle discriminated unions with zRef fields', () => {
+    const referenced = z.object({
+      name: z.string(),
+    });
+
+    const base = z.object({
+      name: z.string(),
+    });
+
+    const first = base.extend({
+      type: z.literal('first'),
+      organisation: zRef('Organisation', referenced).optional(),
+    });
+
+    const second = base.extend({
+      type: z.literal('second'),
+      budgetOwner: zRef('BudgetOwner', referenced).optional(),
+    });
+
+    expect(() => toMongooseSchema(z.discriminatedUnion('type', [first, second]))).not.toThrow();
   });
 });

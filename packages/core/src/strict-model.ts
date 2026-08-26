@@ -3,6 +3,7 @@ import type mongoose from 'mongoose';
 import type {QueryFilter, ProjectionType, QueryOptions, UpdateQuery, Query} from 'mongoose';
 import {ZRefBrand} from './mongoose-helpers.shared.js';
 import {getMongoose} from './config.js';
+import {PrettifyType} from './index.js';
 
 // ============================================================================
 // 1. STRING PARSING & VALIDATION ENGINE
@@ -141,17 +142,19 @@ type DeterminePopulatedResult<DocType, P> = P extends string
  *
  * @template DocType The Zod-inferred document type.
  */
-export type StrictDocument<DocType> = Omit<mongoose.Document, 'populate'> &
-  DocType & {
-    /**
-     * Populates document references and returns a document with updated type information.
-     *
-     * @param path The path(s) to populate. Supports dot notation, spaces, and recursive objects.
-     */
-    populate<P extends string | PopulateOptions<DocType>>(
-      path: P extends string ? ValidatePath<DocType, P> : P,
-    ): Promise<StrictDocument<DeterminePopulatedResult<DocType, P>>>;
-  };
+export type StrictDocument<DocType> = PrettifyType<
+  PrettifyType<Omit<mongoose.Document, 'populate'>> &
+    DocType & {
+      /**
+       * Populates document references and returns a document with updated type information.
+       *
+       * @param path The path(s) to populate. Supports dot notation, spaces, and recursive objects.
+       */
+      populate<P extends string | PopulateOptions<DocType>>(
+        path: P extends string ? ValidatePath<DocType, P> : P,
+      ): Promise<StrictDocument<DeterminePopulatedResult<DocType, P>>>;
+    }
+>;
 
 /**
  * An enhanced Mongoose Query type that tracks population state.
@@ -163,11 +166,11 @@ export type StrictQuery<Result, DocType, Helpers = {}, RawDoc = {}> = Omit<
   Query<Result, any, Helpers, RawDoc>,
   'populate' | 'exec'
 > & {
-    /**
-     * Populates document references and returns a query with updated result type information.
-     *
-     * @param path The path(s) to populate. Supports dot notation, spaces, and recursive objects.
-     */
+  /**
+   * Populates document references and returns a query with updated result type information.
+   *
+   * @param path The path(s) to populate. Supports dot notation, spaces, and recursive objects.
+   */
   populate<P extends string | PopulateOptions<DocType>>(
     path: P extends string ? ValidatePath<DocType, P> : P,
   ): StrictQuery<
