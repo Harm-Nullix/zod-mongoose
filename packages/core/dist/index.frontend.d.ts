@@ -301,6 +301,37 @@ declare const hooks: hookable.Hookable<MongooseZodHooks, hookable.HookKeys<Mongo
  */
 declare function callHookSync<Name extends keyof MongooseZodHooks>(name: Name, ...args: Parameters<MongooseZodHooks[Name]>): void;
 
+interface SchemaFeatures {
+    default?: any;
+    required?: boolean;
+    isOptional?: boolean;
+    isNullable?: boolean;
+    readOnly?: boolean;
+    checks?: any;
+    transformations?: any[];
+}
+/**
+ * Recursively unwrap Zod schemas (Optional, Nullable, Default, Effects, Pipelines)
+ * using Zod's public API and internal _def.type identifiers.
+ */
+declare function unwrapZodSchema(schema: z.ZodTypeAny, features?: SchemaFeatures, visited?: Set<z.ZodTypeAny>): {
+    schema: z.ZodTypeAny;
+    features: SchemaFeatures;
+};
+type InputMongoose<T> = z.input<T>;
+type OutputMongoose<T> = T extends {
+    _zod: {
+        output: any;
+    };
+} ? PrettifyType<Omit<z.output<T>, '_id'> & {
+    _id: mongoose.Types.ObjectId;
+}> : unknown;
+type InferMongoose<T> = OutputMongoose<T>;
+
+type PrettifyType<T> = {
+    [K in keyof T]: T[K];
+} & {};
+
 type UnwrapArray<T> = T extends Array<infer U> ? U : T;
 /** Splits a space-separated string literal into a tuple of entries */
 type SplitSpaces<S extends string> = string extends S ? string[] : S extends `${infer T} ${infer U}` ? [T, ...SplitSpaces<U>] : [S];
@@ -349,14 +380,14 @@ type DeterminePopulatedResult<DocType, P> = P extends string ? HydrateMultiplePa
  *
  * @template DocType The Zod-inferred document type.
  */
-type StrictDocument<DocType> = Omit<mongoose.Document, 'populate'> & DocType & {
+type StrictDocument<DocType> = PrettifyType<PrettifyType<Omit<mongoose.Document, 'populate'>> & DocType & {
     /**
      * Populates document references and returns a document with updated type information.
      *
      * @param path The path(s) to populate. Supports dot notation, spaces, and recursive objects.
      */
     populate<P extends string | PopulateOptions<DocType>>(path: P extends string ? ValidatePath<DocType, P> : P): Promise<StrictDocument<DeterminePopulatedResult<DocType, P>>>;
-};
+}>;
 /**
  * An enhanced Mongoose Query type that tracks population state.
  *
@@ -402,36 +433,6 @@ type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOverrides<D
  * ```
  */
 declare function toStrictModel<UserInferredType>(name: string, mongooseSchema: mongoose.Schema): StrictModel<any, UserInferredType>;
-
-interface SchemaFeatures {
-    default?: any;
-    required?: boolean;
-    isOptional?: boolean;
-    isNullable?: boolean;
-    readOnly?: boolean;
-    checks?: any;
-    transformations?: any[];
-}
-/**
- * Recursively unwrap Zod schemas (Optional, Nullable, Default, Effects, Pipelines)
- * using Zod's public API and internal _def.type identifiers.
- */
-declare function unwrapZodSchema(schema: z.ZodTypeAny, features?: SchemaFeatures, visited?: Set<z.ZodTypeAny>): {
-    schema: z.ZodTypeAny;
-    features: SchemaFeatures;
-};
-type Prettify<T> = {
-    [K in keyof T]: T[K];
-} & {};
-type InputMongoose<T> = z.input<T>;
-type OutputMongoose<T> = T extends {
-    _zod: {
-        output: any;
-    };
-} ? Prettify<Omit<z.output<T>, '_id'> & {
-    _id: mongoose.Types.ObjectId;
-}> : unknown;
-type InferMongoose<T> = OutputMongoose<T>;
 
 export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zRef };
 export type { ExtractPopulatePaths, GetTargetSchema, HydrateMultiplePaths, HydratePopulatedPath, InferMongoose, InputMongoose, MongooseMeta, MongooseZodHooks, OutputMongoose, PopulateObject, PopulateOptions, PopulatedSchema, SchemaFeatures, StrictDocument, StrictModel, StrictQuery, ToMongooseSchemaOptions, ToMongooseType, ZRefBrand };
