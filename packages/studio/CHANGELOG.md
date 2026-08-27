@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 2.5.5
+
+### Patch Changes
+
+- d98f4cb: Enhance discriminated union handling in schema extraction; add tests for complex base schemas, nested schemas, and zRef integration; refactor for type prettification and schema comparison.
+- Updated dependencies [d98f4cb]
+  - @nullix/zod-mongoose@2.5.5
+
 ## 2.5.4
 
 ### Patch Changes
