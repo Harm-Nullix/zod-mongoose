@@ -1,3 +1,9 @@
+## 2.6.0
+
+### Minor Changes
+
+- 1e7d05a: Add `discriminatorModelPrefix` option for Mongoose discriminators to avoid global model name collisions; update docs and tests accordingly.
+
 ## 2.5.6
 
 ### Patch Changes

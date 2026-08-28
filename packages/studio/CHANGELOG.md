@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 2.6.0
+
+### Minor Changes
+
+- 1e7d05a: Add `discriminatorModelPrefix` option for Mongoose discriminators to avoid global model name collisions; update docs and tests accordingly.
+
+### Patch Changes
+
+- Updated dependencies [1e7d05a]
+  - @nullix/zod-mongoose@2.6.0
+
 ## 2.5.6
 
 ### Patch Changes
