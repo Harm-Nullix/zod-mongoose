@@ -27,7 +27,7 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
     (unwrapped as any).meta?.() ||
     {};
 
-  const {plugins, ...schemaOptions} = options || {};
+  const {plugins, discriminatorModelPrefix, ...schemaOptions} = options || {};
 
   const mergedOptions: SchemaOptions = {
     // Also merge other schema options from meta if they exist
@@ -60,6 +60,14 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
   let mongooseSchema: mongoose.Schema;
 
   if (definition && typeof definition === 'object' && definition.__isDiscriminatorUnion) {
+    if (!discriminatorModelPrefix) {
+      throw new Error(
+        'toMongooseSchema() found a top-level discriminated union. ' +
+          'Set `discriminatorModelPrefix` to give its discriminator models unique names, ' +
+          "for example `{ discriminatorModelPrefix: 'BudgetPlan' }`.",
+      );
+    }
+
     const {discriminatorKey, discriminators, baseDef, validate} = definition;
     mongooseSchema = new mongoose.Schema(baseDef, {
       ...mergedOptions,
@@ -74,10 +82,15 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
     }
 
     for (const [key, dDef] of Object.entries(discriminators)) {
-      if (mongooseSchema.discriminators && mongooseSchema.discriminators[key]) {
+      const discriminatorModelName = `${discriminatorModelPrefix}${key}`;
+      if (mongooseSchema.discriminators && mongooseSchema.discriminators[discriminatorModelName]) {
         continue;
       }
-      mongooseSchema.discriminator(key, new mongoose.Schema(dDef as any, {_id: false}));
+      mongooseSchema.discriminator(
+        discriminatorModelName,
+        new mongoose.Schema(dDef as any, {_id: false}),
+        {value: key},
+      );
     }
   } else {
     // Strip internal includeId metadata that might have leaked into the definition

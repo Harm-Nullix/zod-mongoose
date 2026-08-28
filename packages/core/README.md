@@ -241,6 +241,8 @@ const mongooseSchema = toMongooseSchema(userSchema);
 
 When using `z.discriminatedUnion()`, the library automatically maps it to native Mongoose discriminators. This provides the most robust way to handle polymorphic data in Mongoose, including proper indexing and query support.
 
+Top-level discriminated unions require `discriminatorModelPrefix`. Mongoose registers discriminator model names globally, so the prefix prevents collisions with standalone models. It affects only the Mongoose model name; the discriminator value stored in MongoDB remains the Zod literal value.
+
 Common fields (fields present in all union branches) are automatically extracted and moved to the base schema.
 
 ```typescript
@@ -260,12 +262,18 @@ const ActivityZodSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-const ActivitySchema = toMongooseSchema(ActivityZodSchema);
+const ActivitySchema = toMongooseSchema(ActivityZodSchema, {
+  discriminatorModelPrefix: 'Activity',
+});
 // Mongoose will create a base schema with 'timestamp' field
 // and two discriminators ('login', 'post_create') for the other fields.
+// Their model names are 'Activitylogin' and 'Activitypost_create'.
+// The stored `type` values remain 'login' and 'post_create'.
 
 const ActivityModel = mongoose.model('Activity', ActivitySchema);
 ```
+
+This follows Mongoose's discriminator API: its model name and stored discriminator value are separate concepts. `zod-mongoose` uses `${discriminatorModelPrefix}${discriminatorValue}` as the model name and passes the original value through `{ value: discriminatorValue }`. Omitting the prefix for a top-level discriminated union throws a helpful error.
 
 #### 2. Manual Discriminators
 

@@ -44,11 +44,11 @@ describe('Discriminator Unions', () => {
       }),
     ]);
 
-    const schema = toMongooseSchema(MyEventZod);
+    const schema = toMongooseSchema(MyEventZod, {discriminatorModelPrefix: 'TopLevelEvent'});
     const EventModel = mongoose.model('TopLevelEvent', schema);
 
-    expect(EventModel.discriminators).toHaveProperty('clicked');
-    expect(EventModel.discriminators).toHaveProperty('purchased');
+    expect(EventModel.discriminators).toHaveProperty('TopLevelEventclicked');
+    expect(EventModel.discriminators).toHaveProperty('TopLevelEventpurchased');
 
     const clicked = new EventModel({kind: 'clicked', url: 'https://test.com', time: new Date()});
     await clicked.save();
@@ -67,7 +67,7 @@ describe('Discriminator Unions', () => {
       ]),
     });
 
-    const schema = toMongooseSchema(UserSchema);
+    const schema = toMongooseSchema(UserSchema, {discriminatorModelPrefix: 'UserWithNestedDiscriminator'});
     const UserModel = mongoose.model('UserWithNestedDiscriminator', schema);
 
     const user = new UserModel({
@@ -91,7 +91,7 @@ describe('Discriminator Unions', () => {
       ),
     });
 
-    const schema = toMongooseSchema(LogSchema);
+    const schema = toMongooseSchema(LogSchema, {discriminatorModelPrefix: 'LogWithArrayDiscriminator'});
     const LogModel = mongoose.model('LogWithArrayDiscriminator', schema);
 
     const log = new LogModel({
@@ -131,7 +131,7 @@ describe('Discriminator Unions', () => {
 
     const union = z.discriminatedUnion('type', [first, second]);
 
-    expect(() => toMongooseSchema(union)).not.toThrow();
+    expect(() => toMongooseSchema(union, {discriminatorModelPrefix: 'ComplexUnion'})).not.toThrow();
 
     const def = extractMongooseDef(union) as any;
     expect(def.baseDef).toHaveProperty('calculation');
@@ -178,6 +178,8 @@ describe('Discriminator Unions', () => {
       budgetOwner: zRef('BudgetOwner', referenced).optional(),
     });
 
-    expect(() => toMongooseSchema(z.discriminatedUnion('type', [first, second]))).not.toThrow();
+    expect(() => toMongooseSchema(z.discriminatedUnion('type', [first, second]), {
+      discriminatorModelPrefix: 'ZRefUnion',
+    })).not.toThrow();
   });
 });

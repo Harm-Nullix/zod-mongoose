@@ -234,7 +234,7 @@ function getMongooseMeta(schema) {
  * Recursively unwrap Zod schemas (Optional, Nullable, Default, Effects, Pipelines)
  * using Zod's public API and internal _def.type identifiers.
  */
-function unwrapZodSchema(schema, 
+function unwrapZodSchema(schema,
 // eslint-disable-next-line unicorn/no-object-as-default-parameter
 features = { required: true }, visited = new Set()) {
     if (!schema)
@@ -1171,7 +1171,7 @@ function toMongooseSchema(schema, options) {
         schema.meta?.() ||
         unwrapped.meta?.() ||
         {};
-    const { plugins, ...schemaOptions } = options || {};
+    const { plugins, discriminatorModelPrefix, ...schemaOptions } = options || {};
     const mergedOptions = {
         // Also merge other schema options from meta if they exist
         ...(meta.collection ? { collection: meta.collection } : {}),
@@ -1196,6 +1196,11 @@ function toMongooseSchema(schema, options) {
     }
     let mongooseSchema;
     if (definition && typeof definition === 'object' && definition.__isDiscriminatorUnion) {
+        if (!discriminatorModelPrefix) {
+            throw new Error('toMongooseSchema() found a top-level discriminated union. ' +
+                'Set `discriminatorModelPrefix` to give its discriminator models unique names, ' +
+                "for example `{ discriminatorModelPrefix: 'BudgetPlan' }`.");
+        }
         const { discriminatorKey, discriminators, baseDef, validate } = definition;
         mongooseSchema = new mongoose.Schema(baseDef, {
             ...mergedOptions,
@@ -1208,10 +1213,11 @@ function toMongooseSchema(schema, options) {
             mongooseSchema.path(discriminatorKey).validate(validate);
         }
         for (const [key, dDef] of Object.entries(discriminators)) {
-            if (mongooseSchema.discriminators && mongooseSchema.discriminators[key]) {
+            const discriminatorModelName = `${discriminatorModelPrefix}${key}`;
+            if (mongooseSchema.discriminators && mongooseSchema.discriminators[discriminatorModelName]) {
                 continue;
             }
-            mongooseSchema.discriminator(key, new mongoose.Schema(dDef, { _id: false }));
+            mongooseSchema.discriminator(discriminatorModelName, new mongoose.Schema(dDef, { _id: false }), { value: key });
         }
     }
     else {

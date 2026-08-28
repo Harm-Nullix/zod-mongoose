@@ -15,7 +15,7 @@
     "@iconify-json/simple-icons": "^1.2.75",
     "@iconify-json/vscode-icons": "^1.2.45",
     "@nullix/zod-mongoose-studio": "workspace:*",
-    "mongoose": "9.6.3",
+    "mongoose": "9.7.4",
     "@nuxt/content": "^3.12.0",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.6.0",
