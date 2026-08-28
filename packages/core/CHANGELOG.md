@@ -1,3 +1,9 @@
+## 2.5.6
+
+### Patch Changes
+
+- ff6e010: Add request-scoping via parse lock; ensure hook cleanup and improve error handling in parse API
+
 ## 2.5.5
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 2.5.6
+
+### Patch Changes
+
+- ff6e010: Add request-scoping via parse lock; ensure hook cleanup and improve error handling in parse API
+- Updated dependencies [ff6e010]
+  - @nullix/zod-mongoose@2.5.6
+
 ## 2.5.5
 
 ### Patch Changes
