@@ -23,6 +23,28 @@ try {
   // Fallback if import.meta.url is not available or valid in the current context
 }
 
+// The converter exposes a module-level Hookable instance. User code can add
+// hooks to it, so parse requests must not overlap and must always clean it up
+// before the next request starts.
+let parseQueue = Promise.resolve();
+
+async function acquireParseLock(): Promise<() => void> {
+  const previous = parseQueue;
+  let release!: () => void;
+
+  parseQueue = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  await previous;
+  return release;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message || error.name;
+  return String(error);
+}
+
 // @ts-ignore
 if (typeof __filename === "undefined") {
   // @ts-ignore
@@ -43,44 +65,49 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Missing sourceCode" });
   }
 
+  const releaseParseLock = await acquireParseLock();
+
   // 1. Transpile exactly what the user wrote
-  let jsCode = "";
   try {
-    const result = transformSync(sourceCode, {
-      loader: "ts",
-      format: "cjs",
-      target: "esnext",
-      // Provide these globals during transpilation just in case
-      define: {
-        __filename: '"/sandbox/main.ts"',
-        __dirname: '"/sandbox"',
-      },
-    });
-    jsCode = result.code;
-  } catch (e: any) {
-    throw createError({
-      statusCode: 400,
-      message: `Compilation Error: ${e.message}`,
-    });
-  }
+    // A user hook can throw before the converter has completed. Since hooks are
+    // global within the server process, cleanup must happen for both success and
+    // failure, otherwise the user's hook would affect every later visitor.
+    mongooseZod.hooks.removeAllHooks();
 
-  // 2. Map imports securely
-  const sandboxRequire = (moduleName: string) => {
-    if (moduleName === "zod" || moduleName === "zod/v4") return zod;
-    if (moduleName === "@nullix/zod-mongoose") return mongooseZod;
-    if (moduleName === "mongoose") return mongoose.default || mongoose;
-    throw new Error(`Security Exception: Module "${moduleName}" is blocked.`);
-  };
+    let jsCode: string;
+    try {
+      jsCode = transformSync(sourceCode, {
+        loader: "ts",
+        format: "cjs",
+        target: "esnext",
+        // Provide these globals during transpilation just in case
+        define: {
+          __filename: '"/sandbox/main.ts"',
+          __dirname: '"/sandbox"',
+        },
+      }).code;
+    } catch (error: unknown) {
+      throw createError({
+        statusCode: 400,
+        message: `Compilation Error: ${getErrorMessage(error)}`,
+      });
+    }
+    // 2. Map imports securely
+    const sandboxRequire = (moduleName: string) => {
+      if (moduleName === "zod" || moduleName === "zod/v4") return zod;
+      if (moduleName === "@nullix/zod-mongoose") return mongooseZod;
+      if (moduleName === "mongoose") return mongoose.default || mongoose;
+      throw new Error(`Security Exception: Module "${moduleName}" is blocked.`);
+    };
 
-  const sandbox = {
-    require: sandboxRequire,
-    console: { log: () => {}, warn: () => {}, error: () => {} },
-    __filename: "/sandbox/main.ts",
-    __dirname: "/sandbox",
-  };
-  const context = vm.createContext(sandbox);
+    const sandbox = {
+      require: sandboxRequire,
+      console: { log: () => {}, warn: () => {}, error: () => {} },
+      __filename: "/sandbox/main.ts",
+      __dirname: "/sandbox",
+    };
+    const context = vm.createContext(sandbox);
 
-  try {
     const script = new vm.Script(`
       ((__filename, __dirname) => {
         let exports = {};
@@ -147,9 +174,14 @@ export default defineEventHandler(async (event) => {
       schemaPaths: util.inspect(formattedPaths, formatOpts),
     };
   } catch (err: any) {
+    const message = getErrorMessage(err);
+    const isCompilationError = err?.statusCode === 400;
     throw createError({
-      statusCode: 500,
-      message: `Execution Error: ${err.message}`,
+      statusCode: isCompilationError ? 400 : 500,
+      message: isCompilationError ? message : `Execution Error: ${message}`,
     });
+  } finally {
+    mongooseZod.hooks.removeAllHooks();
+    releaseParseLock();
   }
 });
