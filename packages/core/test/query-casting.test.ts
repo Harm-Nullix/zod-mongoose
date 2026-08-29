@@ -5,17 +5,17 @@ import {toMongooseSchema, zObjectId, zRef} from '../src/index.js';
 
 describe('Mongoose query casting', () => {
   test('casts string _id values on a schema extended from a base schema', () => {
-    const budgetOwnerBaseZodSchema = z.object({
+    const activityBaseZodSchema = z.object({
       _id: zObjectId(),
-      displayName: z.string().min(1).max(32),
-      removed: z.boolean(),
+      name: z.string().min(1).max(32),
+      archived: z.boolean(),
     });
-    const budgetOwnerZodMongooseSchema = budgetOwnerBaseZodSchema.extend({});
-    const schema = toMongooseSchema(budgetOwnerZodMongooseSchema, {
-      collection: 'budgetOwners',
+    const activityZodMongooseSchema = activityBaseZodSchema.extend({});
+    const schema = toMongooseSchema(activityZodMongooseSchema, {
+      collection: 'activities',
       collation: {locale: 'nl', strength: 2},
     });
-    const modelName = 'BudgetOwnerQueryCasting';
+    const modelName = 'ActivityQueryCasting';
     const model = mongoose.model(modelName, schema);
     const id = '507f1f77bcf86cd799439011';
 
@@ -75,43 +75,56 @@ describe('Mongoose query casting', () => {
     }
   });
 
-  test('requires a prefix for top-level discriminator model names', () => {
+  test('derives discriminator model names from modelName or collection', () => {
     const referenced = z.object({name: z.string()});
-    const budgetPlanSchema = z.discriminatedUnion('type', [
+    const activitySchema = z.discriminatedUnion('type', [
       z.object({
         _id: zObjectId(),
-        type: z.literal('BudgetOwner'),
-        budgetOwner: zRef('BudgetOwner', referenced).optional(),
+        type: z.literal('clicked'),
+        target: zRef('Activity', referenced).optional(),
       }),
       z.object({
         _id: zObjectId(),
-        type: z.literal('OtherBudgetPlan'),
+        type: z.literal('viewed'),
       }),
     ]);
-    const budgetPlanModelName = 'BudgetPlanDiscriminatorCollision';
+    const activityModelName = 'ActivityDiscriminatorCollision';
 
     try {
-      expect(() => toMongooseSchema(budgetPlanSchema, {collection: 'budgetPlans'})).toThrow(
-        /discriminatorModelPrefix/,
+      expect(() => toMongooseSchema(activitySchema)).toThrow(
+        /modelName.*collection|collection.*modelName/,
       );
 
-      const budgetPlanModel = mongoose.model(
-        budgetPlanModelName,
-        toMongooseSchema(budgetPlanSchema, {
-          collection: 'budgetPlans',
-          discriminatorModelPrefix: 'BudgetPlan',
+      const collectionFallbackModelName = 'CollectionFallbackActivity';
+      const collectionFallbackModel = mongoose.model(
+        collectionFallbackModelName,
+        toMongooseSchema(activitySchema, {collection: 'activities'}),
+      );
+
+      expect(mongoose.models.Activity_clicked).toBe(
+        collectionFallbackModel.discriminators?.Activity_clicked,
+      );
+      delete mongoose.models.Activity_clicked;
+      delete mongoose.models.Activity_viewed;
+      delete mongoose.models[collectionFallbackModelName];
+
+      const activityModel = mongoose.model(
+        activityModelName,
+        toMongooseSchema(activitySchema, {
+          collection: 'activities',
+          modelName: 'Activity',
         }),
       );
 
-      expect(mongoose.models.BudgetOwner).toBeUndefined();
-      expect(mongoose.models.BudgetPlanBudgetOwner).toBe(budgetPlanModel.discriminators?.BudgetPlanBudgetOwner);
-      expect(budgetPlanModel.discriminators?.BudgetPlanBudgetOwner).toBeDefined();
+      expect(mongoose.models.clicked).toBeUndefined();
+      expect(mongoose.models.Activity_clicked).toBe(activityModel.discriminators?.Activity_clicked);
+      expect(activityModel.discriminators?.Activity_clicked).toBeDefined();
     } finally {
-      delete mongoose.models.BudgetOwner;
-      delete mongoose.models.OtherBudgetPlan;
-      delete mongoose.models.BudgetPlanBudgetOwner;
-      delete mongoose.models.BudgetPlanOtherBudgetPlan;
-      delete mongoose.models[budgetPlanModelName];
+      delete mongoose.models.clicked;
+      delete mongoose.models.viewed;
+      delete mongoose.models.Activity_clicked;
+      delete mongoose.models.Activity_viewed;
+      delete mongoose.models[activityModelName];
     }
   });
 });

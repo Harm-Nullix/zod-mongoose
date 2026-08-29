@@ -241,39 +241,56 @@ const mongooseSchema = toMongooseSchema(userSchema);
 
 When using `z.discriminatedUnion()`, the library automatically maps it to native Mongoose discriminators. This provides the most robust way to handle polymorphic data in Mongoose, including proper indexing and query support.
 
-Top-level discriminated unions require `discriminatorModelPrefix`. Mongoose registers discriminator model names globally, so the prefix prevents collisions with standalone models. It affects only the Mongoose model name; the discriminator value stored in MongoDB remains the Zod literal value.
+Top-level discriminated unions require `modelName` or `collection`. Mongoose registers discriminator model names globally, so the model name prevents collisions with standalone models. It affects only the Mongoose model name; the discriminator value stored in MongoDB remains the Zod literal value.
 
 Common fields (fields present in all union branches) are automatically extracted and moved to the base schema.
 
 ```typescript
-import { z } from '@nullix/zod-mongoose';
-import { toMongooseSchema } from '@nullix/zod-mongoose';
+import mongoose from 'mongoose';
+import { z } from 'zod/v4';
+import { toMongooseSchema, zObjectId } from '@nullix/zod-mongoose';
+
+const ClickedEventZodSchema = z.object({
+  type: z.literal('clicked'),
+  timestamp: z.date(),
+  target: z.string(),
+});
+
+const ViewedEventZodSchema = z.object({
+  type: z.literal('viewed'),
+  timestamp: z.date(),
+  postId: zObjectId(),
+});
 
 const ActivityZodSchema = z.discriminatedUnion('type', [
-  z.object({
-    type: z.literal('login'),
-    timestamp: z.date(),
-    ip: z.string()
-  }),
-  z.object({
-    type: z.literal('post_create'),
-    timestamp: z.date(),
-    postId: zObjectId()
-  }),
+  ClickedEventZodSchema,
+  ViewedEventZodSchema,
 ]);
 
 const ActivitySchema = toMongooseSchema(ActivityZodSchema, {
-  discriminatorModelPrefix: 'Activity',
+  modelName: 'Activity',
 });
 // Mongoose will create a base schema with 'timestamp' field
-// and two discriminators ('login', 'post_create') for the other fields.
-// Their model names are 'Activitylogin' and 'Activitypost_create'.
-// The stored `type` values remain 'login' and 'post_create'.
+// and two discriminators ('clicked', 'viewed') for the other fields.
 
 const ActivityModel = mongoose.model('Activity', ActivitySchema);
 ```
 
-This follows Mongoose's discriminator API: its model name and stored discriminator value are separate concepts. `zod-mongoose` uses `${discriminatorModelPrefix}${discriminatorValue}` as the model name and passes the original value through `{ value: discriminatorValue }`. Omitting the prefix for a top-level discriminated union throws a helpful error.
+The discriminator key is `type`; its values (`clicked` and `viewed`) are stored in MongoDB. The base model name is `Activity`, while the generated Mongoose discriminator model names are `Activity_clicked` and `Activity_viewed`. `zod-mongoose` uses `${modelName}_${discriminatorValue}` as the model name and passes the original value through `{ value: discriminatorValue }`. If `modelName` is omitted, the name is derived from `collection` by singularizing it. Omitting both for a top-level discriminated union throws a helpful error.
+
+#### Accessing discriminator models
+
+`toMongooseSchema()` returns the base `mongoose.Schema`, not a model. After compiling it into a model, Mongoose exposes the compiled discriminator models through `BaseModel.discriminators`:
+
+```typescript
+const ActivityModel = mongoose.model('Activity', ActivitySchema);
+const ClickedEventModel = ActivityModel.discriminators?.Activity_clicked as
+  mongoose.Model<z.infer<typeof ClickedEventZodSchema>>;
+
+const event = await ClickedEventModel.findById(id);
+```
+
+The discriminator model uses the same collection and automatically filters on `type: 'clicked'`. The registered model name is `Activity_clicked`; the stored discriminator value remains `clicked`.
 
 #### 2. Manual Discriminators
 

@@ -132,7 +132,7 @@ export default defineEventHandler(async (event) => {
 
     // 4. Run BOTH functions on the user's schema
     const extractedDef = mongooseZod.extractMongooseDef(schema);
-    const mongooseSchema = mongooseZod.toMongooseSchema(schema);
+    const mongooseSchema = mongooseZod.toMongooseSchema(schema, { modelName: 'ParsedSchema' });
 
     // Format the outputs nicely
     const formatOpts = { depth: null, showHidden: false, colors: false };

@@ -5,8 +5,8 @@ import * as hookable from 'hookable';
 interface ToMongooseSchemaOptions extends SchemaOptions {
     plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
     validateBeforeSave?: boolean;
-    /** Prefix used for Mongoose discriminator model names to avoid model-name collisions. */
-    discriminatorModelPrefix?: string;
+    /** Base Mongoose model name used to make discriminator model names unique. */
+    modelName?: string;
 }
 /**
  * DEFINE THE METADATA SHAPE

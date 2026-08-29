@@ -80,7 +80,7 @@ describe('README Examples', () => {
       ]);
 
       const ActivitySchema = toMongooseSchema(ActivityZodSchema, {
-        discriminatorModelPrefix: 'Activity',
+        modelName: 'Activity',
       });
       // Mongoose will create a base schema with 'timestamp' field
       // and two discriminators ('login', 'post_create') for the other fields.
@@ -91,8 +91,8 @@ describe('README Examples', () => {
 
       const ActivityModel = mongoose.model('ActivityReadme', ActivitySchema);
       expect(ActivityModel.discriminators).toBeDefined();
-      expect(ActivityModel.discriminators?.Activitylogin).toBeDefined();
-      expect(ActivityModel.discriminators?.Activitypost_create).toBeDefined();
+      expect(ActivityModel.discriminators?.Activity_login).toBeDefined();
+      expect(ActivityModel.discriminators?.Activity_post_create).toBeDefined();
     });
 
     test('2. Manual Discriminators', () => {

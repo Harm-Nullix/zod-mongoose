@@ -1161,6 +1161,13 @@ function extractMongooseDef(schema, visited = new Map(), isField = false, noWrap
     return mongooseProp;
 }
 
+function modelNameFromCollection(collection) {
+    const singular = collection
+        .replace(/ies$/i, 'y')
+        .replace(/(ses|xes|zes|ches|shes)$/i, (suffix) => suffix.slice(0, -2))
+        .replace(/s$/i, '');
+    return singular.slice(0, 1).toUpperCase() + singular.slice(1);
+}
 /**
  * Converts a Zod schema to a Mongoose Schema instance.
  */
@@ -1171,7 +1178,7 @@ function toMongooseSchema(schema, options) {
         schema.meta?.() ||
         unwrapped.meta?.() ||
         {};
-    const { plugins, discriminatorModelPrefix, ...schemaOptions } = options || {};
+    const { plugins, modelName, ...schemaOptions } = options || {};
     const mergedOptions = {
         // Also merge other schema options from meta if they exist
         ...(meta.collection ? { collection: meta.collection } : {}),
@@ -1196,10 +1203,11 @@ function toMongooseSchema(schema, options) {
     }
     let mongooseSchema;
     if (definition && typeof definition === 'object' && definition.__isDiscriminatorUnion) {
-        if (!discriminatorModelPrefix) {
+        const baseModelName = modelName || (schemaOptions.collection && modelNameFromCollection(schemaOptions.collection));
+        if (!baseModelName) {
             throw new Error('toMongooseSchema() found a top-level discriminated union. ' +
-                'Set `discriminatorModelPrefix` to give its discriminator models unique names, ' +
-                "for example `{ discriminatorModelPrefix: 'BudgetPlan' }`.");
+                'Provide `modelName` or `collection` so discriminator model names can be made unique, ' +
+                "for example `{ modelName: 'Activity' }`.");
         }
         const { discriminatorKey, discriminators, baseDef, validate } = definition;
         mongooseSchema = new mongoose.Schema(baseDef, {
@@ -1213,7 +1221,7 @@ function toMongooseSchema(schema, options) {
             mongooseSchema.path(discriminatorKey).validate(validate);
         }
         for (const [key, dDef] of Object.entries(discriminators)) {
-            const discriminatorModelName = `${discriminatorModelPrefix}${key}`;
+            const discriminatorModelName = `${baseModelName}_${key}`;
             if (mongooseSchema.discriminators && mongooseSchema.discriminators[discriminatorModelName]) {
                 continue;
             }

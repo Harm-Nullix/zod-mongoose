@@ -12,6 +12,14 @@ export {extractMongooseDef} from './extract-mongoose-def.js';
 export type {ToMongooseType} from './extract-mongoose-def.js';
 export type {ToMongooseSchemaOptions} from './registry.js';
 
+function modelNameFromCollection(collection: string): string {
+  const singular = collection
+    .replace(/ies$/i, 'y')
+    .replace(/(ses|xes|zes|ches|shes)$/i, (suffix) => suffix.slice(0, -2))
+    .replace(/s$/i, '');
+  return singular.slice(0, 1).toUpperCase() + singular.slice(1);
+}
+
 /**
  * Converts a Zod schema to a Mongoose Schema instance.
  */
@@ -27,7 +35,7 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
     (unwrapped as any).meta?.() ||
     {};
 
-  const {plugins, discriminatorModelPrefix, ...schemaOptions} = options || {};
+  const {plugins, modelName, ...schemaOptions} = options || {};
 
   const mergedOptions: SchemaOptions = {
     // Also merge other schema options from meta if they exist
@@ -60,11 +68,13 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
   let mongooseSchema: mongoose.Schema;
 
   if (definition && typeof definition === 'object' && definition.__isDiscriminatorUnion) {
-    if (!discriminatorModelPrefix) {
+    const baseModelName =
+      modelName || (schemaOptions.collection && modelNameFromCollection(schemaOptions.collection));
+    if (!baseModelName) {
       throw new Error(
         'toMongooseSchema() found a top-level discriminated union. ' +
-          'Set `discriminatorModelPrefix` to give its discriminator models unique names, ' +
-          "for example `{ discriminatorModelPrefix: 'BudgetPlan' }`.",
+          'Provide `modelName` or `collection` so discriminator model names can be made unique, ' +
+          "for example `{ modelName: 'Activity' }`.",
       );
     }
 
@@ -82,7 +92,7 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
     }
 
     for (const [key, dDef] of Object.entries(discriminators)) {
-      const discriminatorModelName = `${discriminatorModelPrefix}${key}`;
+      const discriminatorModelName = `${baseModelName}_${key}`;
       if (mongooseSchema.discriminators && mongooseSchema.discriminators[discriminatorModelName]) {
         continue;
       }
