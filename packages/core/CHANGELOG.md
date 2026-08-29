@@ -1,3 +1,9 @@
+## 3.0.0
+
+### Major Changes
+
+- 8c8db79: Replace `discriminatorModelPrefix` with `modelName` for Mongoose discriminators; update docs, code, and tests accordingly.
+
 ## 2.6.0
 
 ### Minor Changes

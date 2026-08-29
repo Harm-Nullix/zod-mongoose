@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 3.0.0
+
+### Major Changes
+
+- 8c8db79: Replace `discriminatorModelPrefix` with `modelName` for Mongoose discriminators; update docs, code, and tests accordingly.
+
+### Patch Changes
+
+- Updated dependencies [8c8db79]
+  - @nullix/zod-mongoose@3.0.0
+
 ## 2.6.0
 
 ### Minor Changes
