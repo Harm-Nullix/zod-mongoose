@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 3.1.1
+
+### Patch Changes
+
+- 5dab917: revert some depcreation and export spec for nuxt
+- Updated dependencies [5dab917]
+  - @nullix/zod-mongoose@3.1.1
+
 ## 3.1.0
 
 ### Minor Changes

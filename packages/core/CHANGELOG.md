@@ -1,3 +1,9 @@
+## 3.1.1
+
+### Patch Changes
+
+- 5dab917: revert some depcreation and export spec for nuxt
+
 ## 3.1.0
 
 ### Minor Changes
