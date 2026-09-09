@@ -53,9 +53,9 @@ See the [full documentation](https://zodmongoose.com) for detailed usage example
 | `.date()` | `type: Date` | `z.string()` |
 | `.time()` | `type: String` | `z.string()` |
 
-### Zod v4 & Mongoose 8 Support
+### Zod v4 & Mongoose 8 & 9+ Support
 
-This package is now optimized for **Zod v4** and **Mongoose 8**.
+This package is now optimized for **Zod v4** and **Mongoose 8 & 9+**.
 
 Key features:
 - **Zod v4 registry**: Securely store Mongoose-specific metadata alongside Zod schemas using native Zod v4 registry.
@@ -575,9 +575,10 @@ The following hook points are available:
 
 ---
 
-## Deprecated
+## Deprecated inspirations
 
-The following features from older versions of `mongoose-zod` (Mongoose 7 / Zod 3) are no longer supported or have changed:
+This project was once inspired by https://github.com/Harm-Nullix/mongoose-zod.  
+Later on, the whole core got replaced, but if you are migrating from mongoose-zod here is what you need to know about features that are no longer supported or have changed:
 
 - **`mongooseZodCustomType()`**: This was previously used to directly define a Mongoose type on a Zod schema. In the new version, use `withMongoose(z.any(), { type: mongoose.Schema.Types.YourType })` or specialized helpers like `zObjectId()` and `zBuffer()`.
 - **`toZodMongooseSchema()`**: Previously, this returned a `ZodMongoose` wrapper used to generate the Mongoose schema. This function has been replaced by `toMongooseSchema()` which returns a full `mongoose.Schema` instance, or `extractMongooseDef()` which returns the raw Mongoose schema definition (POJO).
