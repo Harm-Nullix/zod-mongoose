@@ -58,20 +58,6 @@
     "./frontend": {
       "types": "./dist/index.frontend.d.ts",
       "import": "./dist/index.frontend.js"
-    },
-    "./nuxt": {
-      "browser": {
-        "types": "./dist/index.nuxt.frontend.d.ts",
-        "import": "./dist/index.nuxt.frontend.js"
-      },
-      "node": {
-        "types": "./dist/index.nuxt.d.ts",
-        "import": "./dist/index.nuxt.js"
-      },
-      "default": {
-        "types": "./dist/index.nuxt.d.ts",
-        "import": "./dist/index.nuxt.js"
-      }
     }
   },
   "main": "dist/index.cjs",

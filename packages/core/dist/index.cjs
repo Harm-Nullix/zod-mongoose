@@ -350,13 +350,11 @@ let mongooseInstance = null;
 let isFrontend;
 /**
  * @deprecated Conditional exports select the appropriate implementation automatically.
- * Import from `@nullix/zod-mongoose/nuxt` in Nuxt applications instead.
  */
 const setFrontendMode = (enabled) => {
     // eslint-disable-next-line no-console
     console.warn('[zod-mongoose] setFrontendMode() is deprecated and will be removed in v4. ' +
-        'Conditional exports select the appropriate implementation automatically. ' +
-        'Use @nullix/zod-mongoose/nuxt for Nuxt applications.');
+        'Conditional exports select the appropriate implementation automatically.');
     isFrontend = enabled;
 };
 const getFrontendMode = () => {

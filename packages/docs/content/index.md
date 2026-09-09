@@ -143,7 +143,7 @@ Powerful features for developers
   Nuxt 4 Ready
 
   #description
-  Import from `@nullix/zod-mongoose/nuxt` for Nuxt 4 and Nitro schema helpers.
+  Use core schema helpers in Nuxt 4 and Nitro with automatic client/server exports.
   :::
 :::
 

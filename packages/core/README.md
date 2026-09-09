@@ -66,7 +66,7 @@ Key features:
 - **Composite IDs**: Full support for object-based `_id` fields via `{ includeId: true }` metadata.
 - **Isomorphic Support**: The package treats `mongoose` as an optional peer dependency. Core Zod schema definition and metadata helpers (`withMongoose`, `zObjectId`, etc.) are safe to use in the browser without installing `mongoose`. Specialized types like `ObjectId` and `Buffer` automatically fall back to browser-compatible representations (strings and Uint8Arrays) while preserving Mongoose metadata for the backend.
 - **Automatic Browser Detection**: Utilizing `package.json` exports, the library automatically serves a frontend-optimized bundle when imported in browser environments, eliminating the need for manual configuration.
-- **Nuxt 4 Ready**: Import from `@nullix/zod-mongoose/nuxt` for Nuxt and Nitro, including browser-safe client helpers.
+- **Nuxt 4 Ready**: Use the core helpers in Nuxt and Nitro; conditional exports select the browser-safe client implementation automatically.
 - **Hookable**: Extensible conversion process using `unjs/hookable`. Developers can hook into 15+ points (e.g., `schema:object:before`, `schema:union:before`).
 - **Populated Helper**: `PopulatedSchema<T>` utility for perfect TypeScript inference of populated documents.
 - **Mongoose Inference**: `InferDocument<T>` includes the generated `_id`; `InferInput<T>` describes incoming Zod data.
@@ -499,7 +499,7 @@ The library automatically detects the environment using `package.json` condition
 
 #### Legacy Manual Configuration
 
-`setFrontendMode()` remains available in v3.1 but is deprecated and logs a warning when called. Conditional exports now select the correct implementation automatically. Nuxt applications should import from `@nullix/zod-mongoose/nuxt`.
+`setFrontendMode()` remains available in v3.1 but is deprecated and logs a warning when called. Conditional exports now select the correct implementation automatically.
 
 ```typescript
 import { setFrontendMode } from '@nullix/zod-mongoose';
@@ -508,23 +508,7 @@ import { setFrontendMode } from '@nullix/zod-mongoose';
 setFrontendMode(true);
 ```
 
-> **Migration:** Remove this call. In Nuxt, move shared schema imports to `@nullix/zod-mongoose/nuxt`.
-
-### Nuxt and Nitro
-
-In Nuxt, use the dedicated entry point in shared schema modules. Nuxt resolves its browser-safe implementation for client code and its server implementation for Nitro automatically.
-
-```typescript
-import { z } from 'zod/v4';
-import { zObjectId } from '@nullix/zod-mongoose/nuxt';
-
-export const UserSchema = z.object({
-  _id: zObjectId(),
-  name: z.string(),
-});
-```
-
-Imports from `@nullix/zod-mongoose` continue to work in v3.1, but are deprecated for Nuxt code and will be removed in v4.
+> **Migration:** Remove this call. In Nuxt, continue importing shared schema helpers from `@nullix/zod-mongoose`; its conditional exports select the correct bundle.
 
 ### `genTimestampsSchema(createdAtField?, updatedAtField?)`
 Returns a plain object (Zod shape) with timestamp fields. This allows for easy spreading into `z.object()`.

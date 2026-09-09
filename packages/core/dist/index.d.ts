@@ -120,7 +120,6 @@ declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: M
 
 /**
  * @deprecated Conditional exports select the appropriate implementation automatically.
- * Import from `@nullix/zod-mongoose/nuxt` in Nuxt applications instead.
  */
 declare const setFrontendMode: (enabled: boolean) => void;
 declare const getFrontendMode: () => boolean;
