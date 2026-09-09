@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 3.1.0
+
+### Minor Changes
+
+- c32aa25: Add a Nuxt conditional-export entry point and `InferDocument`/`InferInput` type aliases. Deprecate `setFrontendMode()` and legacy inference aliases.
+
+### Patch Changes
+
+- Updated dependencies [c32aa25]
+  - @nullix/zod-mongoose@3.1.0
+
 ## 3.0.0
 
 ### Major Changes
