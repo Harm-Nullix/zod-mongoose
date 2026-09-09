@@ -199,7 +199,7 @@
 
 - Renamed package to `@nullix/zod-mongoose`.
 - Migrated to `Harm-Nullix/zod-mongoose` repository.
-- Full support for Zod v4 and Mongoose 8.
+- Full support for Zod v4 and Mongoose 8+.
 - Added Hookable system for extensible conversion.
 - Added `PopulatedSchema` utility type.
 - Simplified `_id` handling.

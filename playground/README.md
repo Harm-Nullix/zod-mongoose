@@ -1,12 +1,12 @@
 # @nullix/zod-mongoose Playground
 
-This is a playground for testing and demonstrating `@nullix/zod-mongoose` with **Nuxt 4**, **Zod v4**, and **Mongoose 8**.
+This is a playground for testing and demonstrating `@nullix/zod-mongoose` with **Nuxt 4**, **Zod v4**, and **Mongoose 9**.
 
 ## Features
 
 - **Nuxt 4**: Modern full-stack Vue framework.
 - **Nuxt UI 4**: Beautiful and accessible UI components with built-in Zod validation.
-- **Mongoose 8**: MongoDB object modeling.
+- **Mongoose 9**: MongoDB object modeling.
 - **In-memory MongoDB**: Automatically starts a temporary MongoDB instance for development.
 - **Shared Schemas**: Zod schemas defined in `shared/` are used by both the frontend and backend.
 

@@ -12,6 +12,8 @@ Seamlessly integrate [Zod](https://github.com/colinhacks/zod) with [Mongoose](ht
 
 [Getting Started](https://zodmongoose.com/getting-started) | [API Reference](https://zodmongoose.com/api) | [Online Playground](https://zodmongoose.com/playground)
 
+Roadmap: [Available in markdown](https://github.com/Harm-Nullix/zod-mongoose/blob/main/ROADMAP.md)()
+
 ---
 
 ## Why zod-mongoose?
