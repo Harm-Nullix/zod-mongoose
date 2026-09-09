@@ -2,11 +2,16 @@ let mongooseInstance: any = null;
 let isFrontend: boolean | undefined;
 
 /**
- * Enable or disable frontend mode.
- * In frontend mode, specialized types like ObjectId and Buffer fall back to
- * simpler representations (strings/arrays) and do not depend on Mongoose.
+ * @deprecated Conditional exports select the appropriate implementation automatically.
+ * Import from `@nullix/zod-mongoose/nuxt` in Nuxt applications instead.
  */
 export const setFrontendMode = (enabled: boolean) => {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[zod-mongoose] setFrontendMode() is deprecated and will be removed in v4. ' +
+      'Conditional exports select the appropriate implementation automatically. ' +
+      'Use @nullix/zod-mongoose/nuxt for Nuxt applications.',
+  );
   isFrontend = enabled;
 };
 

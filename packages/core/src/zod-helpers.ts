@@ -162,8 +162,19 @@ export function unwrapZodSchema(
   return {schema, features};
 }
 
+/** @deprecated Use InferInput<T> instead. This alias will be removed in v4. */
 export type InputMongoose<T> = zod.input<T>;
+
+/** @deprecated Use InferDocument<T> instead. This alias will be removed in v4. */
 export type OutputMongoose<T> = T extends {_zod: {output: any}}
   ? PrettifyType<Omit<zod.output<T>, '_id'> & {_id: mongoose.Types.ObjectId}>
   : unknown;
+
+/** @deprecated Use InferDocument<T> instead. This alias will be removed in v4. */
 export type InferMongoose<T> = OutputMongoose<T>;
+
+/** The persisted Mongoose document represented by a Zod schema. */
+export type InferDocument<T> = OutputMongoose<T>;
+
+/** The raw input accepted by a Zod schema, before Mongoose adds document fields. */
+export type InferInput<T> = InputMongoose<T>;

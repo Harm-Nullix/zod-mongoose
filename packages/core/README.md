@@ -66,10 +66,10 @@ Key features:
 - **Composite IDs**: Full support for object-based `_id` fields via `{ includeId: true }` metadata.
 - **Isomorphic Support**: The package treats `mongoose` as an optional peer dependency. Core Zod schema definition and metadata helpers (`withMongoose`, `zObjectId`, etc.) are safe to use in the browser without installing `mongoose`. Specialized types like `ObjectId` and `Buffer` automatically fall back to browser-compatible representations (strings and Uint8Arrays) while preserving Mongoose metadata for the backend.
 - **Automatic Browser Detection**: Utilizing `package.json` exports, the library automatically serves a frontend-optimized bundle when imported in browser environments, eliminating the need for manual configuration.
-- **Nuxt 4 Ready**: Fully compatible with Nuxt 4 and Nitro, supporting best practices like `readValidatedBody` with Zod schemas.
+- **Nuxt 4 Ready**: Import from `@nullix/zod-mongoose/nuxt` for Nuxt and Nitro, including browser-safe client helpers.
 - **Hookable**: Extensible conversion process using `unjs/hookable`. Developers can hook into 15+ points (e.g., `schema:object:before`, `schema:union:before`).
 - **Populated Helper**: `PopulatedSchema<T>` utility for perfect TypeScript inference of populated documents.
-- **Mongoose Inference**: `mz.infer<T>` (or `InferMongoose<T>`) for automatic inclusion of `_id: ObjectId` in inferred types.
+- **Mongoose Inference**: `InferDocument<T>` includes the generated `_id`; `InferInput<T>` describes incoming Zod data.
 - **Strict Model**: `toStrictModel<T>` for advanced, fluent type-safe population (see [Strict Model documentation](./STRICT_MODEL.md)).
 
 ### Type Conversion Table
@@ -425,30 +425,28 @@ const LogSchema = withMongoose(
 );
 ```
 
-### `z.infer<T>` / `mz.infer<T>` / `InferMongoose<T>`
+### `InferDocument<T>` / `InferInput<T>`
 
-`@nullix/zod-mongoose` provides a specialized `z` object (and `mz` alias) that overrides the standard `z.infer` to automatically include the `_id: mongoose.Types.ObjectId` field in the inferred type. This ensures that your TypeScript types accurately reflect the structure of a Mongoose document.
+Use `InferDocument` for values read from Mongoose and `InferInput` for data submitted to Zod. `InferDocument` adds Mongoose's generated `_id`; `InferInput` is equivalent to `z.input<T>`, so it preserves coercion and preprocessing input types.
 
 ```typescript
-import { z } from '@nullix/zod-mongoose';
+import { z } from 'zod/v4';
+import type { InferDocument, InferInput } from '@nullix/zod-mongoose';
 
 const UserSchema = z.object({
   name: z.string(),
 });
 
-// User type will automatically include { _id: mongoose.Types.ObjectId }
-type User = z.infer<typeof UserSchema>;
+type UserDocument = InferDocument<typeof UserSchema>;
+type CreateUserInput = InferInput<typeof UserSchema>;
 
-const user: User = {
+const user: UserDocument = {
   _id: new mongoose.Types.ObjectId(),
   name: 'John Doe',
 };
 ```
 
-You can also use the standalone utility types:
-- `InferMongoose<T>`: Alias for `OutputMongoose<T>`.
-- `OutputMongoose<T>`: Inferred output type with `_id: ObjectId`.
-- `InputMongoose<T>`: Inferred input type.
+`InferMongoose`, `OutputMongoose`, and `InputMongoose` remain available in v3.1 for backwards compatibility. Migrate to `InferDocument` and `InferInput`; the legacy aliases will be removed in v4.
 
 ### `PopulatedSchema<T, K>`
 TypeScript utility type to extract the populated object type from a `zRef` union within a larger type. This is useful for typing Mongoose results after calling `.populate()`.
@@ -499,9 +497,9 @@ The library automatically detects the environment using `package.json` condition
 - Maps `zBuffer()` to `Uint8Array`.
 - Preserves all Mongoose metadata so the same schema can be used to generate a Mongoose schema on the backend.
 
-#### Manual Configuration (Optional)
+#### Legacy Manual Configuration
 
-If you are in an environment where automatic detection fails, or you want to force a specific mode, you can still use the `setFrontendMode` helper.
+`setFrontendMode()` remains available in v3.1 but is deprecated and logs a warning when called. Conditional exports now select the correct implementation automatically. Nuxt applications should import from `@nullix/zod-mongoose/nuxt`.
 
 ```typescript
 import { setFrontendMode } from '@nullix/zod-mongoose';
@@ -510,7 +508,23 @@ import { setFrontendMode } from '@nullix/zod-mongoose';
 setFrontendMode(true);
 ```
 
-> **Note:** In most modern projects (Vite, Nuxt 3+, Webpack 5+), this is handled automatically and you don't need to call `setFrontendMode`.
+> **Migration:** Remove this call. In Nuxt, move shared schema imports to `@nullix/zod-mongoose/nuxt`.
+
+### Nuxt and Nitro
+
+In Nuxt, use the dedicated entry point in shared schema modules. Nuxt resolves its browser-safe implementation for client code and its server implementation for Nitro automatically.
+
+```typescript
+import { z } from 'zod/v4';
+import { zObjectId } from '@nullix/zod-mongoose/nuxt';
+
+export const UserSchema = z.object({
+  _id: zObjectId(),
+  name: z.string(),
+});
+```
+
+Imports from `@nullix/zod-mongoose` continue to work in v3.1, but are deprecated for Nuxt code and will be removed in v4.
 
 ### `genTimestampsSchema(createdAtField?, updatedAtField?)`
 Returns a plain object (Zod shape) with timestamp fields. This allows for easy spreading into `z.object()`.

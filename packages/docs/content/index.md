@@ -143,7 +143,7 @@ Powerful features for developers
   Nuxt 4 Ready
 
   #description
-  Seamless integration with Nuxt 4 and Nitro for validating request bodies using Zod schemas.
+  Import from `@nullix/zod-mongoose/nuxt` for Nuxt 4 and Nitro schema helpers.
   :::
 :::
 

@@ -56,6 +56,42 @@ export default [
     external,
   },
 
+  // NUXT TARGETS
+  {
+    input: 'src/index.nuxt.ts',
+    output: {
+      file: 'dist/index.nuxt.js',
+      format: 'esm',
+      sourcemap: true,
+    },
+    plugins: [
+      resolve(),
+      commonjs(),
+      typescript({
+        tsconfig: './tsconfig.json',
+        declaration: false,
+      }),
+    ],
+    external,
+  },
+  {
+    input: 'src/index.nuxt.frontend.ts',
+    output: {
+      file: 'dist/index.nuxt.frontend.js',
+      format: 'esm',
+      sourcemap: true,
+    },
+    plugins: [
+      resolve(),
+      commonjs(),
+      typescript({
+        tsconfig: './tsconfig.json',
+        declaration: false,
+      }),
+    ],
+    external,
+  },
+
   // TYPES GENERATION
   // Generates types for both backend (index.d.ts) and frontend (index.frontend.d.ts)
   {
@@ -71,6 +107,24 @@ export default [
     input: 'src/index.frontend.ts',
     output: {
       file: 'dist/index.frontend.d.ts',
+      format: 'esm',
+    },
+    plugins: [dts()],
+    external,
+  },
+  {
+    input: 'src/index.nuxt.ts',
+    output: {
+      file: 'dist/index.nuxt.d.ts',
+      format: 'esm',
+    },
+    plugins: [dts()],
+    external,
+  },
+  {
+    input: 'src/index.nuxt.frontend.ts',
+    output: {
+      file: 'dist/index.nuxt.frontend.d.ts',
       format: 'esm',
     },
     plugins: [dts()],

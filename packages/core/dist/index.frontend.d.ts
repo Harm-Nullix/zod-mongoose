@@ -119,9 +119,8 @@ declare const zBuffer: (options?: MongooseMeta) => z.ZodCustom<Uint8Array<ArrayB
 declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => z.ZodType<(string | mongoose.Types.ObjectId) & Partial<ZRefBrand<T>>, any> & ZRefBrand<T>;
 
 /**
- * Enable or disable frontend mode.
- * In frontend mode, specialized types like ObjectId and Buffer fall back to
- * simpler representations (strings/arrays) and do not depend on Mongoose.
+ * @deprecated Conditional exports select the appropriate implementation automatically.
+ * Import from `@nullix/zod-mongoose/nuxt` in Nuxt applications instead.
  */
 declare const setFrontendMode: (enabled: boolean) => void;
 declare const getFrontendMode: () => boolean;
@@ -320,7 +319,9 @@ declare function unwrapZodSchema(schema: z.ZodTypeAny, features?: SchemaFeatures
     schema: z.ZodTypeAny;
     features: SchemaFeatures;
 };
+/** @deprecated Use InferInput<T> instead. This alias will be removed in v4. */
 type InputMongoose<T> = z.input<T>;
+/** @deprecated Use InferDocument<T> instead. This alias will be removed in v4. */
 type OutputMongoose<T> = T extends {
     _zod: {
         output: any;
@@ -328,7 +329,12 @@ type OutputMongoose<T> = T extends {
 } ? PrettifyType<Omit<z.output<T>, '_id'> & {
     _id: mongoose.Types.ObjectId;
 }> : unknown;
+/** @deprecated Use InferDocument<T> instead. This alias will be removed in v4. */
 type InferMongoose<T> = OutputMongoose<T>;
+/** The persisted Mongoose document represented by a Zod schema. */
+type InferDocument<T> = OutputMongoose<T>;
+/** The raw input accepted by a Zod schema, before Mongoose adds document fields. */
+type InferInput<T> = InputMongoose<T>;
 
 type PrettifyType<T> = {
     [K in keyof T]: T[K];
@@ -437,4 +443,4 @@ type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOverrides<D
 declare function toStrictModel<UserInferredType>(name: string, mongooseSchema: mongoose.Schema): StrictModel<any, UserInferredType>;
 
 export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zRef };
-export type { ExtractPopulatePaths, GetTargetSchema, HydrateMultiplePaths, HydratePopulatedPath, InferMongoose, InputMongoose, MongooseMeta, MongooseZodHooks, OutputMongoose, PopulateObject, PopulateOptions, PopulatedSchema, SchemaFeatures, StrictDocument, StrictModel, StrictQuery, ToMongooseSchemaOptions, ToMongooseType, ZRefBrand };
+export type { ExtractPopulatePaths, GetTargetSchema, HydrateMultiplePaths, HydratePopulatedPath, InferDocument, InferInput, InferMongoose, InputMongoose, MongooseMeta, MongooseZodHooks, OutputMongoose, PopulateObject, PopulateOptions, PopulatedSchema, SchemaFeatures, StrictDocument, StrictModel, StrictQuery, ToMongooseSchemaOptions, ToMongooseType, ZRefBrand };

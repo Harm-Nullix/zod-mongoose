@@ -234,7 +234,7 @@ function getMongooseMeta(schema) {
  * Recursively unwrap Zod schemas (Optional, Nullable, Default, Effects, Pipelines)
  * using Zod's public API and internal _def.type identifiers.
  */
-function unwrapZodSchema(schema,
+function unwrapZodSchema(schema, 
 // eslint-disable-next-line unicorn/no-object-as-default-parameter
 features = { required: true }, visited = new Set()) {
     if (!schema)
@@ -347,11 +347,14 @@ features = { required: true }, visited = new Set()) {
 let mongooseInstance = null;
 let isFrontend;
 /**
- * Enable or disable frontend mode.
- * In frontend mode, specialized types like ObjectId and Buffer fall back to
- * simpler representations (strings/arrays) and do not depend on Mongoose.
+ * @deprecated Conditional exports select the appropriate implementation automatically.
+ * Import from `@nullix/zod-mongoose/nuxt` in Nuxt applications instead.
  */
 const setFrontendMode = (enabled) => {
+    // eslint-disable-next-line no-console
+    console.warn('[zod-mongoose] setFrontendMode() is deprecated and will be removed in v4. ' +
+        'Conditional exports select the appropriate implementation automatically. ' +
+        'Use @nullix/zod-mongoose/nuxt for Nuxt applications.');
     isFrontend = enabled;
 };
 const getFrontendMode = () => {

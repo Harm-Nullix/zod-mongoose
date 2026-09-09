@@ -1,7 +1,12 @@
 import {describe, expect, test} from 'bun:test';
 import {z} from 'zod/v4';
 import mongoose from 'mongoose';
-import {OutputMongoose, InferMongoose} from '../src/zod-helpers.js';
+import {
+  OutputMongoose,
+  InferDocument,
+  InferInput,
+  InferMongoose,
+} from '../src/zod-helpers.js';
 
 describe('Mongoose Inference', () => {
   test('should include _id as ObjectId even if not in schema', () => {
@@ -69,5 +74,25 @@ describe('Mongoose Inference', () => {
     const a: Out = {name: 'a', _id: new mongoose.Types.ObjectId()};
     const b: Inf = a;
     expect(b).toBe(a);
+  });
+
+  test('InferDocument includes Mongoose-generated _id while InferInput preserves Zod input', () => {
+    const schema = z.object({
+      name: z.string(),
+      count: z.coerce.number(),
+    });
+
+    type Document = InferDocument<typeof schema>;
+    type Input = InferInput<typeof schema>;
+
+    const document: Document = {
+      _id: new mongoose.Types.ObjectId(),
+      name: 'test',
+      count: 1,
+    };
+    const input: Input = {name: 'test', count: '1'};
+
+    expect(document._id).toBeInstanceOf(mongoose.Types.ObjectId);
+    expect(input).toEqual({name: 'test', count: '1'});
   });
 });
