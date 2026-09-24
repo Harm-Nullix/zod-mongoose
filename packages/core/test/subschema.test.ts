@@ -59,12 +59,12 @@ describe('Subschema support', () => {
     expect((mongooseSchema as any).obj.child.type.obj.name).toBeDefined();
   });
 
-  test('should support schema options when passing an object to schema', () => {
+  test('should apply schema options to the nested subschema', () => {
     const nested = withMongoose(
       z.object({
         name: z.string(),
       }),
-      {schema: {_id: true, timestamps: true}},
+      {schema: {_id: false, id: false, timestamps: true}},
     );
 
     const schema = z.object({
@@ -75,8 +75,10 @@ describe('Subschema support', () => {
 
     const subSchema = (mongooseSchema as any).obj.child.type;
     expect(subSchema).toBeInstanceOf(mongoose.Schema);
-    expect(subSchema.options._id).toBe(true);
+    expect(subSchema.options._id).toBe(false);
+    expect(subSchema.options.id).toBe(false);
     expect(subSchema.options.timestamps).toBe(true);
+    expect(subSchema.path('_id')).toBeUndefined();
   });
 
   test('should support plugins in subschemas', () => {

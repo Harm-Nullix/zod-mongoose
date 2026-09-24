@@ -1,124 +1,37 @@
-# Core Principles for v4.0
+# Roadmap
 
-* Micro-kernel First: Anything that does not generate, type, or validate a Mongoose schema does not belong in the core package.
-* Zero Overhead: The conversion engine stays as close as possible to native Mongoose Schema() performance.
-* DX Over Feature Count: 10 perfectly executed MongoDB bridges over 100 superficial utilities.
+This roadmap reflects the code on `main`. Features are marked as shipped only when they are available in a released version; proposed work is deliberately kept separate from the public API.
 
-| **Version** | **Change Type**                  | **Actions & Features**                      | **Reason & SemVer Rules**                                                                            |
-|-------------|----------------------------------|---------------------------------------------|------------------------------------------------------------------------------------------------------|
-| v3.1  💚    | Minor (Deprecations & Additions) | Introduce @nullix/zod-mongoose/nuxt subpath | Existing code remains 100% functional. Developers get clear deprecation notices and time to migrate. |
-|             |                                  | Deprecate core Nuxt import                  |                                                                                                      |
-|             |                                  | Deprecate setFrontendMode() (log warning)   |                                                                                                      |
-|             |                                  | Add InferDocument<T> and InferInput<T>      |                                                                                                      |
-| v3.2  🏗️    | Minor (New Features)             | Add .mongooseVirtual() for virtual fields   | API expansion. Fully backward-compatible.                                                            |
-|             |                                  | Add zPopulated<T, Field> type helper        |                                                                                                      |
-| v3.3  🔴    | Minor (New Features)             | Add runZodValidate: true option             | New functionality added without altering existing behavior.                                          |
-|             |                                  | Add zFilter<T>() type-safe query helper     |                                                                                                      |
-| v4.0  🔴    | Major (Breaking Changes)         | Remove setFrontendMode() permanently        | Major cleanup. Users consciously upgrade to v4 expecting migration steps.                            |
-|             |                                  | Remove Nuxt exports from the core bundle    |                                                                                                      |
-|             |                                  | Remove legacy/duplicate type utilities      |                                                                                                      |
-|             |                                  | Launch npx zod-mongoose check CLI tool      |                                                                                                      |
+## Current release: v3.1.0
 
+v3.1.0 introduced `InferDocument<T>` and `InferInput<T>`. It also deprecated `setFrontendMode()` and the legacy `InferMongoose<T>`, `OutputMongoose<T>`, and `InputMongoose<T>` aliases. Conditional exports continue to select the browser-safe implementation automatically.
 
-Here is a detailed breakdown of each roadmap item, organized into clear sections.
+The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of the current package exports, so it is not a v3.1 feature or a v4 removal target.
 
----
+## Already available
 
-## 1. Frontend Detection & Automatic Exports
+- **Full Zod lifecycle validation:** `toMongooseSchema()` runs `schema.parse()` in a Mongoose `post('validate')` hook by default. This covers Zod features that cannot be expressed as Mongoose schema options, including refinements and transforms. Set `validateBeforeSave: false` in conversion options or `withMongoose()` metadata to opt out. This has been available since v2.5.0; there is no separate `runZodValidate` option planned.
+- **References and populated results:** `zRef()` defines an ObjectId reference and keeps the target Zod schema as metadata. `PopulatedSchema<T, K>` types populated results, `populateZodSchema()` validates populated data at runtime, and `toStrictModel()` provides fluent type-safe population. `zPopulated` was replaced in v2.3.0 and should not be reintroduced.
+- **Mongoose-specific metadata:** `withMongoose(schema, metadata)` stores field and schema options in the Zod registry without extending Zod prototypes. It supports normal Mongoose options such as `index`, `unique`, `ref`, `timestamps`, `collection`, and nested-schema configuration.
+- **Specialized MongoDB bridges:** `zObjectId()`, `zBuffer()`, and `zRef()` are available in both server and browser-safe entry points.
+- **Virtuals and extensions:** Mongoose plugins can be passed to `toMongooseSchema()`. The `schema:created` hook receives the generated `mongoose.Schema`, where consumers can define virtuals and other Mongoose-specific behavior. There is no `.mongooseVirtual()` API or `virtuals`/`indexes` conversion option today.
 
-### What Changes?
+## v3.2 — proposed
 
-In version 3.0, the package relies on a manual function called `setFrontendMode()` to inform the conversion engine whether it is running in a browser or Node.js environment. Starting in v3.1, this function will be marked as **deprecated**, triggering a console warning. In v4.0, it will be **removed entirely**.
+- **GeoJSON helpers:** Add `zPoint()` and `zPolygon()` as standalone MongoDB type bridges, including the Mongoose GeoJSON type metadata needed for conversion. Their API should use `withMongoose()`/the registry and must not patch Zod prototypes.
 
-### Why Are We Doing This?
+No version has been assigned to a type-safe query-filter helper. A future `zFilter()` proposal needs a concrete API and compatibility review before it is added to the release roadmap.
 
-Requiring manual runtime configuration leads to frustrating bugs when developers forget to toggle the flag. Modern JavaScript bundlers (such as Vite, Webpack, and Rollup) and runtime environments natively support conditional exports (`browser` and `default` conditions) in `package.json`. This allows the runtime to select the correct implementation automatically without requiring any manual setup from the developer.
+## v4.0 — planned breaking cleanup
 
----
+- Remove `setFrontendMode()`.
+- Remove the deprecated `InferMongoose<T>`, `OutputMongoose<T>`, and `InputMongoose<T>` aliases in favor of `InferDocument<T>` and `InferInput<T>`.
 
-## 2. Framework Integrations (Nuxt / Nitro)
+Other ideas, including a schema-diagnostics CLI, remain exploratory and are not committed v4.0 scope.
 
-### What Changes?
+## Principles
 
-Framework-specific integrations—such as dedicated helpers for Nuxt 4 or Nitro—will move out of the core export and into an optional subpath import: `@nullix/zod-mongoose/nuxt`. In v3.1, importing these helpers directly from the core package will be deprecated, and in v4.0, the legacy exports will be removed from the core bundle completely.
-
-### Why Are We Doing This?
-
-A primary goal for v4.0 is adhering to a **micro-kernel architecture**: keeping the package core as light, fast, and lean as possible. Developers using NestJS, Express, or Fastify should not have their installations bloated with code or type definitions specifically meant for Nuxt.
-
----
-
-## 3. Type Inference API Consolidation
-
-### What Changes?
-
-Currently, there are overlapping type utilities and generics available to infer TypeScript types from a schema. Starting in v3.1, two clear standard generics are being introduced:
-
-* `InferDocument<typeof Schema>`: Infers the final Mongoose document type (including auto-generated `_id` and timestamps).
-* `InferInput<typeof Schema>`: Infers the raw input payload (ideal for API request bodies where `_id` does not yet exist).
-
-In v4.0, all legacy or duplicate type aliases will be removed.
-
-### Why Are We Doing This?
-
-This significantly reduces cognitive overload for developers. Instead of guessing which type utility to import, they have two intuitive options that explicitly state what they do.
-
----
-
-## 4. Virtuals Bridge (`.mongooseVirtual()`)
-
-### What Changes?
-
-A new fluent schema modifier is being introduced: `.mongooseVirtual()`. This allows you to define Mongoose getters and setters for computed virtual fields (such as `fullName` generated from `firstName` and `lastName`) directly within your Zod schema definition.
-
-### Why Are We Doing This?
-
-Currently, virtual fields often have to be attached manually to the generated Mongoose schema after conversion, which breaks TypeScript type inference. With `.mongooseVirtual()`, your schema definition, Mongoose runtime behavior, and TypeScript types stay synchronized in one central location.
-
----
-
-## 5. Population Inference (`zPopulated`)
-
-### What Changes?
-
-In v3.2, we are introducing the `zPopulated<T, 'relationField'>` utility. When you retrieve a Mongoose document and execute `.populate('author')`, the `author` field transitions from an `ObjectId` (string) into a fully hydrated `User` document. This utility ensures TypeScript reflects that populated state accurately.
-
-### Why Are We Doing This?
-
-Typing populated relations has historically been one of the biggest pain points in the Mongoose and TypeScript ecosystem. Developers frequently have to resort to manual type casting (`as unknown as ...`). This utility solves that issue cleanly and type-safely.
-
----
-
-## 6. Zod Lifecycle Validation (`runZodValidate`)
-
-### What Changes?
-
-A new option is being added to the conversion function: `toMongooseSchema(Schema, { runZodValidate: true })`. When enabled, advanced Zod validation rules—such as `.refine()`, `.superRefine()`, and `.transform()`—are automatically executed during Mongoose's native `.save()` or `.validate()` lifecycle.
-
-### Why Are We Doing This?
-
-By default, `zodMongoose` maps Zod structural types to Mongoose Schema Types. However, native Mongoose lacks built-in awareness for custom Zod refinements. Enabling this option guarantees that Mongoose enforces the exact same validation logic as your Zod schemas on the frontend without forcing you to write duplicate validation code.
-
----
-
-## 7. Type-Safe Query Filters (`zFilter`)
-
-### What Changes?
-
-In v3.3, we will introduce the `zFilter<typeof Schema>()` function. This helper provides autocomplete and strict type checking when writing Mongoose queries using MongoDB operators like `$in`, `$gt`, `$ne`, or `$exists`.
-
-### Why Are We Doing This?
-
-While developers use Zod to define their schemas safely, writing `Model.find({ age: { $gt: "invalid-string" } })` often bypasses TypeScript's safety nets. `zFilter` extends the type safety defined in your Zod schema directly into your database querying layer.
-
----
-
-## 8. CLI Schema Diagnostics (`npx zod-mongoose check`)
-
-### What Changes?
-
-Alongside the v4.0 GA launch, we are releasing a standalone CLI tool executable via `npx zod-mongoose check`. This tool scans your codebase for Zod schemas and checks for potential conversion mismatches with Mongoose.
-
-### Why Are We Doing This?
-
-Certain Zod constructs (such as highly complex nested unions or specific custom transformations) cannot be translated 1-to-1 into Mongoose schema constraints. Rather than discovering these limitations at runtime or in production, the CLI diagnostic tool warns developers early during build or CI/CD pipelines.
+- Keep the core focused on generating, typing, and validating Mongoose schemas.
+- Prefer native Zod constructs when Zod already models the data shape.
+- Add helpers only for MongoDB/Mongoose concepts that Zod does not model, such as ObjectIds and GeoJSON.
+- Keep Mongoose configuration in functional metadata and hooks; do not mutate Zod prototypes.
