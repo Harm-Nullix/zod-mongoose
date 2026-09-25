@@ -1,3 +1,9 @@
+## 3.2.0
+
+### Minor Changes
+
+- 13c3cd3: Add browser-safe `zPoint()` and `zPolygon()` GeoJSON helpers with Zod validation and Mongoose subdocument metadata.
+
 ## 3.1.1
 
 ### Patch Changes
