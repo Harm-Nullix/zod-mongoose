@@ -5,6 +5,7 @@ import {getMongoose} from './config.js';
 import {ZRefBrand} from './mongoose-helpers.shared.js';
 
 export * from './mongoose-helpers.shared.js';
+export * from './geojson-helpers.js';
 const preprocessFn = (val: unknown) => (val === null ? undefined : val);
 export const zObjectId = (options?: MongooseMeta) => {
   const objectIdSchema = z.custom<mongoose.Types.ObjectId>(

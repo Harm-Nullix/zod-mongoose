@@ -1335,6 +1335,19 @@ const genTimestampsSchema = (createdAtField = 'createdAt', updatedAtField = 'upd
 };
 const bufferMongooseGetter = (value) => value != null && value._bsontype === 'Binary' ? value.buffer : value;
 
+const position = v4.z.tuple([v4.z.number(), v4.z.number()]);
+/** A two-dimensional GeoJSON Point, with a Mongoose subdocument definition. */
+const zPoint = (options) => withMongoose(v4.z.object({
+    type: withMongoose(v4.z.literal('Point'), { type: String, enum: ['Point'], required: true }),
+    coordinates: withMongoose(position, { required: true }),
+}), { schema: { _id: false }, required: true, ...options });
+/** A two-dimensional GeoJSON Polygon. Each linear ring must be closed. */
+const zPolygon = (options) => withMongoose(v4.z.object({
+    type: withMongoose(v4.z.literal('Polygon'), { type: String, enum: ['Polygon'], required: true }),
+    coordinates: withMongoose(v4.z.array(v4.z.array(position).refine((ring) => ring.length >= 4 &&
+        ring[0]?.[0] === ring.at(-1)?.[0] && ring[0]?.[1] === ring.at(-1)?.[1], 'Polygon rings must be closed')).refine((rings) => rings.length > 0, 'Polygon must have at least one ring'), { required: true }),
+}), { schema: { _id: false }, required: true, ...options });
+
 const preprocessFn = (val) => (val === null ? undefined : val);
 const zObjectId = (options) => {
     const objectIdSchema = v4.z.custom((val) => {
@@ -1423,5 +1436,7 @@ exports.unwrapZodSchema = unwrapZodSchema;
 exports.withMongoose = withMongoose;
 exports.zBuffer = zBuffer;
 exports.zObjectId = zObjectId;
+exports.zPoint = zPoint;
+exports.zPolygon = zPolygon;
 exports.zRef = zRef;
 //# sourceMappingURL=index.cjs.map

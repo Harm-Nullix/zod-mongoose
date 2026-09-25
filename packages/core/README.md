@@ -62,7 +62,7 @@ Key features:
 - **Automatic Unwrapping**: Support for `.transform()`, `.pipe()`, `.preprocess()`, `.refine()`, `.optional()`, `.nullable()`, and `.brand()`.
 - **Unions**: Primitive Zod unions (`string`, `number`, `boolean`, `date`, `bigint`) are mapped to Mongoose `Schema.Types.Union`. Object unions are automatically merged into a single schema object where all properties are optional, providing a flexible way to handle polymorphic data. Other complex unions fallback to `Mixed`.
 - **Native BigInt**: Maps Zod `bigint` to native Mongoose `BigInt` (or `Number` as fallback). If you need Mongoose `Long` (64-bit integer), you can specify it via `withMongoose(z.bigint(), { type: 'Long' })`.
-- **Specialized Types**: Direct support for `Buffer` and `ObjectId` via `zObjectId()` and `zBuffer()` helpers (or `z.instanceof()`).
+- **Specialized Types**: Direct support for `Buffer` and `ObjectId` via `zObjectId()` and `zBuffer()` helpers.
 - **Composite IDs**: Full support for object-based `_id` fields via `{ includeId: true }` metadata.
 - **Isomorphic Support**: The package treats `mongoose` as an optional peer dependency. Core Zod schema definition and metadata helpers (`withMongoose`, `zObjectId`, etc.) are safe to use in the browser without installing `mongoose`. Specialized types like `ObjectId` and `Buffer` automatically fall back to browser-compatible representations (strings and Uint8Arrays) while preserving Mongoose metadata for the backend.
 - **Automatic Browser Detection**: Utilizing `package.json` exports, the library automatically serves a frontend-optimized bundle when imported in browser environments, eliminating the need for manual configuration.
@@ -71,6 +71,8 @@ Key features:
 - **Populated Helper**: `PopulatedSchema<T>` utility for perfect TypeScript inference of populated documents.
 - **Mongoose Inference**: `InferDocument<T>` includes the generated `_id`; `InferInput<T>` describes incoming Zod data.
 - **Strict Model**: `toStrictModel<T>` for advanced, fluent type-safe population (see [Strict Model documentation](./STRICT_MODEL.md)).
+
+**Coming in v3.2:** The repository includes `zPoint()` and `zPolygon()` helpers for GeoJSON values. They are not available in the published v3.1.1 package yet.
 
 ### Type Conversion Table
 
@@ -103,6 +105,8 @@ The following table shows how Zod types are mapped to Mongoose types by default.
 | `z.discriminatedUnion()` | `Mongoose Discriminator` | Maps to native Mongoose discriminators. Common fields are automatically moved to the base schema. |
 | `zObjectId()` | `mongoose.Schema.Types.ObjectId` | Specialized helper for ObjectIds. By default, it is omitted from the generated Mongoose schema to let Mongoose handle its auto-generation. |
 | `zBuffer()` | `mongoose.Schema.Types.Buffer` | Specialized helper for Buffers. |
+| `zPoint()` (coming in v3.2) | GeoJSON Point subdocument | Validates a 2D coordinate pair; use `{index: '2dsphere'}` for geospatial queries. |
+| `zPolygon()` (coming in v3.2) | GeoJSON Polygon subdocument | Validates closed 2D rings and maps coordinates to `[[[Number]]]`. |
 | `zRef()` | `mongoose.Schema.Types.ObjectId` | Helper for fields that can be either an `ObjectId` or a populated object. |
 | `z.instanceof(Buffer)` | `mongoose.Schema.Types.Buffer` | |
 | `z.instanceof(ObjectId)` | `mongoose.Schema.Types.ObjectId` | |

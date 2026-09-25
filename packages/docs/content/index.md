@@ -1,7 +1,7 @@
 ---
 seo:
   title: zod-mongoose
-  description: Seamlessly integrate Zod with Mongoose for full type safety.
+  description: Create Mongoose schemas from Zod and find clear guides for validation, nested IDs, and references.
 ---
 
 :::u-page-hero{class="dark:bg-gradient-to-b from-neutral-900 to-neutral-950"}
@@ -15,7 +15,7 @@ orientation: horizontal
 Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
 
 #description
-`zod-mongoose` provides a single source of truth for your data models with full TypeScript type safety. No more duplicate definitions.
+Create Mongoose schemas from Zod objects. Start with a model you can validate in memory, then use the guides when you need nested objects, references, or shared schemas.
 
 #links
   :::u-button
@@ -43,8 +43,9 @@ Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
   :::prose-pre
   ---
   code: |
-    import { z } from '@nullix/zod-mongoose';
+    import { z } from 'zod/v4';
     import { toMongooseSchema } from '@nullix/zod-mongoose';
+    import type { InferDocument } from '@nullix/zod-mongoose';
 
     const UserZodSchema = z.object({
       username: z.string().min(3),
@@ -53,14 +54,15 @@ Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
 
     const UserSchema = toMongooseSchema(UserZodSchema);
 
-    // Automatically includes { _id: ObjectId }
-    type User = z.infer<typeof UserZodSchema>;
+    // The stored document type includes Mongoose's generated _id.
+    type User = InferDocument<typeof UserZodSchema>;
   filename: example.ts
   ---
 
   ```ts [example.ts]
-  import { z } from '@nullix/zod-mongoose';
+  import { z } from 'zod/v4';
   import { toMongooseSchema } from '@nullix/zod-mongoose';
+  import type { InferDocument } from '@nullix/zod-mongoose';
 
   const UserZodSchema = z.object({
     username: z.string().min(3),
@@ -69,81 +71,87 @@ Define [Mongoose]{.text-secondary} schemas with [Zod]{.text-primary}.
 
   const UserSchema = toMongooseSchema(UserZodSchema);
 
-  // Automatically includes { _id: ObjectId }
-  type User = z.infer<typeof UserZodSchema>;
+  // The stored document type includes Mongoose's generated _id.
+  type User = InferDocument<typeof UserZodSchema>;
   ```
   :::
 :::
 
 :::u-page-section{class="dark:bg-neutral-950"}
 #title
-Powerful features for developers
+What do you need to do?
 
 #features
   :::u-page-feature
   ---
-  icon: i-lucide-shield-check
+  icon: i-lucide-play
+  to: /getting-started
   ---
   #title
-  Type Safety
+  Create a model
 
   #description
-  Enjoy full TypeScript support and prevent inconsistencies between your document interfaces and Mongoose schemas.
+  Install the packages, convert a Zod object, and validate your first Mongoose document.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-zap
+  icon: i-lucide-scan-search
+  to: /guides/validation
   ---
   #title
-  Automatic Mapping
+  Validate documents
 
   #description
-  Zod validators like `.min()`, `.max()`, and `.regex()` are directly converted to the appropriate Mongoose SchemaType options.
+  See which Zod rules run during Mongoose validation and when to parse input yourself.
   :::
 
   :::u-page-feature
   ---
   icon: i-lucide-layers
+  to: /guides/nested-object-ids
   ---
   #title
-  Native Discriminators
+  Control nested IDs
 
   #description
-  Support for `z.discriminatedUnion` is automatically translated into robust Mongoose discriminators for polymorphic data.
+  Keep or remove `_id` on embedded objects, including schemas imported from other files.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-link
+  to: /guides/references-and-population
+  ---
+  #title
+  Reference another model
+
+  #description
+  Define an ObjectId reference and validate populated or unpopulated data.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-files
+  to: /guides/reusing-object-schemas
+  ---
+  #title
+  Reuse schemas across files
+
+  #description
+  Share a Zod object while choosing different Mongoose options at each use.
   :::
 
   :::u-page-feature
   ---
   icon: i-lucide-monitor
+  to: /playground
   ---
   #title
-  Studio & Playground
+  Try the playground
 
   #description
-  Test and visualize your schema transformations in real-time with the included Studio and online playground.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-globe
-  ---
-  #title
-  Isomorphic
-
-  #description
-  Use the same schemas on both the frontend and the backend with automatic environment detection.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-box
-  ---
-  #title
-  Nuxt 4 Ready
-
-  #description
-  Use core schema helpers in Nuxt 4 and Nitro with automatic client/server exports.
+  Inspect the generated Mongoose schema before adding it to your project.
   :::
 :::
 
@@ -159,8 +167,8 @@ Powerful features for developers
       target: _blank
       variant: subtle
       icon: i-simple-icons-github
-  title: Ready to enhance your Mongoose workflow?
-  description: Join developers who choose better type safety and less duplicate code.
+  title: Ready to build a model?
+  description: Follow a small example from installation to validation, then connect to MongoDB when you need to save.
   class: dark:bg-neutral-950
   ---
 

@@ -4,6 +4,7 @@ import {ZRefBrand} from './mongoose-helpers.shared.js';
 import type mongoose from 'mongoose'; // Type-only import
 
 export * from './mongoose-helpers.shared.js';
+export * from './geojson-helpers.js';
 
 const preprocessFn = (val: unknown) => (val === null ? undefined : val);
 

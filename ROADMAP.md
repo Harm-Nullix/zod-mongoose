@@ -2,7 +2,7 @@
 
 This roadmap reflects the code on `main`. Features are marked as shipped only when they are available in a released version; proposed work is deliberately kept separate from the public API.
 
-## Current release: v3.1.0
+## Current release: v3.1.1
 
 v3.1.0 introduced `InferDocument<T>` and `InferInput<T>`. It also deprecated `setFrontendMode()` and the legacy `InferMongoose<T>`, `OutputMongoose<T>`, and `InputMongoose<T>` aliases. Conditional exports continue to select the browser-safe implementation automatically.
 
@@ -16,9 +16,11 @@ The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of t
 - **Specialized MongoDB bridges:** `zObjectId()`, `zBuffer()`, and `zRef()` are available in both server and browser-safe entry points.
 - **Virtuals and extensions:** Mongoose plugins can be passed to `toMongooseSchema()`. The `schema:created` hook receives the generated `mongoose.Schema`, where consumers can define virtuals and other Mongoose-specific behavior. There is no `.mongooseVirtual()` API or `virtuals`/`indexes` conversion option today.
 
-## v3.2 — proposed
+## v3.2 — implementation complete, pending release
 
-- **GeoJSON helpers:** Add `zPoint()` and `zPolygon()` as standalone MongoDB type bridges, including the Mongoose GeoJSON type metadata needed for conversion. Their API should use `withMongoose()`/the registry and must not patch Zod prototypes.
+- **GeoJSON helpers:** `zPoint()` and `zPolygon()` provide standalone MongoDB type bridges with Mongoose GeoJSON metadata. They use `withMongoose()`/the registry and do not patch Zod prototypes. The feature was motivated by a [request for GeoJSON types](https://github.com/git-zodyac/mongoose/issues/31). See the [helper reference](packages/docs/content/3.api/3.specialized-helpers.md#geojson-helpers) for usage.
+
+## Unscheduled
 
 No version has been assigned to a type-safe query-filter helper. A future `zFilter()` proposal needs a concrete API and compatibility review before it is added to the release roadmap.
 

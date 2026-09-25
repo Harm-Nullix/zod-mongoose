@@ -114,6 +114,17 @@ type PopulatedSchema<T, K extends string = any> = T extends z.ZodObject<infer Sh
 } : T;
 declare const bufferMongooseGetter: (value: unknown) => any;
 
+/** A two-dimensional GeoJSON Point, with a Mongoose subdocument definition. */
+declare const zPoint: (options?: MongooseMeta) => z.ZodObject<{
+    type: z.ZodLiteral<"Point">;
+    coordinates: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+}, z.core.$strip>;
+/** A two-dimensional GeoJSON Polygon. Each linear ring must be closed. */
+declare const zPolygon: (options?: MongooseMeta) => z.ZodObject<{
+    type: z.ZodLiteral<"Polygon">;
+    coordinates: z.ZodArray<z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>>;
+}, z.core.$strip>;
+
 declare const zObjectId: (options?: MongooseMeta) => z.ZodCodec<z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodUnion<readonly [z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>, z.ZodString]>>, z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>>;
 declare const zBuffer: (options?: MongooseMeta) => z.ZodCustom<Buffer<ArrayBufferLike>, Buffer<ArrayBufferLike>>;
 declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => z.ZodType<(string | mongoose.Types.ObjectId) & Partial<ZRefBrand<T>>, any> & ZRefBrand<T>;
@@ -441,5 +452,5 @@ type PrettifyType<T> = {
     [K in keyof T]: T[K];
 } & {};
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zRef };
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zPoint, zPolygon, zRef };
 export type { ExtractPopulatePaths, GetTargetSchema, HydrateMultiplePaths, HydratePopulatedPath, InferDocument, InferInput, InferMongoose, InputMongoose, MongooseMeta, MongooseZodHooks, OutputMongoose, PopulateObject, PopulateOptions, PopulatedSchema, PrettifyType, SchemaFeatures, StrictDocument, StrictModel, StrictQuery, ToMongooseSchemaOptions, ToMongooseType, ZRefBrand };

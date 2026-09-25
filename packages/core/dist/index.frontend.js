@@ -1333,6 +1333,19 @@ const genTimestampsSchema = (createdAtField = 'createdAt', updatedAtField = 'upd
 };
 const bufferMongooseGetter = (value) => value != null && value._bsontype === 'Binary' ? value.buffer : value;
 
+const position = z.tuple([z.number(), z.number()]);
+/** A two-dimensional GeoJSON Point, with a Mongoose subdocument definition. */
+const zPoint = (options) => withMongoose(z.object({
+    type: withMongoose(z.literal('Point'), { type: String, enum: ['Point'], required: true }),
+    coordinates: withMongoose(position, { required: true }),
+}), { schema: { _id: false }, required: true, ...options });
+/** A two-dimensional GeoJSON Polygon. Each linear ring must be closed. */
+const zPolygon = (options) => withMongoose(z.object({
+    type: withMongoose(z.literal('Polygon'), { type: String, enum: ['Polygon'], required: true }),
+    coordinates: withMongoose(z.array(z.array(position).refine((ring) => ring.length >= 4 &&
+        ring[0]?.[0] === ring.at(-1)?.[0] && ring[0]?.[1] === ring.at(-1)?.[1], 'Polygon rings must be closed')).refine((rings) => rings.length > 0, 'Polygon must have at least one ring'), { required: true }),
+}), { schema: { _id: false }, required: true, ...options });
+
 const preprocessFn = (val) => (val === null ? undefined : val);
 const zObjectId = (options) => withMongoose(z.preprocess(preprocessFn, z.string().regex(/^[\dA-Fa-f]{24}$/, 'Invalid ObjectId')), { type: 'ObjectId', ...options });
 const zBuffer = (options) => withMongoose(z.instanceof(Uint8Array), { type: 'Buffer', ...options });
@@ -1377,5 +1390,5 @@ function toStrictModel(name, mongooseSchema) {
     return rawModel;
 }
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zRef };
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zPoint, zPolygon, zRef };
 //# sourceMappingURL=index.frontend.js.map

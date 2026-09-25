@@ -40,6 +40,17 @@ export default defineNuxtConfig({
     transpile: ['estree-walker']
   },
 
+  routeRules: {
+    '/getting-started/installation': { redirect: '/getting-started' },
+    '/getting-started/usage': { redirect: '/guides' },
+    '/api/nested-object-ids': { redirect: '/guides/nested-object-ids' },
+    '/api/reusing-object-schemas': { redirect: '/guides/reusing-object-schemas' },
+    '/api/strict-model': { redirect: '/guides/strict-model' },
+    '/api/hooks-and-plugins': { redirect: '/guides/plugins-and-hooks' },
+    '/api/deprecated': { redirect: '/guides/migration' },
+    '/online-playground': { redirect: '/studio' }
+  },
+
   experimental: {
     asyncContext: true,
     payloadExtraction: false
@@ -100,6 +111,13 @@ export default defineNuxtConfig({
         contentCollection: 'docs',
         contentFilters: [
           { field: 'path', operator: 'LIKE', value: '/getting-started%' }
+        ]
+      },
+      {
+        title: 'Guides',
+        contentCollection: 'docs',
+        contentFilters: [
+          { field: 'path', operator: 'LIKE', value: '/guides%' }
         ]
       },
       {
