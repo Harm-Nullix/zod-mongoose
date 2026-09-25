@@ -1,5 +1,12 @@
 # @nullix/zod-mongoose-studio
 
+## 3.2.0
+
+### Patch Changes
+
+- Updated dependencies [13c3cd3]
+  - @nullix/zod-mongoose@3.2.0
+
 ## 3.1.1
 
 ### Patch Changes
