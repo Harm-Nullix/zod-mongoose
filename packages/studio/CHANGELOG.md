@@ -1,5 +1,20 @@
 # @nullix/zod-mongoose-studio
 
+## 3.3.0
+
+### Minor Changes
+
+- 6bd9531: Preserve and validate unknown keys from loose and catchall Zod objects in Mongoose documents, reject unknown keys from strict objects, and keep `.required()` and `exactOptional()` field types. Document object-mode behavior and its query-update caveats.
+
+### Patch Changes
+
+- 657cb4d: **Buffer validation fix:** `zBuffer()` accepts BSON `Binary` values from Mongoose `document.toObject()`, so the default Zod validation hook accepts edited Buffer fields.
+- 76c9eb2: Carry Mongoose query helpers, methods, statics, and explicitly typed virtuals through `toMongooseSchema()` to compiled models.
+- Updated dependencies [6bd9531]
+- Updated dependencies [657cb4d]
+- Updated dependencies [76c9eb2]
+  - @nullix/zod-mongoose@3.3.0
+
 ## 3.2.0
 
 ### Patch Changes
