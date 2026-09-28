@@ -421,18 +421,14 @@ Converts a Zod schema to a Mongoose schema definition object (the POJO used as t
 - `zodSchema`: A Zod object or any Zod type.
 
 ### `withMongoose(zodSchema, metadata)`
-Attaches Mongoose-specific metadata to any Zod schema.
-- `metadata`: A `MongooseMeta` object.
+Attaches Mongoose metadata to a Zod schema. For object schemas, use different placement for root and nested schema options:
 
-`MongooseMeta` extends Mongoose's `SchemaTypeOptions<any>` and `SchemaOptions`, allowing you to specify both field-level options (like `index`, `unique`, `lowercase`) and top-level schema options (like `collection`, `versionKey`, `strict`, `_id`, `id`) via the top-level Zod object.
+| Where the object is used | Remove its generated `_id` and `id` virtual |
+| --- | --- |
+| Passed to `toMongooseSchema()` | `withMongoose(object, { _id: false, id: false })` |
+| Nested inside another object | `withMongoose(object, { schema: { _id: false, id: false } })` |
 
-```typescript
-// Disable _id and id at the schema level
-const LogSchema = withMongoose(
-  z.object({ message: z.string() }),
-  { _id: false, id: false }
-);
-```
+`_id: false` removes the identifier path; `id: false` only disables the string `id` virtual. Field options such as `index` and `unique` go directly in the metadata. See [Nested Object IDs](https://zodmongoose.com/guides/nested-object-ids) for the full behavior.
 
 ### `InferDocument<T>` / `InferInput<T>`
 
