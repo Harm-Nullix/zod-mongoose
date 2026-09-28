@@ -1,6 +1,7 @@
 import {describe, it, expect} from 'bun:test';
 import {z} from 'zod/v4';
-import {extractMongooseDef} from '../src/converter.js';
+import mongoose from 'mongoose';
+import {extractMongooseDef, toMongooseSchema} from '../src/converter.js';
 
 describe('Zod Validation Mapping to Mongoose Options', () => {
   it('should map string validations (min, max, length, regex)', () => {
@@ -84,5 +85,22 @@ describe('Zod Validation Mapping to Mongoose Options', () => {
 
     expect(def.defDate.min).toEqual(new Date('2020-01-01'));
     expect(def.defDate.default).toBeDefined();
+  });
+
+  it('allows null and preserves a null default without making nullable fields required in Mongoose', async () => {
+    const schema = z.object({
+      plain: z.string().nullable(),
+      withDefault: z.string().nullable().default(null),
+    });
+    const mongooseSchema = toMongooseSchema(schema);
+    const Model = mongoose.model('NullableNullDefault', mongooseSchema);
+
+    expect(mongooseSchema.path('plain').options.required).toBe(false);
+    expect(mongooseSchema.path('withDefault').options.required).toBe(false);
+    expect(mongooseSchema.path('withDefault').options.default).toBeNull();
+
+    const document = new Model({plain: null});
+    expect(document.get('withDefault')).toBeNull();
+    await document.validate();
   });
 });
