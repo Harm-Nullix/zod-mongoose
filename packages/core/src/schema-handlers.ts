@@ -1,6 +1,6 @@
 import {z} from 'zod/v4';
 import {mongooseRegistry} from './registry.js';
-import {unwrapZodSchema} from './zod-helpers.js';
+import {objectStrictness, unwrapZodSchema} from './zod-helpers.js';
 import {getMongoose} from './config.js';
 import {callHookSync} from './hooks.js';
 
@@ -73,12 +73,26 @@ export function handleObject(
   // Handle explicit or default subschema request
   const shouldBeSubSchema = isField && mongooseProp.schema !== false;
 
+  if (isField && mongooseProp.schema === false && !mongooseProp.type && objectStrictness(unwrapped) !== true) {
+    throw new Error(
+      'A strict, loose, or catchall Zod object needs a Mongoose subschema. ' +
+        'Remove {schema: false} or provide a Mongoose type override.',
+    );
+  }
+
   if (shouldBeSubSchema && !mongooseProp.type) {
     const mongoose = getMongoose();
     if (mongoose) {
       const options = typeof mongooseProp.schema === 'object' ? mongooseProp.schema : {};
       const {plugins, ...schemaOptions} = options as any;
-      const subSchema = new mongoose.Schema(objDef, schemaOptions);
+      const strict = schemaOptions.strict ?? mongooseProp.strict ?? objectStrictness(unwrapped);
+      const minimize = schemaOptions.minimize ?? mongooseProp.minimize ??
+        (objectStrictness(unwrapped) === false ? false : undefined);
+      const subSchema = new mongoose.Schema(objDef, {
+        ...schemaOptions,
+        strict,
+        ...(minimize === undefined ? {} : {minimize}),
+      });
 
       if (plugins && Array.isArray(plugins)) {
         for (const plugin of plugins) {

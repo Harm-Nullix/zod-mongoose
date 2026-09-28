@@ -3,7 +3,8 @@ import type mongoose from 'mongoose';
 import type {SchemaOptions} from 'mongoose';
 import {mongooseRegistry} from './registry.js';
 import type {ToMongooseSchemaOptions} from './registry.js';
-import {unwrapZodSchema} from './zod-helpers.js';
+import {objectStrictness, unwrapZodSchema} from './zod-helpers.js';
+import {prepareForZodValidation} from './zod-validation.js';
 import {getMongoose} from './config.js';
 import {extractMongooseDef} from './extract-mongoose-def.js';
 import {callHookSync} from './hooks.js';
@@ -38,6 +39,10 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
   const {plugins, modelName, ...schemaOptions} = options || {};
 
   const mergedOptions: SchemaOptions = {
+    ...(unwrapped instanceof z.ZodObject ? {strict: objectStrictness(unwrapped)} : {}),
+    ...(unwrapped instanceof z.ZodObject && objectStrictness(unwrapped) === false
+      ? {minimize: false}
+      : {}),
     // Also merge other schema options from meta if they exist
     ...(meta.collection ? {collection: meta.collection} : {}),
     // eslint-disable-next-line unicorn/no-negated-condition
@@ -123,7 +128,7 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
   if (mergedOptions.validateBeforeSave !== false) {
     mongooseSchema.post('validate', function () {
       try {
-        schema.parse(this.toObject());
+        schema.parse(prepareForZodValidation(schema, this.toObject(), mongooseSchema));
       } catch (e) {
         if (e instanceof z.ZodError) {
           e.message = JSON.stringify({

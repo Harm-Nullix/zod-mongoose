@@ -73,6 +73,14 @@ export type ToMongooseType<T extends z.ZodTypeAny> = (
         ? Inner extends z.ZodTypeAny
           ? ToMongooseType<Inner>
           : any
+        : T extends z.ZodExactOptional<infer Inner>
+          ? Inner extends z.ZodTypeAny
+            ? ToMongooseType<Inner>
+            : any
+          : T extends z.ZodNonOptional<infer Inner>
+            ? Inner extends z.ZodTypeAny
+              ? ToMongooseType<Inner>
+              : any
         : T extends z.ZodDefault<infer Inner>
           ? Inner extends z.ZodTypeAny
             ? ToMongooseType<Inner>
@@ -139,8 +147,23 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
   if (features.required === false) {
     mongooseProp.required = false;
   }
+  if (features.isNullable === true && mongooseProp.required === undefined) {
+    mongooseProp.required = false;
+  }
+  if (features.isNonOptional === true && features.isNullable !== true && mongooseProp.required !== false) {
+    mongooseProp.required = true;
+  }
   if (features.readOnly === true) {
     mongooseProp.readOnly = true;
+  }
+  if (isField && features.isExactOptional === true) {
+    const previousSetter = mongooseProp.set;
+    mongooseProp.set = function exactOptionalSetter(value: any) {
+      if (value === undefined) {
+        throw new TypeError('An exactOptional field cannot be set to undefined');
+      }
+      return typeof previousSetter === 'function' ? previousSetter.call(this, value) : value;
+    };
   }
 
   // Map Zod checks to Mongoose options
@@ -166,7 +189,13 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
   if (type === 'object') {
     const wrapperFn = (s: z.ZodTypeAny, v: Map<z.ZodTypeAny, any>) =>
       extractMongooseDef(s, v, true);
+    const previousUnwrapped = schema === unwrapped ? undefined : visited.get(unwrapped);
     const result = handleObject(unwrapped as any, mongooseProp, visited, wrapperFn, isField && !noWrap);
+    visited.set(schema, result);
+    if (schema !== unwrapped) {
+      if (previousUnwrapped === undefined) visited.delete(unwrapped);
+      else visited.set(unwrapped, previousUnwrapped);
+    }
     callHookSync('converter:after', {
       schema: schema as z.ZodTypeAny,
       mongooseProp: result,

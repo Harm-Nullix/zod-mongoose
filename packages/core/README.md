@@ -99,6 +99,9 @@ The following table shows how Zod types are mapped to Mongoose types by default.
 | `z.record()` | `Map` | Mapped to a Mongoose `Map` with `of` type. |
 | `z.map()` | `Map` | Mapped to a Mongoose `Map` with `of` type. |
 | `z.object()` | `Nested Object` | Mapped to a nested Mongoose schema or subdocument. |
+| `z.strictObject()` | `Nested Object` | Rejects unknown keys through Mongoose `strict: 'throw'`. |
+| `z.looseObject()` | `Nested Object` | Keeps unknown keys through Mongoose `strict: false`. |
+| `.catchall(valueSchema)` | `Nested Object` | Keeps unknown keys and validates their values during document validation. |
 | `z.intersection()` | `Nested Object` | Merges the definitions of both branches into a single object. |
 | `z.union()` | `Schema.Types.Union` (primitives) or `Nested Object` (objects) | Mapped to `Union` for primitives, merged into an object for `z.object()` unions. Others fallback to `Mixed`. |
 | `z.xor()` | `mongoose.Schema.Types.Mixed` | Non-inclusive union. Maps to `Mixed` with a custom Zod-based validator to enforce mutual exclusivity. |
@@ -125,6 +128,8 @@ The following Zod types are currently not explicitly handled or are unsupported 
 | `z.void()` / `z.never()` | Unsupported | |
 
 > **Note:** Types like `z.branded()`, `z.readonly()`, `z.pipeline()`, `z.preprocess()`, and `z.transform()` are automatically unwrapped to their underlying base type during conversion.
+
+Unknown-key modes also apply to nested subschemas and arrays. A typed catchall validates dynamic values on `document.validate()` and `save()`; query updates do not run that document hook. For nested strict, loose, and catchall objects, use a subschema rather than `{schema: false}`. Mongoose-generated IDs, version keys, and timestamps are excluded from the package's Zod document validation unless the Zod object declares them. See the [object modes guide](https://zodmongoose.com/guides/object-modes) for examples and option overrides.
 
 ## Installation
 

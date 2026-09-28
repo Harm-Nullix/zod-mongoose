@@ -6,10 +6,19 @@ export interface SchemaFeatures {
   default?: any;
   required?: boolean;
   isOptional?: boolean;
+  isExactOptional?: boolean;
+  isNonOptional?: boolean;
   isNullable?: boolean;
   readOnly?: boolean;
   checks?: any;
   transformations?: any[];
+}
+
+/** Mongoose's closest equivalent to a Zod object's unknown-key policy. */
+export function objectStrictness(schema: zod.ZodObject<any>): boolean | 'throw' {
+  const catchall = (schema as any)._zod?.def?.catchall;
+  if (!catchall) return true;
+  return catchall._zod?.def?.type === 'never' ? 'throw' : false;
 }
 
 /**
@@ -40,16 +49,50 @@ export function unwrapZodSchema(
 
   if (schema instanceof zod.ZodOptional) {
     const inner = schema.unwrap();
-    return unwrapZodSchema(
+    const result = unwrapZodSchema(
       // @ts-expect-error Zod v4 schema.unwrap() return type mismatch
       inner,
-      {
-        ...features,
-        required: false,
-        isOptional: true,
-      },
+      features,
       visited,
     );
+    return {
+      schema: result.schema,
+      features: {
+        ...result.features,
+        required: false,
+        isOptional: true,
+        isExactOptional: false,
+        isNonOptional: false,
+      },
+    };
+  }
+
+  if (schema instanceof zod.ZodExactOptional) {
+    const result = unwrapZodSchema(schema.unwrap() as zod.ZodTypeAny, features, visited);
+    return {
+      schema: result.schema,
+      features: {
+        ...result.features,
+        required: false,
+        isOptional: true,
+        isExactOptional: true,
+        isNonOptional: false,
+      },
+    };
+  }
+
+  if (schema instanceof zod.ZodNonOptional) {
+    const result = unwrapZodSchema(schema.unwrap() as zod.ZodTypeAny, features, visited);
+    return {
+      schema: result.schema,
+      features: {
+        ...result.features,
+        required: true,
+        isOptional: false,
+        isExactOptional: false,
+        isNonOptional: true,
+      },
+    };
   }
 
   if (schema instanceof zod.ZodNullable) {

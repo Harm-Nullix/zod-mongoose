@@ -10,6 +10,7 @@ Start with the task you are trying to finish. Each guide gives the useful decisi
 | I need to… | Guide |
 | --- | --- |
 | Run Zod refinements during Mongoose validation | [Validate documents](/guides/validation) |
+| Keep or reject unknown object keys | [Object modes and unknown keys](/guides/object-modes) |
 | Control IDs on nested objects | [Nested object IDs](/guides/nested-object-ids) |
 | Reuse a Zod object across files | [Reusing object schemas](/guides/reusing-object-schemas) |
 | Reference and populate another model | [References and population](/guides/references-and-population) |

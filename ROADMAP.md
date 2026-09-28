@@ -20,15 +20,15 @@ The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of t
 
 - **GeoJSON helpers:** `zPoint()` and `zPolygon()` provide standalone MongoDB type bridges with Mongoose GeoJSON metadata. They use `withMongoose()`/the registry and do not patch Zod prototypes. The feature was motivated by a [request for GeoJSON types](https://github.com/git-zodyac/mongoose/issues/31). See the [helper reference](packages/docs/content/3.api/3.specialized-helpers.md#geojson-helpers) for usage.
 
-## v3.2.1 — implementation complete, pending release
+## v3.2.1 — implementation complete
 
 - **Buffer validation fix:** `zBuffer()` accepts BSON `Binary` values from Mongoose `document.toObject()`, so the default Zod validation hook accepts edited Buffer fields.
 
-## v3.3 — planned object conversion fixes
+## v3.3 — implementation complete, pending release
 
-- **Unknown-key behavior:** Preserve extra fields from `z.looseObject()` and `.catchall()` in top-level and nested Mongoose documents. Validate catchall values and reject unknown fields from `z.strictObject()` before Mongoose can silently discard them. Account for Mongoose-generated `_id` and `__v` during Zod validation.
-- **Object field wrappers:** Map `.required()` fields back to their underlying Mongoose types and required options. Review `exactOptional()` so its type and explicit-`undefined` semantics are not lost.
-- **Derived object schemas:** Cover `.extend()`, `.safeExtend()`, `.pick()`, `.omit()`, and `.partial()` when they inherit strict, loose, or catchall behavior. These methods already expose their resulting shape to the converter.
+- **Unknown-key behavior:** `z.strictObject()` rejects unknown fields, while `z.looseObject()` and `.catchall()` preserve them in top-level and nested Mongoose documents. Typed catchall values are checked during document validation. Mongoose-generated IDs, version keys, and timestamps are excluded from that Zod check unless declared in the corresponding Zod shape.
+- **Object field wrappers:** `.required()` and `exactOptional()` retain their underlying Mongoose types. Exact optional fields reject explicit `undefined` on document assignment.
+- **Derived object schemas:** `.extend()`, `.safeExtend()`, `.pick()`, `.omit()`, and `.partial()` inherit the resulting Zod object's unknown-key policy. See the [object modes guide](packages/docs/content/2.guides/9.object-modes.md) for storage behavior and query-update caveats.
 
 ## Unscheduled
 

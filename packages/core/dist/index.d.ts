@@ -43,7 +43,7 @@ type ToMongooseType<T extends z.ZodTypeAny> = (T extends z.ZodObject<infer Shape
 } : T extends z.ZodArray<infer Element> ? Element extends z.ZodTypeAny ? Array<ToMongooseType<Element>> | {
     type: Array<any>;
     [key: string]: any;
-} : Array<any> : T extends z.ZodOptional<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodDefault<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodNullable<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : any) & Record<string, any>;
+} : Array<any> : T extends z.ZodOptional<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodExactOptional<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodNonOptional<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodDefault<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : T extends z.ZodNullable<infer Inner> ? Inner extends z.ZodTypeAny ? ToMongooseType<Inner> : any : any) & Record<string, any>;
 /**
  * THE CONVERTER (Safe AST Walker)
  * We extract the Zod type and merge it with any registered Mongoose metadata.
@@ -418,11 +418,15 @@ interface SchemaFeatures {
     default?: any;
     required?: boolean;
     isOptional?: boolean;
+    isExactOptional?: boolean;
+    isNonOptional?: boolean;
     isNullable?: boolean;
     readOnly?: boolean;
     checks?: any;
     transformations?: any[];
 }
+/** Mongoose's closest equivalent to a Zod object's unknown-key policy. */
+declare function objectStrictness(schema: z.ZodObject<any>): boolean | 'throw';
 /**
  * Recursively unwrap Zod schemas (Optional, Nullable, Default, Effects, Pipelines)
  * using Zod's public API and internal _def.type identifiers.
@@ -452,5 +456,5 @@ type PrettifyType<T> = {
     [K in keyof T]: T[K];
 } & {};
 
-export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zPoint, zPolygon, zRef };
+export { bufferMongooseGetter, callHookSync, extractMongooseDef, genTimestampsSchema, getFrontendMode, getMongoose, getMongooseMeta, hooks, mongooseRegistry, objectStrictness, populateZodSchema, setFrontendMode, setMongoose, toMongooseSchema, toStrictModel, unwrapZodSchema, withMongoose, zBuffer, zObjectId, zPoint, zPolygon, zRef };
 export type { ExtractPopulatePaths, GetTargetSchema, HydrateMultiplePaths, HydratePopulatedPath, InferDocument, InferInput, InferMongoose, InputMongoose, MongooseMeta, MongooseZodHooks, OutputMongoose, PopulateObject, PopulateOptions, PopulatedSchema, PrettifyType, SchemaFeatures, StrictDocument, StrictModel, StrictQuery, ToMongooseSchemaOptions, ToMongooseType, ZRefBrand };
