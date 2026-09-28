@@ -1376,7 +1376,10 @@ const zObjectId = (options) => {
         ...options,
     });
 };
-const zBuffer = (options) => withMongoose(v4.z.custom((val) => (getMongoose() && val instanceof Buffer) || val instanceof Uint8Array), { type: getMongoose()?.Schema.Types.Buffer || 'Buffer', ...options });
+const zBuffer = (options) => withMongoose(v4.z.preprocess((val) => {
+    const Binary = getMongoose()?.mongo.Binary;
+    return Binary && val instanceof Binary ? Buffer.from(val.value()) : val;
+}, v4.z.custom((val) => val instanceof Uint8Array)), { type: getMongoose()?.Schema.Types.Buffer || 'Buffer', ...options });
 const zRef = (ref, schema, options) => {
     const objectIdSchema = zObjectId();
     const base = v4.z.codec(v4.z.union([objectIdSchema, schema]), objectIdSchema, {

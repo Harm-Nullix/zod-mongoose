@@ -489,6 +489,8 @@ const PostSchema = z.object({
 Helper to create a Zod schema representing a Mongoose `Buffer`.
 - `options`: Optional `MongooseMeta` for this field.
 
+When validating a Mongoose document, `zBuffer()` also accepts the BSON `Binary` value produced by `document.toObject()` and converts it back to a Node.js `Buffer`.
+
 ### Isomorphic Support
 
 `@nullix/zod-mongoose` is designed to be isomorphic, meaning you can use the same Zod schemas on both the frontend (browser) and backend (Node.js).

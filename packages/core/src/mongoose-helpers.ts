@@ -45,8 +45,12 @@ export const zObjectId = (options?: MongooseMeta) => {
 };
 
 export const zBuffer = (options?: MongooseMeta) => withMongoose(
-  z.custom<Buffer>(
-    (val) => (getMongoose() && val instanceof Buffer) || val instanceof Uint8Array,
+  z.preprocess<unknown, z.ZodCustom<Buffer, Buffer>, Buffer | Uint8Array | mongoose.mongo.Binary>(
+    (val) => {
+      const Binary = getMongoose()?.mongo.Binary;
+      return Binary && val instanceof Binary ? Buffer.from((val as mongoose.mongo.Binary).value()) : val;
+    },
+    z.custom<Buffer>((val) => val instanceof Uint8Array),
   ),
   {type: getMongoose()?.Schema.Types.Buffer || 'Buffer', ...options},
 );

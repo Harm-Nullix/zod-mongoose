@@ -1,7 +1,7 @@
 import {expect, test, describe, beforeAll, afterAll} from 'bun:test';
 import {z} from 'zod/v4';
 import mongoose from 'mongoose';
-import {toMongooseSchema} from '../src/index.js';
+import {toMongooseSchema, zBuffer} from '../src/index.js';
 
 describe('Zod Runtime Validation (post-validate hook)', () => {
   beforeAll(async () => {
@@ -62,6 +62,28 @@ describe('Zod Runtime Validation (post-validate hook)', () => {
     });
 
     await doc.validate(); // should not throw
+  });
+
+  test('should validate edited Buffer fields after Mongoose converts them to Binary', async () => {
+    const zodSchema = z.object({
+      pdfBytes: zBuffer(),
+      attachment: z.object({bytes: zBuffer()}),
+    });
+    const TestModel = mongoose.model('RuntimeValidationBuffer', toMongooseSchema(zodSchema));
+    const doc = new TestModel({
+      pdfBytes: Buffer.from('original PDF'),
+      attachment: {bytes: Buffer.from('attachment')},
+    });
+
+    doc.pdfBytes = Buffer.from('edited PDF');
+    const object = doc.toObject();
+    expect(object.pdfBytes).toBeInstanceOf(mongoose.mongo.Binary);
+    expect(object.attachment.bytes).toBeInstanceOf(mongoose.mongo.Binary);
+    expect(zodSchema.parse(object).pdfBytes).toEqual(Buffer.from('edited PDF'));
+    await doc.validate();
+
+    expect(zBuffer().safeParse({buffer: Buffer.from('edited PDF'), position: 10}).success)
+      .toBe(false);
   });
 
   test('should disable Zod validation if validateBeforeSave is false', async () => {

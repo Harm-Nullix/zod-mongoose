@@ -16,9 +16,19 @@ The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of t
 - **Specialized MongoDB bridges:** `zObjectId()`, `zBuffer()`, and `zRef()` are available in both server and browser-safe entry points.
 - **Virtuals and extensions:** Mongoose plugins can be passed to `toMongooseSchema()`. The `schema:created` hook receives the generated `mongoose.Schema`, where consumers can define virtuals and other Mongoose-specific behavior. There is no `.mongooseVirtual()` API or `virtuals`/`indexes` conversion option today.
 
-## v3.2 — implementation complete, pending release
+## v3.2 — implementation complete
 
 - **GeoJSON helpers:** `zPoint()` and `zPolygon()` provide standalone MongoDB type bridges with Mongoose GeoJSON metadata. They use `withMongoose()`/the registry and do not patch Zod prototypes. The feature was motivated by a [request for GeoJSON types](https://github.com/git-zodyac/mongoose/issues/31). See the [helper reference](packages/docs/content/3.api/3.specialized-helpers.md#geojson-helpers) for usage.
+
+## v3.2.1 — implementation complete, pending release
+
+- **Buffer validation fix:** `zBuffer()` accepts BSON `Binary` values from Mongoose `document.toObject()`, so the default Zod validation hook accepts edited Buffer fields.
+
+## v3.3 — planned object conversion fixes
+
+- **Unknown-key behavior:** Preserve extra fields from `z.looseObject()` and `.catchall()` in top-level and nested Mongoose documents. Validate catchall values and reject unknown fields from `z.strictObject()` before Mongoose can silently discard them. Account for Mongoose-generated `_id` and `__v` during Zod validation.
+- **Object field wrappers:** Map `.required()` fields back to their underlying Mongoose types and required options. Review `exactOptional()` so its type and explicit-`undefined` semantics are not lost.
+- **Derived object schemas:** Cover `.extend()`, `.safeExtend()`, `.pick()`, `.omit()`, and `.partial()` when they inherit strict, loose, or catchall behavior. These methods already expose their resulting shape to the converter.
 
 ## Unscheduled
 

@@ -126,7 +126,7 @@ declare const zPolygon: (options?: MongooseMeta) => z.ZodObject<{
 }, z.core.$strip>;
 
 declare const zObjectId: (options?: MongooseMeta) => z.ZodCodec<z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodUnion<readonly [z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>, z.ZodString]>>, z.ZodCustom<mongoose.Types.ObjectId, mongoose.Types.ObjectId>>;
-declare const zBuffer: (options?: MongooseMeta) => z.ZodCustom<Buffer<ArrayBufferLike>, Buffer<ArrayBufferLike>>;
+declare const zBuffer: (options?: MongooseMeta) => z.ZodPipe<z.ZodTransform<unknown, Buffer<ArrayBufferLike> | Uint8Array<ArrayBufferLike> | mongoose.mongo.Binary>, z.ZodCustom<Buffer<ArrayBufferLike>, Buffer<ArrayBufferLike>>>;
 declare const zRef: <T extends z.ZodTypeAny>(ref: string, schema: T, options?: MongooseMeta) => z.ZodType<(string | mongoose.Types.ObjectId) & Partial<ZRefBrand<T>>, any> & ZRefBrand<T>;
 
 /**
