@@ -24,10 +24,43 @@ function modelNameFromCollection(collection: string): string {
 /**
  * Converts a Zod schema to a Mongoose Schema instance.
  */
-export function toMongooseSchema<T extends z.ZodTypeAny>(
+export function toMongooseSchema<
+  T extends z.ZodTypeAny,
+  TInstanceMethods = {},
+  TQueryHelpers = {},
+  TStaticMethods = {},
+  TVirtuals = {},
+  THydratedDocumentType = mongoose.HydratedDocument<
+    z.infer<T>,
+    TVirtuals & TInstanceMethods,
+    TQueryHelpers
+  >,
+  TModelType = mongoose.Model<
+    z.infer<T>,
+    TQueryHelpers,
+    TInstanceMethods,
+    TVirtuals,
+    THydratedDocumentType
+  >,
+>(
   schema: T,
-  options?: ToMongooseSchemaOptions,
-): mongoose.Schema<z.infer<T>> {
+  options?: ToMongooseSchemaOptions<
+    z.infer<T>,
+    TInstanceMethods,
+    TQueryHelpers,
+    TStaticMethods,
+    TVirtuals,
+    THydratedDocumentType,
+    TModelType
+  >,
+): mongoose.Schema<
+  z.infer<T>,
+  TModelType,
+  TInstanceMethods,
+  TQueryHelpers,
+  TVirtuals,
+  TStaticMethods
+> {
   const {schema: unwrapped} = unwrapZodSchema(schema);
   const meta =
     mongooseRegistry.get(schema) ||
@@ -38,7 +71,15 @@ export function toMongooseSchema<T extends z.ZodTypeAny>(
 
   const {plugins, modelName, ...schemaOptions} = options || {};
 
-  const mergedOptions: SchemaOptions = {
+  const mergedOptions: SchemaOptions<
+    z.infer<T>,
+    TInstanceMethods,
+    TQueryHelpers,
+    TStaticMethods,
+    TVirtuals,
+    THydratedDocumentType,
+    TModelType
+  > = {
     ...(unwrapped instanceof z.ZodObject ? {strict: objectStrictness(unwrapped)} : {}),
     ...(unwrapped instanceof z.ZodObject && objectStrictness(unwrapped) === false
       ? {minimize: false}

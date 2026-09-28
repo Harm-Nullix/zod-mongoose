@@ -2,9 +2,8 @@ import { z } from 'zod/v4';
 import mongoose, { SchemaOptions, QueryFilter, ProjectionType, QueryOptions, Query, UpdateQuery } from 'mongoose';
 import * as hookable from 'hookable';
 
-interface ToMongooseSchemaOptions extends SchemaOptions {
+interface ToMongooseSchemaOptions<DocType = unknown, TInstanceMethods = {}, TQueryHelpers = {}, TStaticMethods = {}, TVirtuals = {}, THydratedDocumentType = mongoose.HydratedDocument<DocType, TVirtuals & TInstanceMethods, TQueryHelpers>, TModelType = mongoose.Model<DocType, TQueryHelpers, TInstanceMethods, TVirtuals, THydratedDocumentType>> extends SchemaOptions<DocType, TInstanceMethods, TQueryHelpers, TStaticMethods, TVirtuals, THydratedDocumentType, TModelType> {
     plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
-    validateBeforeSave?: boolean;
     /** Base Mongoose model name used to make discriminator model names unique. */
     modelName?: string;
 }
@@ -53,7 +52,7 @@ declare function extractMongooseDef<T extends z.ZodTypeAny>(schema: T, visited?:
 /**
  * Converts a Zod schema to a Mongoose Schema instance.
  */
-declare function toMongooseSchema<T extends z.ZodTypeAny>(schema: T, options?: ToMongooseSchemaOptions): mongoose.Schema<z.infer<T>>;
+declare function toMongooseSchema<T extends z.ZodTypeAny, TInstanceMethods = {}, TQueryHelpers = {}, TStaticMethods = {}, TVirtuals = {}, THydratedDocumentType = mongoose.HydratedDocument<z.infer<T>, TVirtuals & TInstanceMethods, TQueryHelpers>, TModelType = mongoose.Model<z.infer<T>, TQueryHelpers, TInstanceMethods, TVirtuals, THydratedDocumentType>>(schema: T, options?: ToMongooseSchemaOptions<z.infer<T>, TInstanceMethods, TQueryHelpers, TStaticMethods, TVirtuals, THydratedDocumentType, TModelType>): mongoose.Schema<z.infer<T>, TModelType, TInstanceMethods, TQueryHelpers, TVirtuals, TStaticMethods>;
 
 type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
 type ZRefBrand<S extends z.ZodTypeAny> = {

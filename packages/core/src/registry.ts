@@ -3,9 +3,34 @@ import type mongoose from 'mongoose';
 import type {SchemaOptions} from 'mongoose';
 import {callHookSync} from './hooks.js';
 
-export interface ToMongooseSchemaOptions extends SchemaOptions {
+export interface ToMongooseSchemaOptions<
+  DocType = unknown,
+  TInstanceMethods = {},
+  TQueryHelpers = {},
+  TStaticMethods = {},
+  TVirtuals = {},
+  THydratedDocumentType = mongoose.HydratedDocument<
+    DocType,
+    TVirtuals & TInstanceMethods,
+    TQueryHelpers
+  >,
+  TModelType = mongoose.Model<
+    DocType,
+    TQueryHelpers,
+    TInstanceMethods,
+    TVirtuals,
+    THydratedDocumentType
+  >,
+> extends SchemaOptions<
+  DocType,
+  TInstanceMethods,
+  TQueryHelpers,
+  TStaticMethods,
+  TVirtuals,
+  THydratedDocumentType,
+  TModelType
+> {
   plugins?: Array<(schema: mongoose.Schema, options?: any) => void>;
-  validateBeforeSave?: boolean;
   /** Base Mongoose model name used to make discriminator model names unique. */
   modelName?: string;
 }
