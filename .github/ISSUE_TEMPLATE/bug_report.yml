@@ -1,0 +1,78 @@
+name: Bug Report
+description: Create a report to help us fix a bug
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: checkboxes
+    id: affected-packages
+    attributes:
+      label: Affected Packages
+      description: Which part of the project is affected?
+      options:
+        - label: core
+        - label: docs
+        - label: studio
+        - label: playground
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category / Area
+      description: Select the main area this bug relates to
+      options:
+        - Zod
+        - Mongoose
+        - Parsing
+        - Validation
+        - Typing
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is. You can use Markdown formatting here.
+      placeholder: Describe the issue or paste relevant error logs...
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce & Minimal Reproduction
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Go to '...'
+        2. Execute code '...'
+        3. See error
+      render: markdown
+#    validations:
+#      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment & Stack
+      description: |
+        Provide details about your stack. You can run this command in your terminal to copy your clean environment data directly to your clipboard, then paste it below:
+
+        **macOS:**
+        `node -e 'const p=require("./package.json"),d={...p.dependencies,...p.devDependencies};console.log(JSON.stringify({node:process.version,os:process.platform,packages:{zod:d.zod,mongoose:d.mongoose,typescript:d.typescript}},null,2))' | pbcopy`
+
+        **Windows (PowerShell) / Linux (xclip):**
+        `node -e 'const p=require("./package.json"),d={...p.dependencies,...p.devDependencies};console.log(JSON.stringify({node:process.version,os:process.platform,packages:{zod:d.zod,mongoose:d.mongoose,typescript:d.typescript}},null,2))' | clip`
+      placeholder: |
+        ```json
+        {
+          "node": "v24.0.0",
+          "os": "darwin",
+          "packages": {
+            "zod": "4.4.3",
+            "mongoose": "9.7.4",
+            "typescript": "5.9.3"
+          }
+        }
+        ```
+      render: markdown

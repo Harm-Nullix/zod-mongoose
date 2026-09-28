@@ -1,0 +1,61 @@
+name: Question / Docs Clarification
+description: Ask a question or report unclear documentation
+title: "[DOCS/QUESTION]: "
+labels: ["documentation", "question"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Question / Usage Help
+        - Documentation Clarification
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected-packages
+    attributes:
+      label: Relevant Packages
+      options:
+        - label: core
+        - label: docs
+        - label: studio
+        - label: playground
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What is your question or what part of the documentation is unclear?
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment & Stack (Optional)
+      description: |
+        Provide details about your stack. You can run this command in your terminal to copy your clean environment data directly to your clipboard, then paste it below:
+
+        **macOS:**
+        `node -e 'const p=require("./package.json"),d={...p.dependencies,...p.devDependencies};console.log(JSON.stringify({node:process.version,os:process.platform,packages:{zod:d.zod,mongoose:d.mongoose,typescript:d.typescript}},null,2))' | pbcopy`
+
+        **Windows (PowerShell) / Linux (xclip):**
+        `node -e 'const p=require("./package.json"),d={...p.dependencies,...p.devDependencies};console.log(JSON.stringify({node:process.version,os:process.platform,packages:{zod:d.zod,mongoose:d.mongoose,typescript:d.typescript}},null,2))' | clip`
+      placeholder: |
+        ```json
+        {
+          "node": "v24.0.0",
+          "os": "darwin",
+          "packages": {
+            "zod": "4.4.3",
+            "mongoose": "9.7.4",
+            "typescript": "5.9.3"
+          }
+        }
+        ```
+      render: markdown
