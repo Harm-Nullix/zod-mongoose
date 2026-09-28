@@ -2,6 +2,7 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: "/"
+    rebase-strategy: "auto"
     schedule:
       interval: weekly
     groups:
@@ -13,6 +14,7 @@ updates:
 
   - package-ecosystem: npm
     directory: "/packages/docs"
+    rebase-strategy: "auto"
     schedule:
       interval: weekly
     groups:
