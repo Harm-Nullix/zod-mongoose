@@ -1,3 +1,9 @@
+## 3.2.1
+
+### Patch Changes
+
+- 657cb4d: **Buffer validation fix:** `zBuffer()` accepts BSON `Binary` values from Mongoose `document.toObject()`, so the default Zod validation hook accepts edited Buffer fields.
+
 ## 3.2.0
 
 ### Minor Changes
