@@ -49,6 +49,16 @@ jobs:
       - name: Run tests
         run: pnpm run test
 
+      - name: Build packages
+        run: pnpm build
+
+      # BUNDLE SIZE BADGE GENERATION
+      - name: Generate Bundle Size Badge
+        uses: teplostanski/bundle-size-badge@v1
+        with:
+          path: 'packages/core/dist/index.min.js'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       # PR OR PUBLISH
       - name: Create Release Pull Request or Publish to npm
         id: changesets

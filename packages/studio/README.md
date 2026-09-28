@@ -1,8 +1,16 @@
-<img src="https://raw.githubusercontent.com/Harm-Nullix/zod-mongoose/HEAD/logo.svg" width="200" alt="Logo">
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Harm-Nullix/zod-mongoose/HEAD/logo.svg" width="200" alt="Logo">
+</div>
+<div align="center">
 
 [![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
-[![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose-studio)
-[![License](https://img.shields.io/npm/l/@nullix/zod-mongoose.svg)](https://github.com/Harm-Nullix/zod-mongoose/blob/main/packages/core/LICENSE.md)
+[![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose-studio.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose-studio)
+[![NPM Downloads](https://img.shields.io/npm/dm/@nullix/zod-mongoose-studio.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose-studio)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js Version](https://img.shields.io/node/v/@nullix/zod-mongoose-studio.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose-studio)
+[![License](https://img.shields.io/npm/l/@nullix/zod-mongoose.svg)](https://github.com/Harm-Nullix/zod-mongoose/blob/main/packages/studio/LICENSE.md)
+
+</div>
 
 
 # @nullix/zod-mongoose-studio
