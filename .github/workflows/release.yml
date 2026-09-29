@@ -52,12 +52,15 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      # BUNDLE SIZE BADGE GENERATION
-      - name: Generate Bundle Size Badge
-        uses: teplostanski/bundle-size-badge@v1
-        with:
-          path: 'packages/core'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      # CALCULATE BUNDLE GZIP SIZE
+      - name: Calculate Bundle Size
+        id: bundle_size
+        run: |
+          FILE="packages/core/dist/index.min.js"
+          GZIP_SIZE=$(gzip -c "$FILE" | wc -c | tr -d ' ')
+          GZIP_KB=$(node -e "console.log(($GZIP_SIZE / 1024).toFixed(1))")
+          echo "GZIP_KB=${GZIP_KB} kB" >> $GITHUB_ENV
+          echo "Calculated Gzip Size: ${GZIP_KB} kB"
 
       # PR OR PUBLISH
       - name: Create Release Pull Request or Publish to npm
@@ -74,13 +77,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Haal versie uit de core package
           VERSION=$(node -p "require('./packages/core/package.json').version")
           TAG="@nullix/zod-mongoose@$VERSION"
 
           echo "Checking if tag $TAG exists on remote..."
 
-          # Check of de tag op de server staat
           if ! git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
             echo "Tag does not exist on remote. Creating tag..."
             git tag "$TAG"
@@ -93,10 +94,13 @@ jobs:
       - name: Build docs
         run: pnpm --filter docs run build
 
-      - name: Prepare docs artifact
+      - name: Prepare docs artifact & inject badge JSON
         run: |
           mkdir -p docs-build
           cp -r packages/docs/.output/* docs-build/
+
+          # Write dynamic Shields.io JSON endpoint into docs root
+          echo "{\"schemaVersion\":1,\"label\":\"gzipped size\",\"message\":\"${{ env.GZIP_KB }}\",\"color\":\"41b883\"}" > docs-build/size-badge.json
 
       - name: Upload Docs Artifact
         uses: actions/upload-artifact@v4
@@ -112,7 +116,7 @@ jobs:
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: packages/docs/.output/
+          path: docs-build/
 
       - name: Deploy to GitHub Pages
         id: deployment
