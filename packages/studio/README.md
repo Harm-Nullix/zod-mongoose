@@ -153,6 +153,8 @@ Local CLI mode continues to run directly, binds to `127.0.0.1`, and checks API h
 
 Running `pnpm --filter @nullix/zod-mongoose-studio dev` also uses the local parse endpoint, without Docker. In docs mode the editors remain usable without a runner, but Run reports that the runner is unavailable until the container and `STUDIO_RUNNER_SOCKET` are configured.
 
+The Monaco Zod declarations are bundled from `server/utils/editor-types.json`; production does not read declaration files from `node_modules`. After updating Zod, regenerate that file with `pnpm --filter @nullix/zod-mongoose-studio generate:editor-types` and commit it with the dependency update.
+
 ## Project Structure
 
 ```text

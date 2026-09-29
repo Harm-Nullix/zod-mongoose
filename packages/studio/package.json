@@ -40,7 +40,8 @@
     "provenance": true
   },
   "scripts": {
-    "build": "nuxt build || echo 'Build finished with warnings'",
+    "generate:editor-types": "node scripts/generate-editor-types.mjs",
+    "build": "nuxt build",
     "prepublishOnly": "pnpm run build",
     "publish": "pnpm publish --access public",
     "dev": "nuxt dev -p 34003",
