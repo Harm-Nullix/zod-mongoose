@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 3.3.2
+
+### Patch Changes
+
+- 64f7aee: Bundle precomputed Zod types for Monaco editor, replacing runtime generation.
+- Updated dependencies [64f7aee]
+  - @nullix/zod-mongoose@3.3.2
+
 ## 3.3.1
 
 ### Patch Changes
