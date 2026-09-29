@@ -46,10 +46,12 @@
     "dev": "nuxt dev -p 34003",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
     "@nullix/zod-mongoose": "workspace:*",
+    "acorn": "8.16.0",
     "esbuild": "0.28.0",
     "get-port-please": "3.2.0",
     "mongoose": "9.6.3",

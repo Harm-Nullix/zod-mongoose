@@ -34,8 +34,13 @@ async function startStudio() {
   const env = {
     ...process.env,
     PORT: port.toString(),
+    NITRO_HOST: "127.0.0.1",
+    HOST: "127.0.0.1",
     DOCS_MODE: "false", // CLI is NEVER docs mode
+    NUXT_PUBLIC_IS_DOCS_MODE: "false",
+    NUXT_PUBLIC_IS_EXECUTION_ENABLED: "true",
     LOCAL_MODE: enableFs ? "true" : "false", // Enable FS unless opted out
+    NUXT_PUBLIC_IS_LOCAL_MODE: enableFs ? "true" : "false",
     NODE_ENV: "production",
   };
 

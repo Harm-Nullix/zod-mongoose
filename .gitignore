@@ -65,5 +65,6 @@ typings/
 .cdk.staging
 cdk.out
 
+# IDE things
 .idea
 .junie

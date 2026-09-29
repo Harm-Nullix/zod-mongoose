@@ -56,7 +56,7 @@ jobs:
       - name: Generate Bundle Size Badge
         uses: teplostanski/bundle-size-badge@v1
         with:
-          path: 'packages/core/dist/index.min.js'
+          path: 'packages/core'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       # PR OR PUBLISH

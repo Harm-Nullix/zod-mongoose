@@ -32,7 +32,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       isDocsMode: true,
-      isLocalMode: false
+      isLocalMode: false,
+      isExecutionEnabled: true
     }
   },
 

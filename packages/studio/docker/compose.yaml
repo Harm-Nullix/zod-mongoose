@@ -1,0 +1,28 @@
+services:
+  studio-runner:
+    build:
+      context: ../../..
+      dockerfile: packages/studio/docker/Dockerfile
+    network_mode: none
+    read_only: true
+    init: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - KILL
+    security_opt:
+      - no-new-privileges:true
+    user: "0:0"
+    pids_limit: 64
+    mem_limit: 768m
+    cpus: 1.0
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,mode=0700
+    volumes:
+      - /run/zod-studio:/run/zod-studio
+    restart: unless-stopped
+    logging:
+      driver: none

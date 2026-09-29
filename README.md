@@ -50,7 +50,7 @@ pnpm add @nullix/zod-mongoose zod/v4 mongoose
 ### 2. Define and Convert
 
 ```typescript
-import { z } from '@nullix/zod-mongoose';
+import { z } from 'zod/v4';
 import { toMongooseSchema } from '@nullix/zod-mongoose';
 import mongoose from 'mongoose';
 

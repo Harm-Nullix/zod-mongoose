@@ -1,3 +1,3 @@
 <template>
-  <ZodMongooseStudio />
+  <ZodMongooseStudio class="studio-standalone" />
 </template>

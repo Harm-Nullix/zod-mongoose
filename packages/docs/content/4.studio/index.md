@@ -5,7 +5,7 @@ description: Try Zod-to-Mongoose conversion in the browser or embed the Studio i
 
 # Playground and Studio
 
-The [online playground](/playground) runs Studio in your browser. Paste a Zod schema to inspect its Mongoose definition before changing your app. It needs no local setup or database connection.
+The [online playground](/playground) lets you edit a Zod schema in your browser and inspect its Mongoose definition before changing your app. Run requests execute in an isolated runner on the docs host. You need no local setup or database connection.
 
 ## Try the playground
 

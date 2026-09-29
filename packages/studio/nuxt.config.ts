@@ -3,13 +3,14 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // By default, assume we are in a safe, sandboxed documentation environment.
-      // The CLI script will explicitly pass DOCS_MODE="false" to disable this.
-      isDocsMode: process.env.DOCS_MODE !== "false",
+      // Standalone Studio development uses the loopback-only local endpoint.
+      // Embedders must explicitly opt into docs mode.
+      isDocsMode: process.env.DOCS_MODE === "true",
 
       // By default, local file system access is OFF.
       // The CLI script will explicitly pass LOCAL_MODE="true" to enable it.
       isLocalMode: process.env.LOCAL_MODE === "true",
+      isExecutionEnabled: true,
     },
   },
   css: ["~/assets/css/main.css"],

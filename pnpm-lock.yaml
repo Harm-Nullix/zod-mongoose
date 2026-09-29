@@ -235,6 +235,9 @@ importers:
       '@nullix/zod-mongoose':
         specifier: workspace:*
         version: link:../core
+      acorn:
+        specifier: 8.16.0
+        version: 8.16.0
       esbuild:
         specifier: 0.28.0
         version: 0.28.0
