@@ -56,11 +56,18 @@ jobs:
       - name: Calculate Bundle Size
         id: bundle_size
         run: |
-          FILE="packages/core/dist/index.min.js"
-          GZIP_SIZE=$(gzip -c "$FILE" | wc -c | tr -d ' ')
-          GZIP_KB=$(node -e "console.log(($GZIP_SIZE / 1024).toFixed(1))")
-          echo "GZIP_KB=${GZIP_KB} kB" >> $GITHUB_ENV
-          echo "Calculated Gzip Size: ${GZIP_KB} kB"
+          # Zoek automatisch het juiste minified of hoofdbestand op
+          FILE=$(ls packages/core/dist/index.min.js packages/core/dist/index.js 2>/dev/null | head -n 1)
+
+          if [ -f "$FILE" ]; then
+            BYTES=$(gzip -c "$FILE" | wc -c | tr -d ' ')
+            KB=$(node -e "console.log(($BYTES / 1024).toFixed(1))")
+            echo "GZIP_KB=${KB} kB" >> $GITHUB_ENV
+            echo "Found file $FILE: ${KB} kB"
+          else
+            echo "GZIP_KB=unknown" >> $GITHUB_ENV
+            echo "ERROR: Dist file not found!"
+          fi
 
       # PR OR PUBLISH
       - name: Create Release Pull Request or Publish to npm
