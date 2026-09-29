@@ -1,3 +1,9 @@
+## 3.3.1
+
+### Patch Changes
+
+- 06be33f: Isolated execution logic for Zod-Mongoose Studio
+
 ## 3.3.0
 
 ### Minor Changes
