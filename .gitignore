@@ -68,3 +68,7 @@ cdk.out
 # IDE things
 .idea
 .junie
+
+# Build outputs
+dist/
+**/dist/
