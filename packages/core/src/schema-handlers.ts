@@ -191,8 +191,8 @@ export function handleArray(
 
       // Transfer any metadata from the inner type (like 'ref') to the array definition
       if (typeof innerDef === 'object') {
-        // eslint-disable-next-line sonarjs/no-unused-vars
-        const {type: _extractedType, ...innerMeta} = innerDef;
+        const innerMeta = {...innerDef};
+        delete innerMeta.type;
         Object.assign(mongooseProp, innerMeta);
         mongooseProp.type = [innerType]; // Restore type as array
       }

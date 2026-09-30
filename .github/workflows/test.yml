@@ -52,5 +52,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Build packages
+        run: pnpm run build
+
+      - name: Type check (TypeScript 5.7 & TypeScript 7)
+        run: pnpm run test:types
+
       - name: Run tests
         run: pnpm run test
