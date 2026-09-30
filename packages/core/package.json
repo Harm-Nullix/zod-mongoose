@@ -146,6 +146,6 @@
     }
   },
   "dependencies": {
-    "hookable": "^6.1.0"
+    "hookable": "^6.1.2"
   }
 }
