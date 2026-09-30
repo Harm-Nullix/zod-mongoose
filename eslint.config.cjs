@@ -2,7 +2,6 @@ const {defineConfig, globalIgnores} = require('eslint/config');
 
 const globals = require('globals');
 const typescriptEslint = require('typescript-eslint');
-const sonarjs = require('eslint-plugin-sonarjs');
 const unicorn = require('eslint-plugin-unicorn').default;
 const prettier = require('eslint-plugin-prettier/recommended');
 const promise = require('eslint-plugin-promise');
@@ -28,12 +27,12 @@ module.exports = defineConfig([
     '**/node_modules/',
     '**/.idea',
     '**/oldSrc',
+    '**/scripts/',
     '**/packages/playground/.nuxt',
     '**/packages/playground/.output',
     '**/packages/playground/server/models/index.ts',
   ]),
   js.configs.recommended,
-  sonarjs.configs.recommended,
   unicorn.configs.recommended,
   ...typescriptEslint.configs.recommended,
   prettier,

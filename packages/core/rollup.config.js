@@ -1,7 +1,6 @@
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
-import typescript from '@rollup/plugin-typescript';
-import {dts} from 'rollup-plugin-dts';
+import esbuild from 'rollup-plugin-esbuild';
 
 // Add mongoose to frontend externals just in case, but the src/index.frontend.ts
 // shouldn't even import it to prevent bundling issues.
@@ -27,9 +26,8 @@ export default [
     plugins: [
       resolve(),
       commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
+      esbuild({
+        target: 'esnext',
       }),
     ],
     external,
@@ -48,32 +46,10 @@ export default [
     plugins: [
       resolve(),
       commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
+      esbuild({
+        target: 'esnext',
       }),
     ],
-    external,
-  },
-
-  // TYPES GENERATION
-  // Generates types for both backend (index.d.ts) and frontend (index.frontend.d.ts)
-  {
-    input: 'src/index.ts',
-    output: {
-      file: 'dist/index.d.ts',
-      format: 'esm',
-    },
-    plugins: [dts()],
-    external,
-  },
-  {
-    input: 'src/index.frontend.ts',
-    output: {
-      file: 'dist/index.frontend.d.ts',
-      format: 'esm',
-    },
-    plugins: [dts()],
     external,
   },
 ];

@@ -7,7 +7,6 @@
     "moduleResolution": "NodeNext",
     "lib": ["esnext"],
     "target": "esnext",
-    "baseUrl": ".",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,

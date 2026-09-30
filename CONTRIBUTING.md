@@ -15,7 +15,7 @@ This repository is a monorepo managed with `pnpm` workspaces.
 ### Prerequisites
 
 - Node.js (>= 24)
-- pnpm (>= 9.11.0)
+- pnpm (>= 10.33.0)
 
 ### Setup
 
