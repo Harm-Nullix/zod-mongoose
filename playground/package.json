@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^4.6.0",
+    "@nuxt/ui": "^4.11.3",
     "mongoose": "9.6.3",
     "@nullix/zod-mongoose": "workspace:*",
     "nuxt": "^4.4.2",

@@ -60,7 +60,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "@nuxt/ui": "4.6.0",
+    "@nuxt/ui": "4.11.3",
     "@types/node": "24.12.1",
     "monaco-editor": "0.55.1",
     "nuxt": "4.4.2",
