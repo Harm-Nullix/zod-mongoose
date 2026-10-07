@@ -163,8 +163,8 @@ importers:
         specifier: ^1.2.75
         version: 1.2.76
       '@iconify-json/vscode-icons':
-        specifier: ^1.2.81
-        version: 1.2.81
+        specifier: ^1.2.84
+        version: 1.2.84
       '@nullix/zod-mongoose-studio':
         specifier: workspace:*
         version: link:../studio
@@ -995,8 +995,8 @@ packages:
   '@iconify-json/simple-icons@1.2.76':
     resolution: {integrity: sha512-lLRlA8yaf+1L5VCPRvR9lynoSklsddKHEylchmZJKdj/q2xVQ1ZAEJ8SCQlv9cbgtMefnlyM98U+8Si2aoFZPA==}
 
-  '@iconify-json/vscode-icons@1.2.81':
-    resolution: {integrity: sha512-ES/vVycj4IVC7TK8t+9T4Gnca9p/GbuL8A2Va+xWi01HGpyRCrXdRvKAUE8VcQbTkZsfy6Fv0L6TXq9eFj5+Yw==}
+  '@iconify-json/vscode-icons@1.2.84':
+    resolution: {integrity: sha512-K7v1KdGn0HhrVBZ/MWtsUWX4g01MkjXSAWeVgjrfAH07+TyFR2l4Zq7uPHOXqqN+S5yIjtx1rK9Au10RPk/qXA==}
 
   '@iconify/collections@1.0.668':
     resolution: {integrity: sha512-d4ygrDoTqb02p7YNHdNzy64y4VQG0bd3w26EH+mJ0eKAj+DSWxDJ1Qw/WdCAqhKfjb+mRp1n9+YwcELs2YWVlg==}
@@ -6055,8 +6055,8 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  lib0@0.2.118:
-    resolution: {integrity: sha512-Ip97lrGhycLAkNrC9/tkORm4yPei9pKuP/Ah1eqCdDx8jnKSs7wY2xvOSlvg/r5UqtgfaC4O3NsFdzwWDDs1Wg==}
+  lib0@0.2.119:
+    resolution: {integrity: sha512-vh+TiejVy8Xm+hCdnRfn9BthGNvNUZdEXltNjVZL3TzRIKP3s1lnQh8pWd/Q0wCgY0FPAGVVjFF4ZiHUV3LFgA==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -9742,7 +9742,7 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
-  '@iconify-json/vscode-icons@1.2.81':
+  '@iconify-json/vscode-icons@1.2.84':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -13282,7 +13282,7 @@ snapshots:
 
   '@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.8)(y-protocols@1.0.7(yjs@13.6.30))(yjs@13.6.30)':
     dependencies:
-      lib0: 0.2.118
+      lib0: 0.2.119
       prosemirror-model: 1.25.4
       prosemirror-state: 1.4.4
       prosemirror-view: 1.41.8
@@ -16652,7 +16652,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lib0@0.2.118:
+  lib0@0.2.119:
     dependencies:
       isomorphic.js: 0.2.5
 
@@ -21603,7 +21603,7 @@ snapshots:
 
   y-protocols@1.0.7(yjs@13.6.30):
     dependencies:
-      lib0: 0.2.118
+      lib0: 0.2.119
       yjs: 13.6.30
 
   y18n@5.0.8: {}
@@ -21640,7 +21640,7 @@ snapshots:
 
   yjs@13.6.30:
     dependencies:
-      lib0: 0.2.118
+      lib0: 0.2.119
 
   yocto-queue@0.1.0: {}
 
