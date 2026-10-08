@@ -59,7 +59,10 @@ export function toMongooseSchema<
   TInstanceMethods,
   TQueryHelpers,
   TVirtuals,
-  TStaticMethods
+  TStaticMethods,
+  mongoose.DefaultSchemaOptions,
+  mongoose.InferSchemaType<mongoose.Schema<z.infer<T>>>,
+  THydratedDocumentType & TInstanceMethods & TVirtuals
 > {
   const {schema: unwrapped} = unwrapZodSchema(schema);
   const meta =
@@ -191,7 +194,8 @@ export function toMongooseSchema<
   // Apply plugins if provided in options
   if (plugins && Array.isArray(plugins)) {
     for (const plugin of plugins) {
-      mongooseSchema.plugin(plugin);
+      // The dynamic schema definition is erased internally; the public callback retains its types.
+      mongooseSchema.plugin(plugin as (schema: mongoose.Schema) => void);
     }
   }
 

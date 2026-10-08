@@ -181,3 +181,12 @@ Please refer to the monorepo root for development and contribution guidelines.
 ## License
 
 MIT
+
+
+## 💖 Support the Project
+
+If you find `@nullix/zod-mongoose-studio` helpful, consider supporting its development:
+
+- 🩵 [Sponsor on GitHub](https://github.com/sponsors/Harm-Nullix)
+- ⭐ Star the repository on GitHub
+- 💬 Share it with your developer community

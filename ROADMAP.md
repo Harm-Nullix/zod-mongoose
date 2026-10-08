@@ -32,7 +32,13 @@ The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of t
 
 ## Unscheduled
 
-No version has been assigned to a type-safe query-filter helper. A future `zFilter()` proposal needs a concrete API and compatibility review before it is added to the release roadmap.
+- **Type-safe query-filter helper:** No version has been assigned to `zFilter()`. A future proposal needs a concrete API and compatibility review before it is added to the release roadmap.
+- **Schema conversion edge cases & runtime alignment:** Hardening type translation to prevent runtime casting errors, eliminate unexpected validation failures, and maximize practical interoperability:
+  - **Array requirement rules (`z.array`):** Avoid setting Mongoose `required: true` on arrays unless Zod explicitly defines `.min(1)`, ensuring valid empty lists (`[]`) do not cause save failures.
+  - **Transform output typing (`z.transform`):** Derive Mongoose schema types from the output/return type of Zod transforms rather than input types to prevent type mismatches and data corruption.
+  - **Nullable enums (`z.enum().nullable()`):** Set `required: false` and ensure Mongoose enum validation ignores `null` so nullable enums parse and validate cleanly.
+  - **Multi-primitive unions (`z.union`):** Map unions of disparate primitive types to `Schema.Types.Mixed` to prevent Mongoose from aggressively casting values to the first declared branch.
+  - **Literal values (`z.literal`):** Map `z.literal(value)` to `{ type: <Type>, enum: [value], default: value }` to preserve strict literal constraints in Mongoose.
 
 ## v4.0 — planned breaking cleanup
 
@@ -47,3 +53,4 @@ Other ideas, including a schema-diagnostics CLI, remain exploratory and are not 
 - Prefer native Zod constructs when Zod already models the data shape.
 - Add helpers only for MongoDB/Mongoose concepts that Zod does not model, such as ObjectIds and GeoJSON.
 - Keep Mongoose configuration in functional metadata and hooks; do not mutate Zod prototypes.
+- Keep Mongoose `SchemaOptions` as permissive as possible for edge cases (e.g., arrays and nullable types) to prevent runtime friction, delegating strict validation to the built-in Zod lifecycle hook (`schema.parse()`).

@@ -142,9 +142,19 @@ type DeterminePopulatedResult<DocType, P> = P extends string
  *
  * @template DocType The Zod-inferred document type.
  */
-export type StrictDocument<DocType> = PrettifyType<
-  PrettifyType<Omit<mongoose.Document, 'populate'>> &
-    DocType & {
+type PopulateRootPaths<P> = P extends string
+  ? P extends `${infer Head} ${infer Tail}`
+    ? PopulateRootPaths<Head> | PopulateRootPaths<Tail>
+    : P extends `${infer Head}.${string}` ? Head : P
+  : P extends {path: infer Path extends string} ? PopulateRootPaths<Path> : never;
+
+type PopulatedHydratedDocument<DocType, P, Hydrated> =
+  Omit<Hydrated, PopulateRootPaths<P>> &
+  Pick<DeterminePopulatedResult<DocType, P>,
+    Extract<PopulateRootPaths<P>, keyof DeterminePopulatedResult<DocType, P>>>;
+
+export type StrictDocument<DocType, Hydrated = mongoose.HydratedDocument<DocType>> = PrettifyType<
+  Omit<Hydrated, 'populate'> & {
       /**
        * Populates document references and returns a document with updated type information.
        *
@@ -152,7 +162,10 @@ export type StrictDocument<DocType> = PrettifyType<
        */
       populate<P extends string | PopulateOptions<DocType>>(
         path: P extends string ? ValidatePath<DocType, P> : P,
-      ): Promise<StrictDocument<DeterminePopulatedResult<DocType, P>>>;
+      ): Promise<StrictDocument<
+        DeterminePopulatedResult<DocType, P>,
+        PopulatedHydratedDocument<DocType, P, Hydrated>
+      >>;
     }
 >;
 
@@ -162,10 +175,16 @@ export type StrictDocument<DocType> = PrettifyType<
  * @template Result The current result type of the query.
  * @template DocType The base document type.
  */
-export type StrictQuery<Result, DocType, Helpers = {}, RawDoc = {}> = Omit<
-  Query<Result, any, Helpers, RawDoc>,
+export type StrictQuery<
+  Result,
+  DocType,
+  Helpers = {},
+  RawDoc = DocType,
+  Hydrated = mongoose.HydratedDocument<DocType>,
+> = Omit<
+  Query<Result, Hydrated, Helpers, RawDoc>,
   'populate' | 'exec'
-> & {
+> & Helpers & {
   /**
    * Populates document references and returns a query with updated result type information.
    *
@@ -175,11 +194,12 @@ export type StrictQuery<Result, DocType, Helpers = {}, RawDoc = {}> = Omit<
     path: P extends string ? ValidatePath<DocType, P> : P,
   ): StrictQuery<
     Result extends Array<any>
-      ? StrictDocument<DeterminePopulatedResult<DocType, P>>[]
-      : StrictDocument<DeterminePopulatedResult<DocType, P>> | (Result & (null | undefined)),
+      ? StrictDocument<DeterminePopulatedResult<DocType, P>, PopulatedHydratedDocument<DocType, P, Hydrated>>[]
+      : StrictDocument<DeterminePopulatedResult<DocType, P>, PopulatedHydratedDocument<DocType, P, Hydrated>> | (Result & (null | undefined)),
     DeterminePopulatedResult<DocType, P>,
     Helpers,
-    RawDoc
+    RawDoc,
+    PopulatedHydratedDocument<DocType, P, Hydrated>
   >;
 
   /**
@@ -192,43 +212,54 @@ export type StrictQuery<Result, DocType, Helpers = {}, RawDoc = {}> = Omit<
 // 5. EXPLICIT ENTRY POINT QUERY OVERRIDES
 // ============================================================================
 
-interface ModelQueryOverrides<DocType> {
+interface ModelQueryOverrides<DocType, Helpers, Hydrated> {
   find(
     filter?: QueryFilter<DocType>,
     projection?: ProjectionType<DocType> | null,
     options?: QueryOptions<DocType> | null,
-  ): StrictQuery<StrictDocument<DocType>[], DocType>;
+  ): StrictQuery<StrictDocument<DocType, Hydrated>[], DocType, Helpers, DocType, Hydrated>;
 
   findOne(
     filter?: QueryFilter<DocType>,
     projection?: ProjectionType<DocType> | null,
     options?: QueryOptions<DocType> | null,
-  ): StrictQuery<StrictDocument<DocType> | null, DocType>;
+  ): StrictQuery<StrictDocument<DocType, Hydrated> | null, DocType, Helpers, DocType, Hydrated>;
 
   findById(
     id: any,
     projection?: ProjectionType<DocType> | null,
     options?: QueryOptions<DocType> | null,
-  ): StrictQuery<StrictDocument<DocType> | null, DocType>;
+  ): StrictQuery<StrictDocument<DocType, Hydrated> | null, DocType, Helpers, DocType, Hydrated>;
 
   findOneAndUpdate(
     filter?: QueryFilter<DocType>,
     update?: UpdateQuery<DocType>,
     options?: QueryOptions<DocType> | null,
-  ): StrictQuery<StrictDocument<DocType> | null, DocType>;
+  ): StrictQuery<StrictDocument<DocType, Hydrated> | null, DocType, Helpers, DocType, Hydrated>;
 
   findByIdAndUpdate(
     id: any,
     update?: UpdateQuery<DocType>,
     options?: QueryOptions<DocType> | null,
-  ): StrictQuery<StrictDocument<DocType> | null, DocType>;
+  ): StrictQuery<StrictDocument<DocType, Hydrated> | null, DocType, Helpers, DocType, Hydrated>;
 }
 
 /**
  * A type-safe wrapper for Mongoose Models that provides fluent population tracking.
  */
-export type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOverrides<DocType>> &
-  ModelQueryOverrides<DocType>;
+type ModelHelpers<RawModel> = RawModel extends mongoose.Model<any, infer Helpers, any, any, any, any, any>
+  ? Helpers : {};
+
+type ModelDocument<RawModel, DocType> = RawModel extends {hydrate: (...args: any[]) => infer Hydrated}
+  ? Hydrated : mongoose.HydratedDocument<DocType>;
+
+// Mapped types such as Omit discard construct signatures, so preserve it explicitly.
+type ModelConstructor<RawModel> = RawModel extends new (...args: infer Args) => infer Hydrated
+  ? new (...args: Args) => Hydrated : unknown;
+
+export type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOverrides<DocType, ModelHelpers<RawModel>, ModelDocument<RawModel, DocType>>> &
+  ModelConstructor<RawModel> &
+  ModelQueryOverrides<DocType, ModelHelpers<RawModel>, ModelDocument<RawModel, DocType>>;
 
 // ============================================================================
 // 6. INITIALIZATION RUNTIME COMPONENT
@@ -249,11 +280,17 @@ export type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOver
  * // post.author is now fully typed
  * ```
  */
-export function toStrictModel<UserInferredType>(name: string, mongooseSchema: mongoose.Schema) {
-  const m = getMongoose();
+export function toStrictModel<
+  UserInferredType = never,
+  TSchema extends mongoose.Schema = mongoose.Schema<UserInferredType>,
+>(name: string, mongooseSchema: TSchema) {
+  const m = getMongoose() as typeof mongoose | null;
   if (!m) {
     throw new Error('Mongoose must be installed to use toStrictModel.');
   }
   const rawModel = m.model(name, mongooseSchema);
-  return rawModel as unknown as StrictModel<typeof rawModel, UserInferredType>;
+  return rawModel as unknown as StrictModel<
+    typeof rawModel,
+    [UserInferredType] extends [never] ? mongoose.InferSchemaType<TSchema> : UserInferredType
+  >;
 }

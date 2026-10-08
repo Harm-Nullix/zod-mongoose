@@ -60,3 +60,11 @@ Feel free to open a Pull Request if you'd like to improve the documentation. For
 ---
 
 [Main README](../../README.md) | [zod-mongoose-studio](../studio/README.md)
+
+## 💖 Support the Project
+
+If you find `@nullix/zod-mongoose` helpful, consider supporting its development:
+
+- 🩵 [Sponsor on GitHub](https://github.com/sponsors/Harm-Nullix)
+- ⭐ Star the repository on GitHub
+- 💬 Share it with your developer community

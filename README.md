@@ -119,3 +119,11 @@ Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for o
 ## License
 
 [MIT](./packages/core/LICENSE.md) © [Harm-Nullix](https://github.com/Harm-Nullix)
+
+## 💖 Support the Project
+
+If you find `@nullix/zod-mongoose` helpful, consider supporting its development:
+
+- 🩵 [Sponsor on GitHub](https://github.com/sponsors/Harm-Nullix)
+- ⭐ Star the repository on GitHub
+- 💬 Share it with your developer community

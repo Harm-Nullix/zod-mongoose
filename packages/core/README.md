@@ -601,3 +601,11 @@ Later on, the whole core got replaced, but if you are migrating from mongoose-zo
 - **`setup({ z })`**: No longer required. The library uses the `zod/v4` registry directly and does not modify the Zod prototype.
 - **`.mongoose()`, `.mongooseTypeOptions()`, `.mongooseSchemaOptions()`**: These prototype extensions are deprecated. Use `withMongoose()` instead.
 - **Automatic Plugin Loading**: Optional peer dependencies like `mongoose-lean-*` are no longer automatically attached. Plugins should be applied to the Mongoose schema manually.
+
+## 💖 Support the Project
+
+If you find `@nullix/zod-mongoose` helpful, consider supporting its development:
+
+- 🩵 [Sponsor on GitHub](https://github.com/sponsors/Harm-Nullix)
+- ⭐ Star the repository on GitHub
+- 💬 Share it with your developer community
