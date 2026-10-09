@@ -1,3 +1,9 @@
+## 3.3.4
+
+### Patch Changes
+
+- 2a1c489: Actually, this is a docs fix! But pipeline is uniform!
+
 ## 3.3.3
 
 ### Patch Changes
