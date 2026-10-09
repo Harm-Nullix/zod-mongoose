@@ -55,7 +55,7 @@
     "acorn": "8.16.0",
     "esbuild": "0.28.2",
     "get-port-please": "3.2.0",
-    "mongoose": "9.6.3",
+    "mongoose": "9.11.0",
     "open": "11.0.4",
     "zod": "4.6.5"
   },
