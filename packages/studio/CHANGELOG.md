@@ -1,5 +1,13 @@
 # @nullix/zod-mongoose-studio
 
+## 3.3.4
+
+### Patch Changes
+
+- 2a1c489: Actually, this is a docs fix! But pipeline is uniform!
+- Updated dependencies [2a1c489]
+  - @nullix/zod-mongoose@3.3.4
+
 ## 3.3.3
 
 ### Patch Changes
