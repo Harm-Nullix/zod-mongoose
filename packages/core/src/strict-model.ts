@@ -1,6 +1,6 @@
 import {z} from 'zod/v4';
 import type mongoose from 'mongoose';
-import type {QueryFilter, ProjectionType, QueryOptions, UpdateQuery, Query} from 'mongoose';
+import type {QueryFilter, ProjectionType, QueryOptions, UpdateQuery} from 'mongoose';
 import {ZRefBrand} from './mongoose-helpers.shared.js';
 import {getMongoose} from './config.js';
 import {PrettifyType} from './index.js';
@@ -137,37 +137,58 @@ type DeterminePopulatedResult<DocType, P> = P extends string
 // 4. MAIN INTERACTION INTERFACES
 // ============================================================================
 
+type PopulateRootPaths<P> = P extends string
+  ? P extends `${infer Head} ${infer Tail}`
+    ? PopulateRootPaths<Head> | PopulateRootPaths<Tail>
+    : P extends `${infer Head}.${string}`
+      ? Head
+      : P
+  : P extends {path: infer Path extends string}
+    ? PopulateRootPaths<Path>
+    : never;
+
+type PopulatedHydratedDocument<DocType, P, Hydrated> = Omit<Hydrated, PopulateRootPaths<P>> &
+  Pick<
+    DeterminePopulatedResult<DocType, P>,
+    Extract<PopulateRootPaths<P>, keyof DeterminePopulatedResult<DocType, P>>
+  >;
+
 /**
  * An enhanced Mongoose Document type that tracks population state.
  *
  * @template DocType The Zod-inferred document type.
  */
-type PopulateRootPaths<P> = P extends string
-  ? P extends `${infer Head} ${infer Tail}`
-    ? PopulateRootPaths<Head> | PopulateRootPaths<Tail>
-    : P extends `${infer Head}.${string}` ? Head : P
-  : P extends {path: infer Path extends string} ? PopulateRootPaths<Path> : never;
-
-type PopulatedHydratedDocument<DocType, P, Hydrated> =
-  Omit<Hydrated, PopulateRootPaths<P>> &
-  Pick<DeterminePopulatedResult<DocType, P>,
-    Extract<PopulateRootPaths<P>, keyof DeterminePopulatedResult<DocType, P>>>;
-
 export type StrictDocument<DocType, Hydrated = mongoose.HydratedDocument<DocType>> = PrettifyType<
-  Omit<Hydrated, 'populate'> & {
-      /**
-       * Populates document references and returns a document with updated type information.
-       *
-       * @param path The path(s) to populate. Supports dot notation, spaces, and recursive objects.
-       */
-      populate<P extends string | PopulateOptions<DocType>>(
-        path: P extends string ? ValidatePath<DocType, P> : P,
-      ): Promise<StrictDocument<
+  {[K in keyof Omit<Hydrated, 'populate'>]: OmitThisParameter<Hydrated[K]>} & {
+    /**
+     * Populates document references and returns a document with updated type information.
+     *
+     * @param path The path(s) to populate. Supports dot notation, spaces, and recursive objects.
+     */
+    populate<P extends string | PopulateOptions<DocType>>(
+      path: P extends string ? ValidatePath<DocType, P> : P,
+    ): Promise<
+      StrictDocument<
         DeterminePopulatedResult<DocType, P>,
         PopulatedHydratedDocument<DocType, P, Hydrated>
-      >>;
-    }
+      >
+    >;
+  }
 >;
+
+// Bind helpers that return their generic `this` to the current strict query state.
+// Helpers with explicit result types (including projections and terminal results)
+// retain their declared signatures.
+type StrictQueryHelpers<Result, DocType, Helpers, RawDoc, Hydrated> = {
+  [K in keyof Helpers]: ThisParameterType<Helpers[K]> extends mongoose.Query<any, any, any, any>
+    ? Helpers[K] extends <T extends ThisParameterType<Helpers[K]>>(
+        this: T,
+        ...args: infer Args
+      ) => T
+      ? (...args: Args) => StrictQuery<Result, DocType, Helpers, RawDoc, Hydrated>
+      : Helpers[K]
+    : Helpers[K];
+};
 
 /**
  * An enhanced Mongoose Query type that tracks population state.
@@ -182,9 +203,14 @@ export type StrictQuery<
   RawDoc = DocType,
   Hydrated = mongoose.HydratedDocument<DocType>,
 > = Omit<
-  Query<Result, Hydrated, Helpers, RawDoc>,
+  mongoose.QueryWithHelpers<
+    Result,
+    Hydrated,
+    StrictQueryHelpers<Result, DocType, Helpers, RawDoc, Hydrated>,
+    RawDoc
+  >,
   'populate' | 'exec'
-> & Helpers & {
+> & {
   /**
    * Populates document references and returns a query with updated result type information.
    *
@@ -194,8 +220,16 @@ export type StrictQuery<
     path: P extends string ? ValidatePath<DocType, P> : P,
   ): StrictQuery<
     Result extends Array<any>
-      ? StrictDocument<DeterminePopulatedResult<DocType, P>, PopulatedHydratedDocument<DocType, P, Hydrated>>[]
-      : StrictDocument<DeterminePopulatedResult<DocType, P>, PopulatedHydratedDocument<DocType, P, Hydrated>> | (Result & (null | undefined)),
+      ? StrictDocument<
+          DeterminePopulatedResult<DocType, P>,
+          PopulatedHydratedDocument<DocType, P, Hydrated>
+        >[]
+      :
+          | StrictDocument<
+              DeterminePopulatedResult<DocType, P>,
+              PopulatedHydratedDocument<DocType, P, Hydrated>
+            >
+          | (Result & (null | undefined)),
     DeterminePopulatedResult<DocType, P>,
     Helpers,
     RawDoc,
@@ -244,20 +278,27 @@ interface ModelQueryOverrides<DocType, Helpers, Hydrated> {
   ): StrictQuery<StrictDocument<DocType, Hydrated> | null, DocType, Helpers, DocType, Hydrated>;
 }
 
-/**
- * A type-safe wrapper for Mongoose Models that provides fluent population tracking.
- */
-type ModelHelpers<RawModel> = RawModel extends mongoose.Model<any, infer Helpers, any, any, any, any, any>
-  ? Helpers : {};
+type ModelHelpers<RawModel> =
+  RawModel extends mongoose.Model<any, infer Helpers, any, any, any, any, any> ? Helpers : {};
 
-type ModelDocument<RawModel, DocType> = RawModel extends {hydrate: (...args: any[]) => infer Hydrated}
-  ? Hydrated : mongoose.HydratedDocument<DocType>;
+type ModelDocument<RawModel, DocType> = RawModel extends {
+  hydrate: (...args: any[]) => infer Hydrated;
+}
+  ? Hydrated
+  : mongoose.HydratedDocument<DocType>;
 
 // Mapped types such as Omit discard construct signatures, so preserve it explicitly.
 type ModelConstructor<RawModel> = RawModel extends new (...args: infer Args) => infer Hydrated
-  ? new (...args: Args) => Hydrated : unknown;
+  ? new (...args: Args) => Hydrated
+  : unknown;
 
-export type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOverrides<DocType, ModelHelpers<RawModel>, ModelDocument<RawModel, DocType>>> &
+/**
+ * A type-safe wrapper for Mongoose Models that provides fluent population tracking.
+ */
+export type StrictModel<RawModel, DocType> = Omit<
+  RawModel,
+  keyof ModelQueryOverrides<DocType, ModelHelpers<RawModel>, ModelDocument<RawModel, DocType>>
+> &
   ModelConstructor<RawModel> &
   ModelQueryOverrides<DocType, ModelHelpers<RawModel>, ModelDocument<RawModel, DocType>>;
 
@@ -268,14 +309,19 @@ export type StrictModel<RawModel, DocType> = Omit<RawModel, keyof ModelQueryOver
 /**
  * Converts a standard Mongoose model into a `StrictModel` with advanced type-safe population.
  *
- * @template UserInferredType The Zod-inferred type of the document (e.g. `z.infer<typeof Schema>`).
+ * Infers document and extension types from the supplied schema. When specifying the
+ * document type explicitly, also pass `typeof schema` as the second type argument
+ * to preserve schema extensions.
+ *
+ * @template UserInferredType An optional explicit document type.
+ * @template TSchema The concrete Mongoose schema type.
  * @param name The model name to register or retrieve from Mongoose.
  * @param mongooseSchema The Mongoose schema instance.
  * @returns A `StrictModel` instance with enhanced type safety for population.
  *
  * @example
  * ```typescript
- * const PostModel = toStrictModel<Post>('Post', postSchema);
+ * const PostModel = toStrictModel('Post', postSchema);
  * const post = await PostModel.findOne().populate('author').exec();
  * // post.author is now fully typed
  * ```

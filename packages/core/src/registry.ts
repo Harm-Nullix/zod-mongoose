@@ -30,11 +30,22 @@ export interface ToMongooseSchemaOptions<
   THydratedDocumentType,
   TModelType
 > {
-  plugins?: Array<(schema: mongoose.Schema<
-    DocType, TModelType, TInstanceMethods, TQueryHelpers, TVirtuals, TStaticMethods,
-    mongoose.DefaultSchemaOptions, mongoose.InferSchemaType<mongoose.Schema<DocType>>,
-    THydratedDocumentType
-  >, options?: any) => void>;
+  plugins?: Array<
+    (
+      schema: mongoose.Schema<
+        DocType,
+        TModelType,
+        TInstanceMethods,
+        TQueryHelpers,
+        TVirtuals,
+        TStaticMethods,
+        mongoose.DefaultSchemaOptions,
+        mongoose.InferSchemaType<mongoose.Schema<DocType>>,
+        THydratedDocumentType & TInstanceMethods & TVirtuals
+      >,
+      options?: any,
+    ) => void
+  >;
   /** Base Mongoose model name used to make discriminator model names unique. */
   modelName?: string;
 }
