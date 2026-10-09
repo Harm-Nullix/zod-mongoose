@@ -1,5 +1,14 @@
 # @nullix/zod-mongoose-studio
 
+## 3.3.3
+
+### Patch Changes
+
+- Updated dependencies [89fd40c]
+- Updated dependencies [89fd40c]
+- Updated dependencies [6563e75]
+  - @nullix/zod-mongoose@3.3.3
+
 ## 3.3.2
 
 ### Patch Changes

@@ -1,3 +1,14 @@
+## 3.3.3
+
+### Patch Changes
+
+- 89fd40c: Reject non-reference population paths and preserve strict population through native fluent queries, lean queries, and document creation. Merge repeated nested query population options while retaining Mongoose's document replacement behavior. Infer generated fields from literal schema options and typed `withMongoose()` metadata, preserving explicit option overrides and custom hydrated types.
+
+  Keep the Strict Model guide focused on everyday usage and move advanced inference guidance to TypeScript Details. Add strict consumer checks against the emitted declarations.
+
+- 89fd40c: Infer populated result types for options arrays in strict model queries and documents, including nested arrays and reusable readonly tuples. Preserve schema extensions during population. Dynamic arrays retain both ID and populated possibilities.
+- 6563e75: Preserve schema types through `toStrictModel()`, including query helpers, statics, instance methods, virtuals, and hydrated document overrides. Keep fluent helper types around strict population calls. Carry custom hydrated document types and typed plugin callbacks through `toMongooseSchema()`.
+
 ## 3.3.2
 
 ### Patch Changes
