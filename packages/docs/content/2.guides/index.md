@@ -15,6 +15,7 @@ Start with the task you are trying to finish. Each guide gives the useful decisi
 | Reuse a Zod object across files | [Reusing object schemas](/guides/reusing-object-schemas) |
 | Reference and populate another model | [References and population](/guides/references-and-population) |
 | Type populated queries | [Strict Model](/guides/strict-model) |
+| Customize TypeScript inference | [TypeScript details](/guides/typescript-details) |
 | Share schemas with a browser or Nuxt app | [Browser and Nuxt](/guides/browser-and-nuxt) |
 | Add a plugin or conversion hook | [Plugins and hooks](/guides/plugins-and-hooks) |
 | Upgrade from older APIs | [Migration](/guides/migration) |

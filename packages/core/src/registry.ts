@@ -2,6 +2,7 @@ import {z} from 'zod/v4';
 import type mongoose from 'mongoose';
 import type {SchemaOptions} from 'mongoose';
 import {callHookSync} from './hooks.js';
+import type {WithSchemaMetadata, SchemaMetadata, MergeOptions} from './schema-types.js';
 
 export interface ToMongooseSchemaOptions<
   DocType = unknown,
@@ -73,7 +74,10 @@ export const mongooseRegistry = z.registry<MongooseMeta>();
 /**
  * A clean wrapper to attach Mongoose metadata to any Zod schema.
  */
-export function withMongoose<T extends z.ZodTypeAny>(schema: T, meta: MongooseMeta = {}): T {
+export function withMongoose<T extends z.ZodTypeAny, const Meta extends MongooseMeta = {}>(
+  schema: T,
+  meta: Meta = {} as Meta,
+): T & WithSchemaMetadata<MergeOptions<SchemaMetadata<T>, Meta>> {
   callHookSync('registry:get:before', {schema});
   const existing = mongooseRegistry.get(schema) || {};
   callHookSync('registry:get', {schema, meta: existing});
@@ -82,7 +86,7 @@ export function withMongoose<T extends z.ZodTypeAny>(schema: T, meta: MongooseMe
   callHookSync('registry:add', {schema, meta: merged});
   mongooseRegistry.add(schema, merged);
   callHookSync('registry:added', {schema, meta: merged});
-  return schema;
+  return schema as T & WithSchemaMetadata<MergeOptions<SchemaMetadata<T>, Meta>>;
 }
 
 /**

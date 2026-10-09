@@ -199,7 +199,9 @@ export async function checkExplicitSchemaGenerics() {
   Model.find().echo(false);
   // @ts-expect-error A helper that changes the result to a number keeps that result.
   const wrongCount: string = await Model.find().countMatches();
-  const populated = await Model.findOne().populate('author').exec();
+  const populated = await Model.findOne()
+    .populate([{path: 'author'}])
+    .exec();
   if (!populated) return undefined;
   populated.items.id(new mongoose.Types.ObjectId());
   const display: string = populated.displayName;

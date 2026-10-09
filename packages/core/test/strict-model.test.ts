@@ -140,6 +140,93 @@ describe('StrictModel', () => {
     }
   });
 
+  it('populates multiple paths and nested options arrays on queries and documents', async () => {
+    const accountSchema = z.object({username: z.string()});
+    const teamSchema = z.object({label: z.string()});
+    const authorSchema = z.object({
+      name: z.string(),
+      user: zRef('ArrayAccount', accountSchema),
+      team: zRef('ArrayTeam', teamSchema),
+    });
+    const postSchema = z.object({
+      author: zRef('ArrayAuthor', authorSchema),
+      mentions: z.array(zRef('ArrayAuthor', authorSchema)),
+    });
+    const Account = mongoose.model('ArrayAccount', toMongooseSchema(accountSchema));
+    const Team = mongoose.model('ArrayTeam', toMongooseSchema(teamSchema));
+    const Author = mongoose.model('ArrayAuthor', toMongooseSchema(authorSchema));
+    const Post = toStrictModel('ArrayPost', toMongooseSchema(postSchema));
+    const account = await Account.create({username: 'ada'});
+    const team = await Team.create({label: 'Core'});
+    const author = await Author.create({name: 'Ada', user: account._id, team: team._id});
+    const post = await Post.create({author: author._id, mentions: [author._id]});
+
+    const populated = await Post.findById(post._id)
+      .populate([
+        {path: 'author', populate: [{path: 'user'}, {path: 'team'}]},
+        {path: 'mentions', populate: [{path: 'user'}]},
+      ])
+      .exec();
+    expect(populated?.author.user.username).toBe('ada');
+    expect(populated?.author.team.label).toBe('Core');
+    expect(populated?.mentions[0]?.user.username).toBe('ada');
+
+    const raw = await Post.findById(post._id).exec();
+    if (!raw) throw new Error('Expected the newly created post');
+    const populatedDoc = await post.populate([
+      {path: 'author', populate: [{path: 'user'}, {path: 'team'}]},
+      {path: 'mentions'},
+    ] as const);
+    expect(populatedDoc.author.user.username).toBe('ada');
+    expect(populatedDoc.author.team.label).toBe('Core');
+    expect(populatedDoc.mentions[0]?.name).toBe('Ada');
+
+    const repeated = await Post.findById(post._id)
+      .populate([
+        {path: 'author', populate: {path: 'user'}},
+        {path: 'author', populate: {path: 'team'}},
+      ])
+      .orFail()
+      .exec();
+    expect(repeated.author.user.username).toBe('ada');
+    expect(repeated.author.team.label).toBe('Core');
+    const chained = await Post.findById(post._id)
+      .populate({path: 'author', populate: {path: 'user'}})
+      .sort({_id: 1})
+      .select('author mentions')
+      .populate({path: 'author', populate: {path: 'team'}})
+      .orFail()
+      .exec();
+    expect(chained.author.user.username).toBe('ada');
+    expect(chained.author.team.label).toBe('Core');
+    const documentRepeated = await raw.populate([
+      {path: 'author', populate: {path: 'user'}},
+      {path: 'author', populate: {path: 'team'}},
+    ]);
+    expect(documentRepeated.author.team.label).toBe('Core');
+    expect(documentRepeated.author.user).toBeInstanceOf(mongoose.Types.ObjectId);
+    const repopulated = await documentRepeated.populate({path: 'author', populate: {path: 'user'}});
+    expect(repopulated.author.user.username).toBe('ada');
+
+    const lean = await Post.findById(post._id)
+      .lean()
+      .populate({path: 'author', populate: {path: 'user'}})
+      .orFail();
+    expect(lean.author.user.username).toBe('ada');
+    expect(lean).not.toBeInstanceOf(mongoose.Document);
+    expect(lean.author).not.toBeInstanceOf(mongoose.Document);
+    const leanAfter = await Post.findById(post._id).populate('author').lean().orFail();
+    expect(leanAfter.author.name).toBe('Ada');
+    expect(leanAfter.author).not.toBeInstanceOf(mongoose.Document);
+    const constructed = await new Post({author: author._id, mentions: []}).populate('author');
+    expect(constructed.author.name).toBe('Ada');
+    const hydrated = await Post.hydrate({author: author._id, mentions: []}).populate('author');
+    expect(hydrated.author.name).toBe('Ada');
+
+    const empty = await Post.findById(post._id).populate([]).exec();
+    expect(empty?.author).toBeInstanceOf(mongoose.Types.ObjectId);
+  });
+
   it('should handle optional zRefs correctly', async () => {
     const OptionalPostSchema = z.object({
       title: z.string(),

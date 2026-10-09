@@ -8,6 +8,13 @@ import {prepareForZodValidation} from './zod-validation.js';
 import {getMongoose} from './config.js';
 import {extractMongooseDef} from './extract-mongoose-def.js';
 import {callHookSync} from './hooks.js';
+import type {
+  SchemaTypeOptions,
+  SchemaMetadata,
+  MergeOptions,
+  ConvertedDocument,
+  SchemaHydratedDocument,
+} from './schema-types.js';
 
 export {extractMongooseDef} from './extract-mongoose-def.js';
 export type {ToMongooseType} from './extract-mongoose-def.js';
@@ -42,6 +49,7 @@ export function toMongooseSchema<
     TVirtuals,
     THydratedDocumentType
   >,
+  const TOptions extends SchemaTypeOptions = {},
 >(
   schema: T,
   options?: ToMongooseSchemaOptions<
@@ -52,17 +60,36 @@ export function toMongooseSchema<
     TVirtuals,
     THydratedDocumentType,
     TModelType
-  >,
+  > &
+    TOptions,
 ): mongoose.Schema<
-  z.infer<T>,
+  ConvertedDocument<T, MergeOptions<SchemaMetadata<T>, NoInfer<TOptions>>>,
   TModelType,
   TInstanceMethods,
   TQueryHelpers,
   TVirtuals,
   TStaticMethods,
-  mongoose.DefaultSchemaOptions,
-  mongoose.InferSchemaType<mongoose.Schema<z.infer<T>>>,
-  THydratedDocumentType & TInstanceMethods & TVirtuals
+  MergeOptions<mongoose.DefaultSchemaOptions, MergeOptions<SchemaMetadata<T>, NoInfer<TOptions>>>,
+  mongoose.InferSchemaType<
+    mongoose.Schema<
+      ConvertedDocument<T, MergeOptions<SchemaMetadata<T>, NoInfer<TOptions>>>,
+      any,
+      any,
+      any,
+      any,
+      any,
+      MergeOptions<
+        mongoose.DefaultSchemaOptions,
+        MergeOptions<SchemaMetadata<T>, NoInfer<TOptions>>
+      >
+    >
+  >,
+  SchemaHydratedDocument<
+    THydratedDocumentType & TInstanceMethods & TVirtuals,
+    z.infer<T>,
+    MergeOptions<SchemaMetadata<T>, NoInfer<TOptions>>,
+    TVirtuals
+  >
 > {
   const {schema: unwrapped} = unwrapZodSchema(schema);
   const meta =
@@ -118,7 +145,7 @@ export function toMongooseSchema<
 
   if (definition && typeof definition === 'object' && definition.__isDiscriminatorUnion) {
     const baseModelName =
-      modelName || (schemaOptions.collection && modelNameFromCollection(schemaOptions.collection));
+      modelName || (options?.collection && modelNameFromCollection(options.collection));
     if (!baseModelName) {
       throw new Error(
         'toMongooseSchema() found a top-level discriminated union. ' +
