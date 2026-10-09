@@ -1,0 +1,33 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 8140df709a39adc2861d9dcf11de22eef08be554..49e5a0e689de77b685a065a3c21ecf20de3de604 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -523,16 +523,22 @@ ${content(node, context)}`.trim();
+       linkReference: (node, _, state, info) => {
+         return defaultHandlers.linkReference(node, _, state, info) + attributes(node, state);
+       },
+-      strong: (node, _, state, info) => {
+-        return defaultHandlers.strong(node, _, state, info) + attributes(node, state);
+-      },
++      strong: Object.assign(
++        (node, _, state, info) => {
++          return defaultHandlers.strong(node, _, state, info) + attributes(node, state);
++        },
++        { attention: defaultHandlers.strong.attention, peek: defaultHandlers.strong.peek }
++      ),
+       inlineCode: (node, _, state) => {
+         state.compilePattern = state.compilePattern || compilePattern;
+         return defaultHandlers.inlineCode(node, _, state) + attributes(node, state);
+       },
+-      emphasis: (node, _, state, info) => {
+-        return defaultHandlers.emphasis(node, _, state, info) + attributes(node, state);
+-      }
++      emphasis: Object.assign(
++        (node, _, state, info) => {
++          return defaultHandlers.emphasis(node, _, state, info) + attributes(node, state);
++        },
++        { attention: defaultHandlers.emphasis.attention, peek: defaultHandlers.emphasis.peek }
++      )
+     }
+   };
+ };
