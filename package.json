@@ -43,6 +43,9 @@
     "onlyBuiltDependencies": [
       "bun",
       "better-sqlite3"
-    ]
+    ],
+    "patchedDependencies": {
+      "remark-mdc": "patches/remark-mdc.patch"
+    }
   }
 }
