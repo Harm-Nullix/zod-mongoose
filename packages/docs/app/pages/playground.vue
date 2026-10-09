@@ -9,7 +9,7 @@ useSeoMeta({
     'Experiment with Zod to Mongoose schema transformations in real-time.'
 })
 
-defineOgImageComponent('Docs', {
+defineOgImage('Docs', {
   title: 'Playground - zod-mongoose',
   description:
     'Experiment with Zod to Mongoose schema transformations in real-time.'

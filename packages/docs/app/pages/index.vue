@@ -23,7 +23,7 @@ useSeoMeta({
   twitterImage: 'https://ui.nuxt.com/assets/templates/nuxt/docs-light.png'
 })
 
-defineOgImageComponent('Docs', {
+defineOgImage('Docs', {
   title,
   description
 })
