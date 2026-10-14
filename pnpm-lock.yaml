@@ -262,10 +262,10 @@ importers:
         version: 0.2.0(magicast@0.5.5)
       nuxt-og-image:
         specifier: ^6.9.0
-        version: 6.9.0(044490acfab097eef4f4530f82baac17)
+        version: 6.9.0(1d99f71feec47d7c1fb80c08f8492f51)
       satori:
-        specifier: ^0.44.3
-        version: 0.44.3
+        specifier: ^0.47.1
+        version: 0.47.1
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2
@@ -8934,8 +8934,8 @@ packages:
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
-  satori@0.44.3:
-    resolution: {integrity: sha512-3Dj7zB2jc+806+YYinNID9nvdJK2AagSmpNeG/qeHY7Yq7jQ5EpMSQ8C5rLSw1PMxnrbQaQsQnCiEGzIKKq3HA==}
+  satori@0.47.1:
+    resolution: {integrity: sha512-hoRMFMXQ9o4VvcOZ+5pXKRAuWJkjvUzRz3fZJoFrAT3MVfuUvMWROe50lB7AREI1m9a0FAlEMDdQ3WPvHLm7FA==}
     engines: {node: '>=16'}
 
   sax@1.6.0:
@@ -20276,7 +20276,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  nuxt-og-image@6.9.0(044490acfab097eef4f4530f82baac17):
+  nuxt-og-image@6.9.0(1d99f71feec47d7c1fb80c08f8492f51):
     dependencies:
       '@clack/prompts': 1.8.1
       '@nuxt/kit': 4.5.2(magic-string@1.4.2)(magicast@0.5.5)(oxc-parser@0.151.0)(rolldown@1.2.13)(unplugin@3.4.0(esbuild@0.27.7)(rolldown@1.2.13)(rollup@4.64.3)(vite@8.3.4(@types/node@26.6.3)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.1)))
@@ -20316,7 +20316,7 @@ snapshots:
       fontless: 0.2.1(db0@0.3.4(better-sqlite3@13.0.3))(ioredis@5.10.1)(vite@8.3.4(@types/node@26.6.3)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.1))
       nitropack: 2.13.4(better-sqlite3@13.0.3)(oxc-parser@0.151.0)(rolldown@1.2.13)(vite@8.3.4(@types/node@26.6.3)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.46.1)(yaml@2.9.1))
       playwright-core: 1.59.1
-      satori: 0.44.3
+      satori: 0.47.1
       sharp: 0.35.4(@types/node@26.6.3)
       tailwindcss: 4.2.2
       unifont: 0.7.5
@@ -22335,7 +22335,7 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
-  satori@0.44.3:
+  satori@0.47.1:
     dependencies:
       '@shuding/opentype.js': 1.4.0-beta.0
       css-background-parser: 0.1.0
