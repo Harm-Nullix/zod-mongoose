@@ -21,7 +21,7 @@
     "@nuxtjs/mcp-toolkit": "^0.22.0",
     "@nuxtjs/mdc": "^0.23.1",
     "@resvg/resvg-js": "^2.6.2",
-    "@vueuse/core": "^14.2.1",
+    "@vueuse/core": "^15.0.0",
     "minimark": "^0.2.0",
     "mongoose": "9.7.4",
     "nuxt": "^4.6.0",
