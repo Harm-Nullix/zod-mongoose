@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 3.5.0
+
+### Minor Changes
+
+- aeaef9b: Add type-safe MongoDB query filter inference with `InferQueryFilter` and alias `InferFilter`. Update documentation and add tests for query filter utilities.
+
+### Patch Changes
+
+- Updated dependencies [aeaef9b]
+  - @nullix/zod-mongoose@3.5.0
+
 ## 3.4.0
 
 ### Minor Changes
