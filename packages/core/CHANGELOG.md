@@ -1,3 +1,9 @@
+## 3.5.0
+
+### Minor Changes
+
+- aeaef9b: Add type-safe MongoDB query filter inference with `InferQueryFilter` and alias `InferFilter`. Update documentation and add tests for query filter utilities.
+
 ## 3.4.0
 
 ### Minor Changes
