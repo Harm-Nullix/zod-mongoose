@@ -62,7 +62,7 @@ Key features:
 - **Nuxt 4 Ready**: Use the core helpers in Nuxt and Nitro; conditional exports select the browser-safe client implementation automatically.
 - **Hookable**: Extensible conversion process using `unjs/hookable`. Developers can hook into 15+ points (e.g., `schema:object:before`, `schema:union:before`).
 - **Populated Helper**: `PopulatedSchema<T>` utility for perfect TypeScript inference of populated documents.
-- **Mongoose Inference**: `InferDocument<T>` includes the generated `_id`; `InferInput<T>` describes incoming Zod data.
+- **Mongoose Inference**: `InferDocument<T>` includes the generated `_id`; `InferInput<T>` describes incoming Zod data; `InferQueryFilter<T>` derives type-safe MongoDB query filters.
 - **Strict Model**: `toStrictModel<T>` for advanced, fluent type-safe population (see [Strict Model documentation](./STRICT_MODEL.md)).
 
 `zPoint()` and `zPolygon()` provide GeoJSON values with native coordinate storage and validation. See the [helper reference](https://zodmongoose.com/api/specialized-helpers#geojson-helpers).
@@ -374,24 +374,31 @@ Attaches Mongoose metadata to a Zod schema. For object schemas, use different pl
 
 `_id: false` removes the identifier path; `id: false` only disables the string `id` virtual. Field options such as `index` and `unique` go directly in the metadata. See [Nested Object IDs](https://zodmongoose.com/guides/nested-object-ids) for the full behavior.
 
-### `InferDocument<T>` / `InferInput<T>`
+### `InferDocument<T>` / `InferInput<T>` / `InferQueryFilter<T>`
 
-Use `InferDocument` for values read from Mongoose and `InferInput` for data submitted to Zod. `InferDocument` adds Mongoose's generated `_id`; `InferInput` is equivalent to `z.input<T>`, so it preserves coercion and preprocessing input types.
+Use `InferDocument` for values read from Mongoose, `InferInput` for data submitted to Zod, and `InferQueryFilter` for MongoDB query filters. `InferDocument` adds Mongoose's generated `_id`; `InferInput` is equivalent to `z.input<T>`, so it preserves coercion and preprocessing input types; `InferQueryFilter` derives the type-safe `QueryFilter<InferDocument<T>>` for queries and repository layers.
 
 ```typescript
 import { z } from 'zod/v4';
-import type { InferDocument, InferInput } from '@nullix/zod-mongoose';
+import type { InferDocument, InferInput, InferQueryFilter } from '@nullix/zod-mongoose';
 
 const UserSchema = z.object({
   name: z.string(),
+  age: z.number(),
 });
 
 type UserDocument = InferDocument<typeof UserSchema>;
 type CreateUserInput = InferInput<typeof UserSchema>;
+type UserFilter = InferQueryFilter<typeof UserSchema>;
 
 const user: UserDocument = {
   _id: new mongoose.Types.ObjectId(),
   name: 'John Doe',
+  age: 30,
+};
+
+const filter: UserFilter = {
+  age: { $gte: 18 },
 };
 ```
 

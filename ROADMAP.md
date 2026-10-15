@@ -30,7 +30,7 @@ The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of t
 - **Object field wrappers:** `.required()` and `exactOptional()` retain their underlying Mongoose types. Exact optional fields reject explicit `undefined` on document assignment.
 - **Derived object schemas:** `.extend()`, `.safeExtend()`, `.pick()`, `.omit()`, and `.partial()` inherit the resulting Zod object's unknown-key policy. See the [object modes guide](packages/docs/content/2.guides/9.object-modes.md) for storage behavior and query-update caveats.
 
-## v3.4 — implementation complete, release pending
+## v3.4 — implementation complete
 
 **Predictable stored values:** conversion preserves valid values and avoids guessing transform return types. [Schema conversion compatibility](packages/core/test/schema-conversion-compatibility.test.ts) and [stored-value lifecycle](packages/core/test/storage-lifecycle.test.ts) coverage run as part of the normal unit suite: `pnpm --filter @nullix/zod-mongoose test:unit`. See the [decisions and original findings](packages/core/test/roadmap-3.4.md).
 
@@ -43,9 +43,9 @@ The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of t
 
 The original red tests included proposals for implicit literal defaults and strict union casting. Those assertions were revised to match the contracts above. The [validation guide](packages/docs/content/2.guides/1.validation.md) explains the input/output boundary; the [migration notes](packages/docs/content/2.guides/8.migration.md#upgrade-to-v34) highlight array and transform changes.
 
-## Unscheduled
+## v3.5 — implementation complete
 
-- **Type-safe query-filter helper:** No version has been assigned to `zFilter()`. A future proposal needs a concrete API and compatibility review before it is added to the release roadmap.
+- **Type-safe query-filter helper:** `InferQueryFilter<T>` (and alias `InferFilter<T>`) provides compile-time MongoDB query filter types (`mongoose.QueryFilter<InferDocument<T>>`) derived directly from Zod document schemas. It complements `InferInput<T>` and `InferDocument<T>` with zero runtime overhead.
 
 ## v4.0 — planned breaking cleanup
 

@@ -6,6 +6,8 @@ import {
   InferDocument,
   InferInput,
   InferMongoose,
+  InferQueryFilter,
+  InferFilter,
 } from '../src/zod-helpers.js';
 
 describe('Mongoose Inference', () => {
@@ -94,5 +96,32 @@ describe('Mongoose Inference', () => {
 
     expect(document._id).toBeInstanceOf(mongoose.Types.ObjectId);
     expect(input).toEqual({name: 'test', count: '1'});
+  });
+
+  test('InferQueryFilter provides type-safe MongoDB query filters for Zod schemas', () => {
+    const schema = z.object({
+      name: z.string(),
+      age: z.number(),
+      tags: z.array(z.string()),
+    });
+
+    type UserFilter = InferQueryFilter<typeof schema>;
+    type UserFilterAlias = InferFilter<typeof schema>;
+
+    const filter1: UserFilter = {
+      name: 'test',
+      age: {$gte: 18, $lt: 65},
+    };
+
+    const filter2: UserFilter = {
+      $or: [{name: 'Alice'}, {age: {$gt: 30}}],
+      tags: {$in: ['admin', 'user']},
+    };
+
+    const filter3: UserFilterAlias = filter1;
+
+    expect(filter1.name).toBe('test');
+    expect(filter3.name).toBe('test');
+    expect(filter2.$or).toHaveLength(2);
   });
 });
