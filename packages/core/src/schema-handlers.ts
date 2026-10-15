@@ -159,9 +159,27 @@ export function handleArray(
     (unwrapped as any)._def.items?.[0];
 
   const mongoose = getMongoose();
-  const innerDef = element
+  // A tuple has a different schema at every position. A Mixed element avoids
+  // destructive casting; the Zod lifecycle validator checks each position.
+  let innerDef = unwrapped instanceof z.ZodTuple
+    ? {type: mongoose?.Schema.Types.Mixed || 'Mixed'}
+    : element
     ? extractMongooseDef(element, visited)
     : mongoose?.Schema.Types.Mixed || 'Mixed';
+
+  if (unwrapped instanceof z.ZodTuple) {
+    const {items, rest} = (unwrapped as any)._def;
+    const definitions = [...items, ...(rest ? [rest] : [])]
+      .map((item) => extractMongooseDef(item, visited));
+    const first = definitions[0];
+    // Homogeneous, unconstrained primitive tuples can keep native casting
+    // (including GeoJSON coordinates). Position-specific schemas use Mixed.
+    if (first && [String, Number, Boolean, Date, BigInt].includes(first.type) &&
+      definitions.every((definition) => definition.type === first.type &&
+        Object.keys(definition).every((key) => key === 'type' || key === 'required'))) {
+      innerDef = first;
+    }
+  }
 
   // If no explicit type override, wrap the inner definition in an array
   if (!mongooseProp.type) {
@@ -186,18 +204,15 @@ export function handleArray(
       ];
       mongooseProp.discriminators = discriminators;
     } else {
-      const innerType = (innerDef as any).type || innerDef;
-      mongooseProp.type = [innerType];
-
-      // Transfer any metadata from the inner type (like 'ref') to the array definition
-      if (typeof innerDef === 'object') {
-        const innerMeta = {...innerDef};
-        delete innerMeta.type;
-        Object.assign(mongooseProp, innerMeta);
-        mongooseProp.type = [innerType]; // Restore type as array
-      }
+      const simple = typeof innerDef === 'object' && innerDef !== null &&
+        Object.keys(innerDef).every((key) => key === 'type' || key === 'required');
+      mongooseProp.type = [simple ? (innerDef as any).type : innerDef];
+      // Mongoose also needs ref on the array for population/query inference.
+      if ((innerDef as any).ref && !mongooseProp.ref) mongooseProp.ref = (innerDef as any).ref;
     }
   }
+  // Mongoose's implicit [] hides omission from Zod. Explicit defaults win.
+  if (!Object.hasOwn(mongooseProp, 'default')) mongooseProp.default = undefined;
   callHookSync('schema:array:after', {schema: unwrapped, mongooseProp, innerDef});
 }
 

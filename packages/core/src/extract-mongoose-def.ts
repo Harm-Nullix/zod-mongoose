@@ -5,6 +5,7 @@ import {mongooseRegistry, getMongooseMeta} from './registry.js';
 import {mapZodChecksToMongoose} from './validation-mappers.js';
 import {handleObject, handleArray, handleRecord} from './schema-handlers.js';
 import {callHookSync} from './hooks.js';
+import {storageSchema} from './storage-schema.js';
 
 /**
  * Compare generated Mongoose definitions without walking Mongoose's internal
@@ -207,6 +208,9 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
   }
 
   if (type === 'array' || type === 'set' || type === 'tuple') {
+    if (mongooseProp.required === undefined && !features.isNullable) {
+      mongooseProp.required = features.required;
+    }
     handleArray(unwrapped as any, mongooseProp, visited, (s, v) => extractMongooseDef(s, v, true));
   }
 
@@ -285,6 +289,7 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
     }
 
     callHookSync('schema:union:before', {schema: unwrapped as any, mongooseProp, ctx: unionCtx});
+    const unionValidationSchema = storageSchema(schema);
 
     if (discriminatorKey && unionCtx.isObjectUnion) {
       const discriminators: Record<string, any> = {};
@@ -342,7 +347,7 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
               const mongoose = getMongoose();
               const doc =
                 mongoose && this instanceof mongoose.Document ? this.toObject() : this || {};
-              (schema as any).parse(doc);
+              unionValidationSchema.parse(doc);
               return true;
             } catch (err: any) {
               const message = err?.errors?.[0]?.message || err.message;
@@ -449,7 +454,7 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
         mongooseProp.validate = {
           validator(v: any) {
             try {
-              (schema as any).parse(v);
+              unionValidationSchema.parse(v);
               return true;
             } catch {
               return false;
@@ -498,7 +503,7 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
         mongooseProp.validate = {
           validator(v: any) {
             try {
-              (schema as any).parse(v);
+              unionValidationSchema.parse(v);
               return true;
             } catch (err) {
               return false;
@@ -507,7 +512,7 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
           message: (props: any) => {
             if (unionCtx.isXor) return 'XOR validation failed';
             try {
-              (schema as any).parse(props.value);
+              unionValidationSchema.parse(props.value);
             } catch (err: any) {
               return `Union validation failed: ${err.message}`;
             }
@@ -524,8 +529,31 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
     });
   }
 
-  if (type === 'literal' && !mongooseProp.type) {
-    mongooseProp.type = getMongoose()?.Schema.Types.Mixed || 'Mixed';
+  if (type === 'literal') {
+    const values: unknown[] = def.values || [def.value];
+    const kind = typeof values[0];
+    const homogeneous = new Set(values.map((value) => typeof value)).size === 1 &&
+      values.every((value) => value !== null);
+    const nativeTypes: Record<string, any> = {string: String, number: Number, boolean: Boolean};
+    if (!mongooseProp.type) {
+      mongooseProp.type = homogeneous && nativeTypes[kind]
+        ? nativeTypes[kind]
+        : getMongoose()?.Schema.Types.Mixed || 'Mixed';
+    }
+    if (homogeneous && (kind === 'string' || kind === 'number')) mongooseProp.enum = values;
+    const validator = {
+      validator: (value: unknown) =>
+        (value === undefined && features.required === false) ||
+        (value === null && features.isNullable) || values.includes(value),
+      message: 'Value must match a declared Zod literal',
+    };
+    const previous = mongooseProp.validate;
+    mongooseProp.validate = previous
+      ? [...(Array.isArray(previous) ? previous : [previous]), validator]
+      : validator;
+    if (mongooseProp.required === undefined) {
+      mongooseProp.required = features.isNullable || values.includes(null) ? false : features.required;
+    }
   }
 
   // Handle Primitives
@@ -552,36 +580,6 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
             booleanstring: Boolean,
           };
           mongooseProp.type = typeMap[type];
-
-          // Clever inference: If a transform occurred (which we know if the Zod type
-          // is different from the default value type), prefer the default's type.
-          if (mongooseProp.default !== undefined) {
-            const defaultType = typeof mongooseProp.default;
-            if (defaultType === 'boolean' && type !== 'boolean') {
-              mongooseProp.type = Boolean;
-            } else if (defaultType === 'number' && type !== 'number') {
-              mongooseProp.type = Number;
-            } else if (defaultType === 'string' && type !== 'string') {
-              mongooseProp.type = String;
-            } else if (mongooseProp.default instanceof Date && type !== 'date') {
-              mongooseProp.type = Date;
-            }
-          }
-
-          // Even cleverer: Check transformations for clues (e.g., stringbool, boolstring)
-          if (mongooseProp.type === String && features.transformations) {
-            for (const tx of features.transformations) {
-              const txStr = tx.transform?.toString() || tx.toString();
-              if (txStr.includes('stringbool') || txStr.includes('boolstring') || txStr.includes('booleanstring')) {
-                mongooseProp.type = Boolean;
-                break;
-              }
-              if (txStr.includes('=== "true"') || txStr.includes('=== \'true\'')) {
-                mongooseProp.type = Boolean;
-                break;
-              }
-            }
-          }
         }
       }
       if (mongooseProp.required !== false) mongooseProp.required = true;
@@ -590,11 +588,17 @@ export function extractMongooseDef<T extends z.ZodTypeAny>(
     case 'enum':
     case 'nativeenum':
     case 'native_enum': {
-      if (!mongooseProp.type) mongooseProp.type = String;
       mongooseProp.enum =
         type === 'enum'
           ? (unwrapped as any).options || def.values
           : Object.values((unwrapped as any).enum || def.values);
+      if (!mongooseProp.type) {
+        mongooseProp.type = mongooseProp.enum.every((value: unknown) => typeof value === 'number')
+          ? Number
+          : mongooseProp.enum.every((value: unknown) => typeof value === 'string')
+            ? String
+            : getMongoose()?.Schema.Types.Mixed || 'Mixed';
+      }
       if (mongooseProp.required !== false) mongooseProp.required = true;
       break;
     }

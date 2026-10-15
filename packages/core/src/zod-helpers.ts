@@ -147,7 +147,9 @@ export function unwrapZodSchema(
           ...effects,
         ];
       }
-      return unwrapZodSchema(def.in, transformFeatures, visited);
+      // A callback's return type is erased at runtime. Preserve its output with
+      // Mixed unless a subsequent pipe declares an output schema.
+      return unwrapZodSchema(zod.unknown(), transformFeatures, visited);
     }
 
     // Default pipe behavior (extract the output part)

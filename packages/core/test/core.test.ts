@@ -88,11 +88,11 @@ describe('@nullix/zod-mongoose core', () => {
 
   test('should handle pipelines (transform)', () => {
     const zodSchema = z.object({
-      count: z.string().transform((v) => Number.parseInt(v, 10)),
+      count: z.string().transform((v) => Number.parseInt(v, 10)).pipe(z.number()),
     });
 
     const mongooseSchema = toMongooseSchema(zodSchema);
-    expect(mongooseSchema.path('count')).toBeInstanceOf(mongoose.Schema.Types.String);
+    expect(mongooseSchema.path('count')).toBeInstanceOf(mongoose.Schema.Types.Number);
   });
 
   test('should handle BigInt', () => {

@@ -2,7 +2,7 @@
 
 This roadmap reflects the code on `main`. Features are marked as shipped only when they are available in a released version; proposed work is deliberately kept separate from the public API.
 
-## Current release: v3.1.1
+## Current release: v3.3.4
 
 v3.1.0 introduced `InferDocument<T>` and `InferInput<T>`. It also deprecated `setFrontendMode()` and the legacy `InferMongoose<T>`, `OutputMongoose<T>`, and `InputMongoose<T>` aliases. Conditional exports continue to select the browser-safe implementation automatically.
 
@@ -10,7 +10,7 @@ The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of t
 
 ## Already available
 
-- **Full Zod lifecycle validation:** `toMongooseSchema()` runs `schema.parse()` in a Mongoose `post('validate')` hook by default. This covers Zod features that cannot be expressed as Mongoose schema options, including refinements and transforms. Set `validateBeforeSave: false` in conversion options or `withMongoose()` metadata to opt out. This has been available since v2.5.0; there is no separate `runZodValidate` option planned.
+- **Zod document validation:** `toMongooseSchema()` validates stored values in a Mongoose `post('validate')` hook by default, including field and object refinements. In v3.4, pipes and codecs validate their declared output without rerunning input transforms. Parse transformed input before storage; see the [validation guide](packages/docs/content/2.guides/1.validation.md). Set `validateBeforeSave: false` in conversion options or metadata to disable the extra hook.
 - **References and populated results:** `zRef()` defines an ObjectId reference and keeps the target Zod schema as metadata. `PopulatedSchema<T, K>` types populated results, `populateZodSchema()` validates populated data at runtime, and `toStrictModel()` provides fluent type-safe population. `zPopulated` was replaced in v2.3.0 and should not be reintroduced.
 - **Mongoose-specific metadata:** `withMongoose(schema, metadata)` stores field and schema options in the Zod registry without extending Zod prototypes. It supports normal Mongoose options such as `index`, `unique`, `ref`, `timestamps`, `collection`, and nested-schema configuration.
 - **Specialized MongoDB bridges:** `zObjectId()`, `zBuffer()`, and `zRef()` are available in both server and browser-safe entry points.
@@ -24,21 +24,28 @@ The previously proposed `@nullix/zod-mongoose/nuxt` entry point is not part of t
 
 - **Buffer validation fix:** `zBuffer()` accepts BSON `Binary` values from Mongoose `document.toObject()`, so the default Zod validation hook accepts edited Buffer fields.
 
-## v3.3 — implementation complete, pending release
+## v3.3 — implementation complete
 
 - **Unknown-key behavior:** `z.strictObject()` rejects unknown fields, while `z.looseObject()` and `.catchall()` preserve them in top-level and nested Mongoose documents. Typed catchall values are checked during document validation. Mongoose-generated IDs, version keys, and timestamps are excluded from that Zod check unless declared in the corresponding Zod shape.
 - **Object field wrappers:** `.required()` and `exactOptional()` retain their underlying Mongoose types. Exact optional fields reject explicit `undefined` on document assignment.
 - **Derived object schemas:** `.extend()`, `.safeExtend()`, `.pick()`, `.omit()`, and `.partial()` inherit the resulting Zod object's unknown-key policy. See the [object modes guide](packages/docs/content/2.guides/9.object-modes.md) for storage behavior and query-update caveats.
 
+## v3.4 — implementation complete, release pending
+
+**Predictable stored values:** conversion preserves valid values and avoids guessing transform return types. [Schema conversion compatibility](packages/core/test/schema-conversion-compatibility.test.ts) and [stored-value lifecycle](packages/core/test/storage-lifecycle.test.ts) coverage run as part of the normal unit suite: `pnpm --filter @nullix/zod-mongoose test:unit`. See the [decisions and original findings](packages/core/test/roadmap-3.4.md).
+
+- **Array presence and defaults:** required arrays reject omission; optional arrays remain omitted. Use `.default([])` to request an empty-list default. Element defaults and options stay separate from their containing array, including primitive-union definitions. Valid empty arrays and length checks retain their behavior.
+- **Tuple values:** heterogeneous and position-constrained tuples preserve their element types through Mixed array storage. Unconstrained homogeneous primitive tuples retain native casting, including GeoJSON coordinates. Zod checks tuple positions and length during document validation.
+- **Transform output:** parse input once before storage. Pipes, preprocessors, and codecs validate declared output without rerunning input callbacks. Bare callbacks map to Mixed and need `.pipe(outputSchema)` for automatic output typing and validation. Whole-object transforms require an output object pipe. Explicit Mongoose types control casting, without supplying an output validation schema.
+- **Strings and enums:** valid empty strings pass presence checks while missing required values still fail. Numeric enums retain numbers; nullable enums retain null support. Both current and older ISO string format syntax preserve strings.
+- **Literal constraints:** primitive literals use native types and enforce declared values even with the Zod hook disabled. Defaults remain explicit; optional/nullable wrappers and multi-value literals retain their semantics.
+- **Casting compatibility:** native Mongoose primitive Union casting remains available for direct construction and query filters. Parse input with Zod first when strict raw-input validation is required. Conversion does not impose a new global casting policy.
+
+The original red tests included proposals for implicit literal defaults and strict union casting. Those assertions were revised to match the contracts above. The [validation guide](packages/docs/content/2.guides/1.validation.md) explains the input/output boundary; the [migration notes](packages/docs/content/2.guides/8.migration.md#upgrade-to-v34) highlight array and transform changes.
+
 ## Unscheduled
 
 - **Type-safe query-filter helper:** No version has been assigned to `zFilter()`. A future proposal needs a concrete API and compatibility review before it is added to the release roadmap.
-- **Schema conversion edge cases & runtime alignment:** Hardening type translation to prevent runtime casting errors, eliminate unexpected validation failures, and maximize practical interoperability:
-  - **Array requirement rules (`z.array`):** Avoid setting Mongoose `required: true` on arrays unless Zod explicitly defines `.min(1)`, ensuring valid empty lists (`[]`) do not cause save failures.
-  - **Transform output typing (`z.transform`):** Derive Mongoose schema types from the output/return type of Zod transforms rather than input types to prevent type mismatches and data corruption.
-  - **Nullable enums (`z.enum().nullable()`):** Set `required: false` and ensure Mongoose enum validation ignores `null` so nullable enums parse and validate cleanly.
-  - **Multi-primitive unions (`z.union`):** Map unions of disparate primitive types to `Schema.Types.Mixed` to prevent Mongoose from aggressively casting values to the first declared branch.
-  - **Literal values (`z.literal`):** Map `z.literal(value)` to `{ type: <Type>, enum: [value], default: value }` to preserve strict literal constraints in Mongoose.
 
 ## v4.0 — planned breaking cleanup
 

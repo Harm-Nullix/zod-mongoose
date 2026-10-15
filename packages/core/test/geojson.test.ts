@@ -78,7 +78,9 @@ describe('GeoJSON helpers', () => {
 
     expect(schema.path('boundary.type').options.enum).toEqual(['Polygon']);
     expect(schema.path('boundary.coordinates').instance).toBe('Array');
-    expect(schema.path('boundary.coordinates').options.type).toEqual([[[Number]]]);
+    // Nested array options stay attached to the corresponding array element.
+    const coordinates = schema.path('boundary.coordinates') as any;
+    expect(coordinates.embeddedSchemaType.embeddedSchemaType.embeddedSchemaType.instance).toBe('Number');
     expect(schema.path('boundary.coordinates').options.minlength).toBeUndefined();
     expect(schema.path('boundary.coordinates').isRequired).toBe(true);
     expect(schema.path('boundary._id')).toBeUndefined();

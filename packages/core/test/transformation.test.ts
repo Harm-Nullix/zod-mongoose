@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 describe('Zod Transformation and Validation Pipelines', () => {
   test('should handle .transform()', () => {
     const zodSchema = z.object({
-      name: z.string().transform((val) => val.toUpperCase()),
+      name: z.string().transform((val) => val.toUpperCase()).pipe(z.string()),
     });
 
     const mongooseSchema = toMongooseSchema(zodSchema);
@@ -63,7 +63,7 @@ describe('Zod Transformation and Validation Pipelines', () => {
       nested: z.object({
         val: z.preprocess(
           String,
-          z.string().transform((v) => v.trim()),
+          z.string().transform((v) => v.trim()).pipe(z.string()),
         ),
       }),
     });

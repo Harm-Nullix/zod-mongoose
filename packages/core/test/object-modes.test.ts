@@ -96,7 +96,7 @@ describe('Zod object modes', () => {
     expect(valid.get('children.0.score')).toBe(3);
     await valid.validate();
 
-    const invalid = new Model({child: {name: 'A', score: 'wrong'}});
+    const invalid = new Model({child: {name: 'A', score: 'wrong'}, children: []});
     await expect(invalid.validate()).rejects.toThrow('score');
   });
 
