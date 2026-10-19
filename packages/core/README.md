@@ -4,6 +4,7 @@
 <div align="center">
 
 [![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://harm-nullix.github.io/zod-mongoose/coverage-core.json)](https://github.com/Harm-Nullix/zod-mongoose)
 [![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose)
 [![NPM Downloads](https://img.shields.io/npm/dm/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose)
 [![install size](https://badgen.net/packagephobia/install/@nullix/zod-mongoose)](https://packagephobia.com/result?p=@nullix/zod-mongoose)
@@ -42,33 +43,17 @@ pnpm add @nullix/zod-mongoose zod/v4 mongoose
 # Documentation
 See the [full documentation](https://zodmongoose.com) for detailed usage examples and API reference.
 
-### Automatic Validation & Transformation Mapping
+### Validation and conversion
 
-`@nullix/zod-mongoose` automatically maps Zod's built-in validations and transformations to their corresponding Mongoose SchemaType options.
+Built-in checks such as `.min()` and `.regex()` become Mongoose validators; string setters such as `.trim()` normalize on assignment. Field and object refinements also run during document validation. See the [conversion reference](https://zodmongoose.com/api/conversion-mapping) for the complete mapping.
 
-| Zod Check | Mongoose Option | Target Types |
-| :--- | :--- | :--- |
-| `.min(n)` | `minlength: n` | `z.string()` |
-| `.max(n)` | `maxlength: n` | `z.string()` |
-| `.length(n)` | `minlength: n`, `maxlength: n` | `z.string()` |
-| `.regex(re)` | `match: re` | `z.string()` |
-| `.trim()` | `trim: true` | `z.string()` |
-| `.toLowerCase()` | `lowercase: true` | `z.string()` |
-| `.toUpperCase()` | `uppercase: true` | `z.string()` |
-| `.min(n)` / `.positive()` | `min: n` | `z.number()`, `z.date()` |
-| `.max(n)` / `.negative()` | `max: n` | `z.number()`, `z.date()` |
-| `.uuid()` | `type: Schema.Types.UUID` | `z.string()` |
-| `.datetime()` | `type: Date` | `z.string()` |
-| `.date()` | `type: Date` | `z.string()` |
-| `.time()` | `type: String` | `z.string()` |
+### Zod v4 & Mongoose 9 Support
 
-### Zod v4 & Mongoose 8 & 9+ Support
-
-This package is now optimized for **Zod v4** and **Mongoose 8 & 9+**.
+This package is now optimized for **Zod v4** and **Mongoose 9**.
 
 Key features:
 - **Zod v4 registry**: Securely store Mongoose-specific metadata alongside Zod schemas using native Zod v4 registry.
-- **Automatic Unwrapping**: Support for `.transform()`, `.pipe()`, `.preprocess()`, `.refine()`, `.optional()`, `.nullable()`, and `.brand()`.
+- **Output-aware conversion**: Pipes, preprocessors, and codecs use their output schema. Bare transforms use `Mixed`; parse input before storage. Optional and nullable wrappers retain their underlying types.
 - **Unions**: Primitive Zod unions (`string`, `number`, `boolean`, `date`, `bigint`) are mapped to Mongoose `Schema.Types.Union`. Object unions are automatically merged into a single schema object where all properties are optional, providing a flexible way to handle polymorphic data. Other complex unions fallback to `Mixed`.
 - **Native BigInt**: Maps Zod `bigint` to native Mongoose `BigInt` (or `Number` as fallback). If you need Mongoose `Long` (64-bit integer), you can specify it via `withMongoose(z.bigint(), { type: 'Long' })`.
 - **Specialized Types**: Direct support for `Buffer` and `ObjectId` via `zObjectId()` and `zBuffer()` helpers.
@@ -78,65 +63,16 @@ Key features:
 - **Nuxt 4 Ready**: Use the core helpers in Nuxt and Nitro; conditional exports select the browser-safe client implementation automatically.
 - **Hookable**: Extensible conversion process using `unjs/hookable`. Developers can hook into 15+ points (e.g., `schema:object:before`, `schema:union:before`).
 - **Populated Helper**: `PopulatedSchema<T>` utility for perfect TypeScript inference of populated documents.
-- **Mongoose Inference**: `InferDocument<T>` includes the generated `_id`; `InferInput<T>` describes incoming Zod data.
+- **Mongoose Inference**: `InferDocument<T>` includes the generated `_id`; `InferInput<T>` describes incoming Zod data; `InferQueryFilter<T>` derives type-safe MongoDB query filters.
 - **Strict Model**: `toStrictModel<T>` for advanced, fluent type-safe population (see [Strict Model documentation](./STRICT_MODEL.md)).
 
-**Coming in v3.2:** The repository includes `zPoint()` and `zPolygon()` helpers for GeoJSON values. They are not available in the published v3.1.1 package yet.
+`zPoint()` and `zPolygon()` provide GeoJSON values with native coordinate storage and validation. See the [helper reference](https://zodmongoose.com/api/specialized-helpers#geojson-helpers).
 
-### Type Conversion Table
+### Values at the storage boundary
 
-The following table shows how Zod types are mapped to Mongoose types by default.
-
-| Zod Type | Mongoose Type | Notes |
-| :--- | :--- | :--- |
-| `z.string()` | `String` | Required by default unless `.optional()` is used. |
-| `z.string().uuid()` | `mongoose.Schema.Types.UUID` | Maps to Mongoose's native UUID type. |
-| `z.string().datetime()` | `Date` | Maps to Mongoose `Date` for automatic parsing and indexing. |
-| `z.string().date()` | `Date` | Maps to Mongoose `Date`. |
-| `z.number()` | `Number` | |
-| `z.boolean()` | `Boolean` | |
-| `z.date()` | `Date` | |
-| `z.bigint()` | `BigInt` | Fallback to `Number` if `BigInt` is not supported. Use `withMongoose` with `type: 'Long'` for 64-bit integers. |
-| `z.enum()` | `String` | Includes Mongoose `enum` validation. |
-| `z.nativeEnum()` | `String` | Includes Mongoose `enum` validation. |
-| `z.string().trim()` | `String` | Automatically sets `trim: true`. |
-| `z.string().toLowerCase()` | `String` | Automatically sets `lowercase: true`. |
-| `z.string().min(5)` | `String` | Automatically sets `minlength: 5`. |
-| `z.array()` | `[]` | Mapped to a Mongoose array of the inner type. |
-| `z.set()` | `[]` | Mapped to a Mongoose array of the value type. |
-| `z.tuple()` | `[]` | Mapped to a Mongoose array of the first item's type. |
-| `z.record()` | `Map` | Mapped to a Mongoose `Map` with `of` type. |
-| `z.map()` | `Map` | Mapped to a Mongoose `Map` with `of` type. |
-| `z.object()` | `Nested Object` | Mapped to a nested Mongoose schema or subdocument. |
-| `z.strictObject()` | `Nested Object` | Rejects unknown keys through Mongoose `strict: 'throw'`. |
-| `z.looseObject()` | `Nested Object` | Keeps unknown keys through Mongoose `strict: false`. |
-| `.catchall(valueSchema)` | `Nested Object` | Keeps unknown keys and validates their values during document validation. |
-| `z.intersection()` | `Nested Object` | Merges the definitions of both branches into a single object. |
-| `z.union()` | `Schema.Types.Union` (primitives) or `Nested Object` (objects) | Mapped to `Union` for primitives, merged into an object for `z.object()` unions. Others fallback to `Mixed`. |
-| `z.xor()` | `mongoose.Schema.Types.Mixed` | Non-inclusive union. Maps to `Mixed` with a custom Zod-based validator to enforce mutual exclusivity. |
-| `z.discriminatedUnion()` | `Mongoose Discriminator` | Maps to native Mongoose discriminators. Common fields are automatically moved to the base schema. |
-| `zObjectId()` | `mongoose.Schema.Types.ObjectId` | Specialized helper for ObjectIds. By default, it is omitted from the generated Mongoose schema to let Mongoose handle its auto-generation. |
-| `zBuffer()` | `mongoose.Schema.Types.Buffer` | Specialized helper for Buffers. |
-| `zPoint()` (coming in v3.2) | GeoJSON Point subdocument | Validates a 2D coordinate pair; use `{index: '2dsphere'}` for geospatial queries. |
-| `zPolygon()` (coming in v3.2) | GeoJSON Polygon subdocument | Validates closed 2D rings and maps coordinates to `[[[Number]]]`. |
-| `zRef()` | `mongoose.Schema.Types.ObjectId` | Helper for fields that can be either an `ObjectId` or a populated object. |
-| `z.instanceof(Buffer)` | `mongoose.Schema.Types.Buffer` | |
-| `z.instanceof(ObjectId)` | `mongoose.Schema.Types.ObjectId` | |
-| `z.literal()` | `String` / `Number` / `Boolean` | Mapped to the literal's type with a Mongoose `enum` constraint. |
-| `z.any()` / `z.unknown()` | `mongoose.Schema.Types.Mixed` | Fallback for unhandled types. |
-
-### Unhandled and Unsupported Zod Types
-
-The following Zod types are currently not explicitly handled or are unsupported by nature and will fall back to `Mongoose.Schema.Types.Mixed` unless a custom type is provided via `withMongoose`.
-
-| Zod Type | Current Status | Recommended Alternative |
-| :--- | :--- | :--- |
-| `z.readonly()` | `Base Type` | Automatically unwrapped, applies `readOnly: true` metadata. |
-| `z.promise()` | Unsupported | Not applicable for database schemas |
-| `z.function()` | Unsupported | Not applicable for database schemas |
-| `z.void()` / `z.never()` | Unsupported | |
-
-> **Note:** Types like `z.branded()`, `z.readonly()`, `z.pipeline()`, `z.preprocess()`, and `z.transform()` are automatically unwrapped to their underlying base type during conversion.
+- **Arrays:** use `.default([])` when omission should produce an empty list. Otherwise required arrays reject omission and optional arrays remain omitted.
+- **Transforms:** parse input before constructing or assigning a document. Add `.pipe(outputSchema)` for automatic storage typing and output validation. Document validation does not rerun input callbacks; bare transforms use `Mixed`. See [Validate Documents](https://zodmongoose.com/guides/validation).
+- **Casting:** direct construction retains Mongoose casting. Parse with Zod first when raw input must satisfy Zod's rules before casting.
 
 Unknown-key modes also apply to nested subschemas and arrays. A typed catchall validates dynamic values on `document.validate()` and `save()`; query updates do not run that document hook. For nested strict, loose, and catchall objects, use a subschema rather than `{schema: false}`. Mongoose-generated IDs, version keys, and timestamps are excluded from the package's Zod document validation unless the Zod object declares them. See the [object modes guide](https://zodmongoose.com/guides/object-modes) for examples and option overrides.
 
@@ -439,24 +375,31 @@ Attaches Mongoose metadata to a Zod schema. For object schemas, use different pl
 
 `_id: false` removes the identifier path; `id: false` only disables the string `id` virtual. Field options such as `index` and `unique` go directly in the metadata. See [Nested Object IDs](https://zodmongoose.com/guides/nested-object-ids) for the full behavior.
 
-### `InferDocument<T>` / `InferInput<T>`
+### `InferDocument<T>` / `InferInput<T>` / `InferQueryFilter<T>`
 
-Use `InferDocument` for values read from Mongoose and `InferInput` for data submitted to Zod. `InferDocument` adds Mongoose's generated `_id`; `InferInput` is equivalent to `z.input<T>`, so it preserves coercion and preprocessing input types.
+Use `InferDocument` for values read from Mongoose, `InferInput` for data submitted to Zod, and `InferQueryFilter` for MongoDB query filters. `InferDocument` adds Mongoose's generated `_id`; `InferInput` is equivalent to `z.input<T>`, so it preserves coercion and preprocessing input types; `InferQueryFilter` derives the type-safe `QueryFilter<InferDocument<T>>` for queries and repository layers.
 
 ```typescript
 import { z } from 'zod/v4';
-import type { InferDocument, InferInput } from '@nullix/zod-mongoose';
+import type { InferDocument, InferInput, InferQueryFilter } from '@nullix/zod-mongoose';
 
 const UserSchema = z.object({
   name: z.string(),
+  age: z.number(),
 });
 
 type UserDocument = InferDocument<typeof UserSchema>;
 type CreateUserInput = InferInput<typeof UserSchema>;
+type UserFilter = InferQueryFilter<typeof UserSchema>;
 
 const user: UserDocument = {
   _id: new mongoose.Types.ObjectId(),
   name: 'John Doe',
+  age: 30,
+};
+
+const filter: UserFilter = {
+  age: { $gte: 18 },
 };
 ```
 

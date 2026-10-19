@@ -44,11 +44,6 @@ export function mapZodChecksToMongoose(checks: any[], mongooseProp: any) {
       }
     }
 
-    // ISO Formats
-    if (traitSet.has('$ZodISODateTime') || traitSet.has('$ZodISODate')) {
-      mongooseProp.type = Date;
-    }
-
     // String Transforms (trim, lowercase, uppercase)
     if (traitSet.has('$ZodCheckOverwrite') && typeof checkDef.tx === 'function') {
       const txStr = checkDef.tx.toString();

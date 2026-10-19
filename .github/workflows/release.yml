@@ -49,8 +49,8 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Run tests
-        run: pnpm run test
+      - name: Run tests and generate coverage
+        run: pnpm run test:coverage
 
       # CALCULATE BUNDLE GZIP SIZE
       - name: Calculate Bundle Size
@@ -105,6 +105,11 @@ jobs:
         run: |
           mkdir -p docs-build
           cp -r packages/docs/.output/* docs-build/
+
+          # Copy coverage badges if generated in docs public
+          if [ -d packages/docs/public ]; then
+            cp packages/docs/public/coverage*.json docs-build/ 2>/dev/null || true
+          fi
 
           # Write dynamic Shields.io JSON endpoint into docs root
           echo "{\"schemaVersion\":1,\"label\":\"gzipped size\",\"message\":\"${{ env.GZIP_KB }}\",\"color\":\"41b883\"}" > docs-build/size-badge.json

@@ -8,7 +8,9 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "test:coverage": "node -e \"console.log('Documentation package: no unit tests required')\"",
+    "test": "node -e \"console.log('Documentation package: no unit tests required')\""
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.139",

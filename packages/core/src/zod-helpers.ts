@@ -147,7 +147,9 @@ export function unwrapZodSchema(
           ...effects,
         ];
       }
-      return unwrapZodSchema(def.in, transformFeatures, visited);
+      // A callback's return type is erased at runtime. Preserve its output with
+      // Mixed unless a subsequent pipe declares an output schema.
+      return unwrapZodSchema(zod.unknown(), transformFeatures, visited);
     }
 
     // Default pipe behavior (extract the output part)
@@ -221,3 +223,9 @@ export type InferDocument<T> = OutputMongoose<T>;
 
 /** The raw input accepted by a Zod schema, before Mongoose adds document fields. */
 export type InferInput<T> = InputMongoose<T>;
+
+/** The MongoDB query filter accepted for a document represented by a Zod schema. */
+export type InferQueryFilter<T> = mongoose.QueryFilter<InferDocument<T>>;
+
+/** Alias for InferQueryFilter. */
+export type InferFilter<T> = InferQueryFilter<T>;

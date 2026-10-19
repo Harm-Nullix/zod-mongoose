@@ -70,7 +70,7 @@ describe('MegaZodSchema conversion', () => {
     const mongooseSchema = toMongooseSchema(MegaZodSchema);
 
     expect(mongooseSchema.path('customValidated')).toBeInstanceOf(mongoose.Schema.Types.String);
-    expect(mongooseSchema.path('transformed')).toBeInstanceOf(mongoose.Schema.Types.String);
+    expect(mongooseSchema.path('transformed')).toBeInstanceOf(mongoose.Schema.Types.Mixed);
   });
 
   test('should verify fallback to Mixed for unsupported types', () => {

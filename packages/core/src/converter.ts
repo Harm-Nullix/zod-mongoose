@@ -5,6 +5,7 @@ import {mongooseRegistry} from './registry.js';
 import type {ToMongooseSchemaOptions} from './registry.js';
 import {objectStrictness, unwrapZodSchema} from './zod-helpers.js';
 import {prepareForZodValidation} from './zod-validation.js';
+import {storageSchema} from './storage-schema.js';
 import {getMongoose} from './config.js';
 import {extractMongooseDef} from './extract-mongoose-def.js';
 import {callHookSync} from './hooks.js';
@@ -91,7 +92,12 @@ export function toMongooseSchema<
     TVirtuals
   >
 > {
-  const {schema: unwrapped} = unwrapZodSchema(schema);
+  const {schema: unwrapped, features} = unwrapZodSchema(schema);
+  if (features.transformations?.length && (unwrapped as any)._def?.type === 'unknown') {
+    throw new TypeError(
+      'A top-level transform needs an output object schema. Add .pipe(z.object({...})) to declare the stored fields.',
+    );
+  }
   const meta =
     mongooseRegistry.get(schema) ||
     mongooseRegistry.get(unwrapped) ||
@@ -197,9 +203,10 @@ export function toMongooseSchema<
   }
 
   if (mergedOptions.validateBeforeSave !== false) {
+    const storedSchema = storageSchema(schema);
     mongooseSchema.post('validate', function () {
       try {
-        schema.parse(prepareForZodValidation(schema, this.toObject(), mongooseSchema));
+        storedSchema.parse(prepareForZodValidation(storedSchema, this.toObject(), mongooseSchema));
       } catch (e) {
         if (e instanceof z.ZodError) {
           e.message = JSON.stringify({
@@ -217,6 +224,28 @@ export function toMongooseSchema<
       }
     });
   }
+
+  // Required strings mean presence in Zod; '' is valid unless constrained.
+  // Set this per path, leaving global Mongoose configuration untouched.
+  const seenPaths = new Set<object>();
+  const alignStrings = (target: any) => {
+    if (seenPaths.has(target)) return;
+    seenPaths.add(target);
+    if (target.instance === 'String') {
+      target.checkRequired = (value: unknown) => typeof value === 'string';
+    }
+    if (target.embeddedSchemaType) alignStrings(target.embeddedSchemaType);
+    if (target.$__schemaType) alignStrings(target.$__schemaType);
+    if (target.schemaTypes) target.schemaTypes.forEach(alignStrings);
+    if (target.schema) alignStrings(target.schema);
+    if (target.discriminators) Object.values(target.discriminators).forEach(alignStrings);
+    // Schema-level discriminators are compiled into models later by Mongoose.
+    if (target._applyDiscriminators) {
+      for (const child of target._applyDiscriminators.values()) alignStrings(child.schema);
+    }
+    if (target.eachPath) target.eachPath((_key: string, path: any) => alignStrings(path));
+  };
+  alignStrings(mongooseSchema);
 
   // Apply plugins if provided in options
   if (plugins && Array.isArray(plugins)) {

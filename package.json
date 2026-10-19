@@ -8,6 +8,7 @@
     "lint:types:ts5": "pnpm --filter @nullix/zod-mongoose run lint:types:ts5",
     "lint:types:ts7": "pnpm --filter @nullix/zod-mongoose run lint:types:ts7",
     "test:types": "pnpm --filter @nullix/zod-mongoose run test:types",
+    "test:coverage": "node scripts/generate-coverage.js",
     "test": "pnpm --filter \"*\" run test",
     "build": "pnpm --filter \"*\" --filter \"!docs\" run build",
     "dev": "pnpm --filter \"*playground*\" run dev",

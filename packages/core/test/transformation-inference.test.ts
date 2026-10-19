@@ -1,77 +1,44 @@
 import {describe, expect, test} from 'bun:test';
-import {z} from 'zod';
+import mongoose from 'mongoose';
+import {z} from 'zod/v4';
 import {toMongooseSchema} from '../src/index.js';
 
-describe('Transform Issue', () => {
-  test('should result in Boolean type when transformed to boolean', () => {
-    const schema = z.object({
-      active: z.coerce.string().transform((v) => v === 'true'),
-    });
-
-    const mongooseSchema = toMongooseSchema(schema) as any;
-
-    // IMPROVED BEHAVIOR: it's now Boolean because we infer it from the transform
-    expect(mongooseSchema.obj.active.type).toBe(Boolean);
+describe('Transform output mapping', () => {
+  test('an opaque callback uses Mixed without executing or inspecting it', () => {
+    let calls = 0;
+    const callback = (value: string) => { calls++; return value === 'true'; };
+    callback.toString = () => { throw new Error('Callback source must not be inspected'); };
+    const schema = toMongooseSchema(z.object({active: z.string().transform(callback)}));
+    expect(schema.path('active').instance).toBe('Mixed');
+    expect(calls).toBe(0);
   });
 
-  test('should result in Boolean type when transformed to boolean and has boolean default', () => {
-    const schema = z.object({
-      active: z.coerce
-        .string()
-        .transform((v) => v === 'true')
-        .default(false),
-    });
-
-    const mongooseSchema = toMongooseSchema(schema) as any;
-    expect(mongooseSchema.obj.active.type).toBe(Boolean);
-    expect(mongooseSchema.obj.active.default).toBe(false);
+  test('a default does not constrain every possible callback result', () => {
+    const schema = toMongooseSchema(z.object({
+      value: z.string().transform((value) => value === 'true' || value === 'false' ? value === 'true' : value).default(false),
+    }));
+    expect(schema.path('value').instance).toBe('Mixed');
+    expect(schema.path('value').options.default).toBe(false);
   });
 
-  test('should result in Boolean type when using pipe to boolean', () => {
-    const schema = z.object({
-      active: (z.string() as any).pipe(z.boolean()),
-    });
-
-    const mongooseSchema = toMongooseSchema(schema) as any;
-    expect(mongooseSchema.obj.active.type).toBe(Boolean);
+  test('an output pipe supplies the Boolean type', () => {
+    const schema = toMongooseSchema(z.object({
+      active: z.string().transform((value) => value === 'true').pipe(z.boolean()),
+    }));
+    expect(schema.path('active').instance).toBe('Boolean');
   });
 
-  test('should support custom stringbool type if it exists', () => {
-    // Simulate a custom type called 'stringbool'
-    const stringbool = z.string().transform((v) => v === 'true') as any;
-    stringbool._def.type = 'stringbool';
-
-    const schema = z.object({
-      active: stringbool,
-    });
-
-    const mongooseSchema = toMongooseSchema(schema) as any;
-    expect(mongooseSchema.obj.active.type).toBe(Boolean);
-  });
-
-  test('should support standard stringbool type if it exists', () => {
-    // Simulate a custom type called 'stringbool'
-    const stringbool = z.stringbool() as any;
-
-    const schema = z.object({
-      active: stringbool,
-    });
-
-    const mongooseSchema = toMongooseSchema(schema) as any;
-    expect(mongooseSchema.obj.active.type).toBe(Boolean);
-  });
-
-  test('should support standard stringbool type in transform', () => {
-    // Simulate a custom type called 'stringbool'
-    const b = z.coerce.string().transform((v) => (z as any).stringbool().parse(v));
-    const c = b.default(false);
-    const schema = z.object({
-      removed1: b,
-      removed2: c,
-    });
-
-    const mongooseSchema = toMongooseSchema(schema) as any;
-    expect(mongooseSchema.obj.removed1.type).toBe(Boolean);
-    expect(mongooseSchema.obj.removed2.type).toBe(Boolean);
+  test('the built-in stringbool codec declares its Boolean output', async () => {
+    const input = z.object({active: z.stringbool()});
+    const connection = mongoose.createConnection();
+    try {
+      const Model = connection.model('StringboolOutput', toMongooseSchema(input));
+      const doc = new Model(input.parse({active: 'yes'}));
+      expect(Model.schema.path('active').instance).toBe('Boolean');
+      await doc.validate();
+      expect(doc.active).toBe(true);
+    } finally {
+      connection.deleteModel(/.*/);
+    }
   });
 });

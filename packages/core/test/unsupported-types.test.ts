@@ -63,7 +63,7 @@ describe('Improved Types behavior', () => {
     const schema = z.tuple([z.string(), z.number()]);
     const def = extractMongooseDef(schema) as any;
     expect(Array.isArray(def.type)).toBe(true);
-    expect(def.type[0]).toBe(String);
+    expect(def.type[0]).toBe(mongoose.Schema.Types.Mixed);
   });
 
   test('z.promise should currently fallback to Mixed', () => {

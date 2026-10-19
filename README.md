@@ -4,6 +4,7 @@
 <div align="center">
 
 [![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://harm-nullix.github.io/zod-mongoose/coverage-badge.json)](https://github.com/Harm-Nullix/zod-mongoose)
 [![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose)
 [![NPM Downloads](https://img.shields.io/npm/dm/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose)
 [![install size](https://badgen.net/packagephobia/install/@nullix/zod-mongoose)](https://packagephobia.com/result?p=@nullix/zod-mongoose)
@@ -32,7 +33,7 @@ In modern TypeScript applications, you often find yourself defining the same sch
 
 - **Type Safety**: Full TypeScript support with inference from your Zod schemas.
 - **Automatic Mapping**: Zod validators like `.min()`, `.max()`, and `.regex()` are directly converted to Mongoose options.
-- **Full Zod Validation**: Automatically runs `schema.parse()` during Mongoose validation to support complex Zod features like `.refine()` and `.transform()`.
+- **Zod Validation**: Checks stored values and refinements during Mongoose validation. Parse transformed input once before storage; add an output pipe for stored-value validation. See [validation](https://zodmongoose.com/guides/validation).
 - **Native Discriminators**: Automatically maps `z.discriminatedUnion` to native Mongoose discriminators. Top-level unions use `modelName` (or derive it from `collection`) to avoid globally registered model-name collisions.
 - **Advanced Types**: Built-in support for `ObjectId`, `Decimal128`, `BigInt`, and more.
 - **Isomorphic**: Share schemas between frontend and backend with `setFrontendMode`.

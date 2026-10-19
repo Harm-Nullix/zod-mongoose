@@ -9,7 +9,7 @@ describe('Advanced Zod Transformation and Validation', () => {
       combined: z
         .preprocess(Number, z.number())
         .transform((v) => v * 2)
-        .refine((v) => v > 0),
+        .refine((v) => v > 0).pipe(z.number()),
     });
 
     const mongooseSchema = toMongooseSchema(zodSchema);
@@ -21,7 +21,7 @@ describe('Advanced Zod Transformation and Validation', () => {
       deepPipe: z
         .string()
         .pipe(z.email())
-        .pipe(z.string().transform((v) => v.toLowerCase())),
+        .pipe(z.string().transform((v) => v.toLowerCase())).pipe(z.string()),
     });
 
     const mongooseSchema = toMongooseSchema(zodSchema);
@@ -30,7 +30,7 @@ describe('Advanced Zod Transformation and Validation', () => {
 
   test('should handle transformations on arrays', () => {
     const zodSchema = z.object({
-      tags: z.array(z.string().transform((v) => v.trim())).transform((arr) => arr.filter(Boolean)),
+      tags: z.array(z.string().transform((v) => v.trim())).transform((arr) => arr.filter(Boolean)).pipe(z.array(z.string())),
     });
 
     const mongooseSchema = toMongooseSchema(zodSchema);
@@ -47,7 +47,7 @@ describe('Advanced Zod Transformation and Validation', () => {
 
     const transformedSchema = schemaWithMeta
       .transform((v) => v.toUpperCase())
-      .refine((v) => v.length > 0);
+      .refine((v) => v.length > 0).pipe(z.string());
 
     const zodObject = z.object({
       field: transformedSchema,
@@ -77,14 +77,14 @@ describe('Advanced Zod Transformation and Validation', () => {
       .object({
         key: z.string().transform((v) => v.trim()),
       })
-      .transform((obj) => ({...obj, extra: 'field'}));
+      .transform((obj) => ({...obj, extra: 'field'})).pipe(z.object({key: z.string(), extra: z.string()}));
 
     const zodSchema = z.object({
       nested: innerObject,
     });
 
     const mongooseSchema = toMongooseSchema(zodSchema);
-    // Even if transformed, the underlying structure for Mongoose is the object before transform
+    // The explicit output schema supplies the stored object structure
     expect(mongooseSchema.path('nested.key')).toBeInstanceOf(mongoose.Schema.Types.String);
   });
 });
