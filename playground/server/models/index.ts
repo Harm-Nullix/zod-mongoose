@@ -43,7 +43,9 @@ export const PostModel =
   (mongoose.models.Post as mongoose.Model<Post>) || mongoose.model<Post>('Post', PostSchema);
 
 // Activity Model (Discriminator example)
-export const ActivitySchema = toMongooseSchema(ActivityZodSchema);
+export const ActivitySchema = toMongooseSchema(ActivityZodSchema, {
+  modelName: 'Activity',
+});
 export const ActivityModel =
   (mongoose.models.Activity as mongoose.Model<Activity>) ||
   mongoose.model<Activity>('Activity', ActivitySchema);

@@ -151,7 +151,12 @@ export function toMongooseSchema<
 
   if (definition && typeof definition === 'object' && definition.__isDiscriminatorUnion) {
     const baseModelName =
-      modelName || (options?.collection && modelNameFromCollection(options.collection));
+      modelName ||
+      meta.modelName ||
+      (options?.collection && modelNameFromCollection(options.collection)) ||
+      (meta.collection && modelNameFromCollection(meta.collection)) ||
+      (schema as any).description ||
+      (unwrapped as any).description;
     if (!baseModelName) {
       throw new Error(
         'toMongooseSchema() found a top-level discriminated union. ' +

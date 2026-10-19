@@ -9,6 +9,10 @@
     "dev": "nuxt dev -p 34002",
     "postinstall": "nuxt prepare"
   },
+  "imports": {
+    "#shared/*": "./shared/*.ts",
+    "#server/*": "./server/*.ts"
+  },
   "dependencies": {
     "@nuxt/ui": "^4.11.3",
     "mongoose": "9.6.3",
