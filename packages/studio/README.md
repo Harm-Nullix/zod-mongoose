@@ -4,6 +4,7 @@
 <div align="center">
 
 [![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://harm-nullix.github.io/zod-mongoose/coverage-studio.json)](https://github.com/Harm-Nullix/zod-mongoose)
 [![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose-studio.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose-studio)
 [![NPM Downloads](https://img.shields.io/npm/dm/@nullix/zod-mongoose-studio.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose-studio)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue.svg)](https://www.typescriptlang.org/)

@@ -1,3 +1,13 @@
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Harm-Nullix/zod-mongoose/HEAD/logo.svg" width="200" alt="Logo">
+</div>
+<div align="center">
+
+[![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://harm-nullix.github.io/zod-mongoose/coverage-docs.json)](https://github.com/Harm-Nullix/zod-mongoose)
+
+</div>
+
 # @nullix/zod-mongoose-docs
 
 The documentation site for `zod-mongoose`, powered by [Nuxt UI Pro](https://ui.nuxt.com/pro) and [Nuxt Content](https://content.nuxt.com).

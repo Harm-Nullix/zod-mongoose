@@ -12,6 +12,7 @@
     "lint": "pnpm lint:types && pnpm lint:eslint",
     "test:types": "pnpm run lint:types:ts5 && pnpm run lint:types:ts7 && pnpm run test:types:consumer",
     "test:types:consumer": "node scripts/check-consumer-types.js",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov --coverage-reporter=text",
     "test:unit": "bun test",
     "test:unit:watch": "bun test --watch",
     "test": "pnpm lint && pnpm test:unit",

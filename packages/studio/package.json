@@ -47,6 +47,7 @@
     "dev": "nuxt dev -p 34003",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov --coverage-reporter=text",
     "test": "node --experimental-strip-types --test test/*.test.ts",
     "postinstall": "nuxt prepare"
   },

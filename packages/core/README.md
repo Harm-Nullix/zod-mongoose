@@ -4,6 +4,7 @@
 <div align="center">
 
 [![Release](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml/badge.svg)](https://github.com/Harm-Nullix/zod-mongoose/actions/workflows/release.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://harm-nullix.github.io/zod-mongoose/coverage-core.json)](https://github.com/Harm-Nullix/zod-mongoose)
 [![NPM Version](https://img.shields.io/npm/v/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose)
 [![NPM Downloads](https://img.shields.io/npm/dm/@nullix/zod-mongoose.svg)](https://www.npmjs.com/package/@nullix/zod-mongoose)
 [![install size](https://badgen.net/packagephobia/install/@nullix/zod-mongoose)](https://packagephobia.com/result?p=@nullix/zod-mongoose)
