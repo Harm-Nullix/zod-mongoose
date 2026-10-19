@@ -124,6 +124,28 @@ function generateMarkdownSummary(coreCoverage, studioCoverage, docsPercent) {
   return md;
 }
 
+function runBun(args, cwd) {
+  const localBun = path.join(rootDir, 'node_modules', '.bin', 'bun');
+  let cmd = 'bun';
+  if (process.env.BUN_BIN) {
+    cmd = process.env.BUN_BIN;
+  } else if (fs.existsSync(localBun)) {
+    cmd = `"${localBun}"`;
+  } else {
+    try {
+      execSync('bun --version', { stdio: 'ignore' });
+      cmd = 'bun';
+    } catch {
+      cmd = 'pnpm exec bun';
+    }
+  }
+
+  execSync(`${cmd} ${args}`, {
+    cwd,
+    stdio: 'inherit',
+  });
+}
+
 async function main() {
   if (!fs.existsSync(docsPublicDir)) {
     fs.mkdirSync(docsPublicDir, { recursive: true });
@@ -131,20 +153,14 @@ async function main() {
 
   console.log('Running test coverage for @nullix/zod-mongoose (core)...');
   const coreDir = path.join(rootDir, 'packages', 'core');
-  execSync('bun test --coverage --coverage-reporter=lcov --coverage-reporter=text', {
-    cwd: coreDir,
-    stdio: 'inherit',
-  });
+  runBun('test --coverage --coverage-reporter=lcov --coverage-reporter=text', coreDir);
 
   const coreCoverage = parseLcov(path.join(coreDir, 'coverage', 'lcov.info'));
   const coreColor = getColor(coreCoverage.percent);
 
   console.log('Running test coverage for @nullix/zod-mongoose-studio (studio)...');
   const studioDir = path.join(rootDir, 'packages', 'studio');
-  execSync('bun test --coverage --coverage-reporter=lcov --coverage-reporter=text', {
-    cwd: studioDir,
-    stdio: 'inherit',
-  });
+  runBun('test --coverage --coverage-reporter=lcov --coverage-reporter=text', studioDir);
 
   const studioCoverage = parseLcov(
     path.join(studioDir, 'coverage', 'lcov.info'),

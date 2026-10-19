@@ -27,7 +27,7 @@ onMounted(async () => {
     const monaco = await import("monaco-editor");
     if (!container.value) return;
     if (props.language === "typescript") {
-      const tsMonaco: any = await import("monaco-editor/esm/vs/language/typescript/monaco.contribution.js");
+      const tsMonaco: any = monaco.languages.typescript;
       tsMonaco.typescriptDefaults.setCompilerOptions({
         target: tsMonaco.ScriptTarget.ESNext,
         allowNonTsExtensions: true,

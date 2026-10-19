@@ -38,6 +38,10 @@ export const getMongoose = () => {
   if (mongooseInstance) {
     return mongooseInstance;
   }
+  if ((globalThis as any).mongoose) {
+    const m = (globalThis as any).mongoose;
+    return m.default || m;
+  }
   try {
     if (typeof require !== 'undefined') {
       // eslint-disable-next-line global-require
@@ -47,12 +51,23 @@ export const getMongoose = () => {
       }
       return m;
     }
-    return null;
   } catch {
-    // Try to see if mongoose is globally available (e.g. in some environments)
-    if ((globalThis as any).mongoose) {
-      return (globalThis as any).mongoose;
-    }
-    return null;
+    // ignore
   }
+  try {
+    if (typeof process !== 'undefined' && typeof (process as any).getBuiltinModule === 'function') {
+      const nodeModule = (process as any).getBuiltinModule('node:module') || (process as any).getBuiltinModule('module');
+      if (nodeModule && typeof nodeModule.createRequire === 'function') {
+        const req = nodeModule.createRequire(`${process.cwd()}/`);
+        const m = req('mongoose');
+        if (m && (m.Schema || m.default?.Schema)) {
+          return m.default || m;
+        }
+        return m;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
 };

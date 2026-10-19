@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import {toMongooseSchema} from '@nullix/zod-mongoose';
+import {toMongooseSchema, setMongoose} from '@nullix/zod-mongoose';
 import {
   UserZodSchema,
   PostZodSchema,
@@ -15,7 +15,8 @@ import {
   type Task,
 } from '#shared/schemas';
 
-// Expose mongoose globally for the converter to find in ESM/Nitro environments
+// Expose mongoose for the converter to find in ESM/Nitro environments
+setMongoose(mongoose);
 (globalThis as any).mongoose = mongoose;
 
 // User Model
@@ -42,7 +43,9 @@ export const PostModel =
   (mongoose.models.Post as mongoose.Model<Post>) || mongoose.model<Post>('Post', PostSchema);
 
 // Activity Model (Discriminator example)
-export const ActivitySchema = toMongooseSchema(ActivityZodSchema);
+export const ActivitySchema = toMongooseSchema(ActivityZodSchema, {
+  modelName: 'Activity',
+});
 export const ActivityModel =
   (mongoose.models.Activity as mongoose.Model<Activity>) ||
   mongoose.model<Activity>('Activity', ActivitySchema);
