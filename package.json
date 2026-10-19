@@ -41,6 +41,9 @@
     "typescript-eslint": "8.71.1"
   },
   "pnpm": {
+    "overrides": {
+      "@tiptap/*": "^3.31.4"
+    },
     "onlyBuiltDependencies": [
       "bun",
       "better-sqlite3"
