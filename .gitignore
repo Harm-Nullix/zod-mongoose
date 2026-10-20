@@ -73,3 +73,5 @@ cdk.out
 # Build outputs
 dist/
 **/dist/
+
+.history
