@@ -5,17 +5,18 @@ import {MongoMemoryServer} from 'mongodb-memory-server';
 import {toMongooseSchema, extractMongooseDef, zRef} from '../src/index.js';
 
 let mongoServer: MongoMemoryServer;
+let connection: mongoose.Connection;
 
 describe('Discriminator Unions', () => {
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
-  });
+    connection = await mongoose.createConnection(mongoServer.getUri()).asPromise();
+  }, 30000);
 
   afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoServer.stop();
-  });
+    await connection?.close();
+    await mongoServer?.stop();
+  }, 30000);
 
   it('should extract a structured POJO for discriminated unions', () => {
     const MyEventSchema = z.discriminatedUnion('kind', [
@@ -45,7 +46,7 @@ describe('Discriminator Unions', () => {
     ]);
 
     const schema = toMongooseSchema(MyEventZod, {modelName: 'TopLevelEvent'});
-    const EventModel = mongoose.model('TopLevelEvent', schema);
+    const EventModel = connection.model('TopLevelEvent', schema);
 
     expect(EventModel.discriminators).toHaveProperty('TopLevelEvent_clicked');
     expect(EventModel.discriminators).toHaveProperty('TopLevelEvent_purchased');
@@ -68,7 +69,7 @@ describe('Discriminator Unions', () => {
     });
 
     const schema = toMongooseSchema(UserSchema, {modelName: 'UserWithNestedDiscriminator'});
-    const UserModel = mongoose.model('UserWithNestedDiscriminator', schema);
+    const UserModel = connection.model('UserWithNestedDiscriminator', schema);
 
     const user = new UserModel({
       name: 'John',
@@ -92,7 +93,7 @@ describe('Discriminator Unions', () => {
     });
 
     const schema = toMongooseSchema(LogSchema, {modelName: 'LogWithArrayDiscriminator'});
-    const LogModel = mongoose.model('LogWithArrayDiscriminator', schema);
+    const LogModel = connection.model('LogWithArrayDiscriminator', schema);
 
     const log = new LogModel({
       entries: [

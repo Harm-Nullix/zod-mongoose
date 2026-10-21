@@ -7,10 +7,10 @@ import {toMongooseSchema, withMongoose, zObjectId} from '../src/index.js';
 describe('Zod object modes', () => {
   test('persists typed catchall fields and rejects invalid extras', async () => {
     const server = await MongoMemoryServer.create();
+    const database = await mongoose.createConnection(server.getUri()).asPromise();
     try {
-      await mongoose.connect(server.getUri());
       const definition = z.object({name: z.string(), age: z.number()}).catchall(z.string());
-      const Model = mongoose.model('CatchallPersistence', toMongooseSchema(definition)) as any;
+      const Model = database.model('CatchallPersistence', toMongooseSchema(definition)) as any;
 
       const saved = await Model.create({name: 'Ada', age: 37, nickname: 'A'});
       await saved.validate(); // A saved document also has Mongoose's __v field.
@@ -21,7 +21,7 @@ describe('Zod object modes', () => {
       expect(invalid.toObject()).toHaveProperty('nickname', 42);
       await expect(invalid.validate()).rejects.toThrow('nickname');
 
-      const EmptyModel = mongoose.model(
+      const EmptyModel = database.model(
         'CatchallEmptyPersistence',
         toMongooseSchema(z.object({name: z.string()}).catchall(z.object({}))),
       ) as any;
@@ -29,7 +29,7 @@ describe('Zod object modes', () => {
       const emptyRead = await EmptyModel.findById(emptySaved._id).lean();
       expect(emptyRead?.notes).toEqual({});
 
-      const StrictModel = mongoose.model(
+      const StrictModel = database.model(
         'StrictCustomVersion',
         toMongooseSchema(z.strictObject({name: z.string()}), {versionKey: 'revision'}),
       );
@@ -37,7 +37,7 @@ describe('Zod object modes', () => {
       expect(strictSaved.toObject()).toHaveProperty('revision', 0);
       await strictSaved.validate();
 
-      const TimestampModel = mongoose.model(
+      const TimestampModel = database.model(
         'StrictGeneratedTimestamps',
         toMongooseSchema(z.strictObject({name: z.string()}), {
           timestamps: {createdAt: 'created_at', updatedAt: 'updated_at'},
@@ -47,10 +47,10 @@ describe('Zod object modes', () => {
       expect(timestampSaved.toObject()).toHaveProperty('created_at');
       await timestampSaved.validate();
     } finally {
-      await mongoose.disconnect();
+      await database.close();
       await server.stop();
     }
-  });
+  }, 30000);
 
   test('preserves loose fields at root and in subdocuments', async () => {
     const definition = z.looseObject({

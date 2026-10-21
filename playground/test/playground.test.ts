@@ -11,12 +11,12 @@ describe('Playground Integration', () => {
     mongod = await MongoMemoryServer.create();
     const uri = mongod.getUri();
     await mongoose.connect(uri);
-  });
+  }, 30000);
 
   afterAll(async () => {
     await mongoose.disconnect();
     await mongod.stop();
-  });
+  }, 30000);
 
   it('should successfully create a User model from UserZodSchema', async () => {
     const userSchema = toMongooseSchema(UserZodSchema);

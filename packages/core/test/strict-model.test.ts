@@ -10,12 +10,12 @@ describe('StrictModel', () => {
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     await mongoose.connect(mongoServer.getUri());
-  });
+  }, 30000);
 
   afterAll(async () => {
     await mongoose.disconnect();
     await mongoServer.stop();
-  });
+  }, 30000);
 
   const AuthorSchema = z.object({
     name: z.string(),
