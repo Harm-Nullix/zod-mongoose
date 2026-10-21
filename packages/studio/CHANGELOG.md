@@ -1,5 +1,16 @@
 # @nullix/zod-mongoose-studio
 
+## 3.6.0
+
+### Minor Changes
+
+- aadb67b: Minor bumps in packages causing cascading minor bumps
+
+### Patch Changes
+
+- Updated dependencies [aadb67b]
+  - @nullix/zod-mongoose@3.6.0
+
 ## 3.5.0
 
 ### Minor Changes

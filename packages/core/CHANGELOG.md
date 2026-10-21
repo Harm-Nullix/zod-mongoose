@@ -1,3 +1,9 @@
+## 3.6.0
+
+### Minor Changes
+
+- aadb67b: Minor bumps in packages causing cascading minor bumps
+
 ## 3.5.0
 
 ### Minor Changes
