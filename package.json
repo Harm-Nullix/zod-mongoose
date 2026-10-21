@@ -13,8 +13,8 @@
     "build": "pnpm --filter \"*\" --filter \"!docs\" run build",
     "dev": "pnpm --filter \"*playground*\" run dev",
     "release:prepare": "pnpm build && pnpm test && changeset && git add .changeset/",
-    "release": "pnpm build && pnpm test && changeset publish --access public",
-    "release:ci": "pnpm release --no-git-checks || true"
+    "release": "pnpm build && pnpm test && changeset publish",
+    "release:ci": "pnpm release"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",

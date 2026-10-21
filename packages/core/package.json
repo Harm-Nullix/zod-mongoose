@@ -19,8 +19,7 @@
     "build:rollup": "rimraf dist && rollup -c",
     "build:types": "node scripts/build-types.js",
     "build": "pnpm run build:rollup && pnpm run build:types",
-    "prepublishOnly": "pnpm run build",
-    "publish": "pnpm publish --access public"
+    "prepublishOnly": "pnpm run build"
   },
   "homepage": "https://zodmongoose.com",
   "repository": {

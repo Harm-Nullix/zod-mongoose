@@ -87,12 +87,15 @@ Every release is published with `--provenance`. This adds a verified checkmark o
 
 ### Manual Publish
 
-If you ever need to publish manually (not recommended), ensure you are logged into npm locally and run:
+If you ever need to publish manually from a local terminal (not recommended), ensure you are logged into npm locally (`npm login`) and run:
 
 ```bash
 pnpm build
-pnpm changeset publish --provenance
+pnpm test
+NPM_CONFIG_PROVENANCE=false pnpm changeset publish
 ```
+
+> **Note:** `NPM_CONFIG_PROVENANCE=false` is required when publishing locally because provenance generation is only supported in CI environments (GitHub Actions OIDC).
 
 > **Note:** Only use manual publishing in emergencies to maintain the integrity of the automated changelogs.
 

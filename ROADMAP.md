@@ -51,6 +51,12 @@ The original red tests included proposals for implicit literal defaults and stri
 - **Minor bumps:**
   - **Casting compatibility:** native Mongoose primitive Union casting remains available for direct construction and query filters. Parse input with Zod first when strict raw-input validation is required. Conversion does not impose a new global casting policy.
 
+## 3.7 - implementation pending
+- **explore schema diagnostics and CLI**- 
+
+lets try and explore version 3.7. What would a schema diagnostics CLI look like and do?
+What kind of purpose would it have, and would it be included inside the core package? Or seperated?
+Somnething like npx zod-mongoose, maybe detecting Zod constructs in CI/CD that Mongoose silently ignores or misinterprets? Some more sympfony styled things to create fixtures for testing? Can we think of some more things a developer would want for more rapid development, or debugging? maybe the option to fully isolate a file so they can paste it in the playground?
 ## v4.0 — planned breaking cleanup
 
 - Remove `setFrontendMode()`.
