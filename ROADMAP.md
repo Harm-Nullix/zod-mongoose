@@ -47,6 +47,10 @@ The original red tests included proposals for implicit literal defaults and stri
 
 - **Type-safe query-filter helper:** `InferQueryFilter<T>` (and alias `InferFilter<T>`) provides compile-time MongoDB query filter types (`mongoose.QueryFilter<InferDocument<T>>`) derived directly from Zod document schemas. It complements `InferInput<T>` and `InferDocument<T>` with zero runtime overhead.
 
+## v3.6 — implementation complete
+- **Minor bumps:**
+  - **Casting compatibility:** native Mongoose primitive Union casting remains available for direct construction and query filters. Parse input with Zod first when strict raw-input validation is required. Conversion does not impose a new global casting policy.
+
 ## v4.0 — planned breaking cleanup
 
 - Remove `setFrontendMode()`.
