@@ -135,4 +135,25 @@ describe('Subschema support', () => {
     expect((mongooseSchema as any).obj.child.a).toBeDefined();
     expect((mongooseSchema as any).obj.child.b).toBeDefined();
   });
+
+  test('should support plugins in intersection subschemas', () => {
+    let pluginCalled = false;
+    const testPlugin = () => {
+      pluginCalled = true;
+    };
+
+    const left = z.object({a: z.string()});
+    const right = z.object({b: z.number()});
+    const intersection = withMongoose(z.intersection(left, right), {
+      schema: {plugins: [testPlugin]},
+    });
+
+    const schema = z.object({
+      child: intersection,
+    });
+
+    toMongooseSchema(schema);
+
+    expect(pluginCalled).toBe(true);
+  });
 });

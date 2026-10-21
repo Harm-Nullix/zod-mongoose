@@ -69,4 +69,64 @@ describe('Isomorphic Support', () => {
     expect(typeof parsed._id).toBe('string');
     expect(parsed._id).toBe(oidStr);
   });
+
+  test('should support frontend zRef codec and metadata extraction', () => {
+    const UserSchema = z.object({
+      _id: Frontend.zObjectId(),
+      name: z.string(),
+    });
+
+    const PostSchema = z.object({
+      title: z.string(),
+      author: Frontend.zRef('User', UserSchema),
+    });
+
+    const authorOid = '507f1f77bcf86cd799439011';
+
+    // Parse with raw ID string
+    const parsedWithId = PostSchema.parse({
+      title: 'Hello',
+      author: authorOid,
+    });
+    expect(parsedWithId.author).toBe(authorOid);
+
+    // Parse with populated object containing _id (decoded to _id)
+    const parsedWithPopulated = PostSchema.parse({
+      title: 'Hello',
+      author: {_id: authorOid, name: 'Alice'},
+    });
+    expect(parsedWithPopulated.author).toBe(authorOid);
+
+    // Verify metadata attached via withMongoose
+    const meta = Frontend.getMongooseMeta(PostSchema.shape.author);
+    expect(meta?.ref).toBe('User');
+    expect(meta?.type).toBe('ObjectId');
+  });
+
+  test('should support frontend populateZodSchema and timestamps', () => {
+    const AuthorSchema = z.object({
+      _id: Frontend.zObjectId(),
+      name: z.string(),
+    });
+
+    const BookSchema = z.object({
+      title: z.string(),
+      author: Frontend.zRef('Author', AuthorSchema),
+    });
+
+    const populatedSchema = Frontend.populateZodSchema(BookSchema, ['author']);
+    const validData = {
+      title: 'Zod in Action',
+      author: {
+        _id: '507f1f77bcf86cd799439011',
+        name: 'Bob',
+      },
+    };
+
+    expect(populatedSchema.parse(validData)).toEqual(validData);
+
+    const timestamps = Frontend.genTimestampsSchema('created_at', 'updated_at');
+    expect(timestamps).toHaveProperty('created_at');
+    expect(timestamps).toHaveProperty('updated_at');
+  });
 });

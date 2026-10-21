@@ -1,7 +1,7 @@
 import {expect, test, describe} from 'bun:test';
 import {z} from 'zod/v4';
 import mongoose from 'mongoose';
-import {withMongoose, toMongooseSchema} from '../src/index.js';
+import {withMongoose, toMongooseSchema, genTimestampsSchema, bufferMongooseGetter} from '../src/index.js';
 
 describe('Mongoose Schema Options via withMongoose', () => {
   test('should apply top-level schema options like collection and versionKey', () => {
@@ -81,5 +81,19 @@ describe('Mongoose Schema Options via withMongoose', () => {
     expect(
       toMongooseSchema(withMongoose(meta, {timestamps: false})).path('createdAt'),
     ).toBeUndefined();
+  });
+
+  test('should throw error when createdAt and updatedAt timestamp fields are identical', () => {
+    expect(() => {
+      genTimestampsSchema('sameTimestampKey' as any, 'sameTimestampKey' as any);
+    }).toThrow('`createdAt` and `updatedAt` fields must be different');
+  });
+
+  test('should normalize BSON Binary in bufferMongooseGetter', () => {
+    const rawBuffer = Buffer.from('hello');
+    const bsonBinary = {_bsontype: 'Binary', buffer: rawBuffer};
+    expect(bufferMongooseGetter(bsonBinary)).toBe(rawBuffer);
+    expect(bufferMongooseGetter('plain')).toBe('plain');
+    expect(bufferMongooseGetter(null)).toBeNull();
   });
 });

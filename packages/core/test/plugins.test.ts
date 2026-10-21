@@ -1,11 +1,10 @@
-import { expect, test, describe, mock } from 'bun:test';
-import { z } from 'zod/v4';
-import { toMongooseSchema } from '../src/converter.js';
-import { hooks } from '../src/hooks.js';
+import {expect, test, describe, mock} from 'bun:test';
+import {z} from 'zod/v4';
+import {toMongooseSchema, withMongoose, hooks} from '../src/index.js';
 import mongoose from 'mongoose';
 
-describe('Plugins and Schema Hooks', () => {
-  test('should support Mongoose plugins via options', () => {
+describe('Mongoose Plugin Support', () => {
+  test('should support root Mongoose plugins via options', () => {
     const schema = z.object({
       name: z.string(),
     });
@@ -22,26 +21,28 @@ describe('Plugins and Schema Hooks', () => {
     expect((mongooseSchema.virtuals as any).pluginVirtual).toBeDefined();
   });
 
-  test('should support schema:created hook', () => {
+  test('should support plugins in nested subschemas', () => {
+    let pluginCalled = false;
+    const testPlugin = () => {
+      pluginCalled = true;
+    };
+
+    const nested = withMongoose(
+      z.object({
+        name: z.string(),
+      }),
+      {schema: {plugins: [testPlugin]}},
+    );
+
     const schema = z.object({
-      name: z.string(),
+      child: nested,
     });
 
-    const hookCallback = mock(({ mongooseSchema }: { mongooseSchema: mongoose.Schema }) => {
-      mongooseSchema.virtual('hookVirtual').get(() => 'world');
-    });
-
-    const unhook = hooks.hook('schema:created', hookCallback);
-
-    const mongooseSchema = toMongooseSchema(schema);
-
-    expect(hookCallback).toHaveBeenCalled();
-    expect((mongooseSchema.virtuals as any).hookVirtual).toBeDefined();
-
-    unhook();
+    toMongooseSchema(schema);
+    expect(pluginCalled).toBe(true);
   });
 
-  test('should support both plugins and hooks together', () => {
+  test('should support both Mongoose plugins and zod-mongoose hooks together', () => {
     const schema = z.object({
       name: z.string(),
     });
@@ -50,7 +51,7 @@ describe('Plugins and Schema Hooks', () => {
       s.virtual('p1').get(() => 1);
     });
 
-    const hookCallback = mock(({ mongooseSchema }: { mongooseSchema: mongoose.Schema }) => {
+    const hookCallback = mock(({mongooseSchema}: {mongooseSchema: mongoose.Schema}) => {
       mongooseSchema.virtual('h1').get(() => 2);
     });
 
