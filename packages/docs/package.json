@@ -13,7 +13,7 @@
     "test": "node -e \"console.log('Documentation package: no unit tests required')\""
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.139",
+    "@iconify-json/lucide": "^1.2.147",
     "@iconify-json/simple-icons": "^1.2.75",
     "@iconify-json/vscode-icons": "^1.2.84",
     "@nullix/zod-mongoose-studio": "workspace:*",
