@@ -28,7 +28,7 @@
     "mongoose": "9.7.4",
     "nuxt": "^4.6.0",
     "nuxt-llms": "0.2.0",
-    "nuxt-og-image": "^6.9.0",
+    "nuxt-og-image": "^7.0.7",
     "satori": "^0.47.1",
     "tailwindcss": "^4.2.2",
     "ufo": "^1.6.4",
