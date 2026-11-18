@@ -37,8 +37,8 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
-    "better-sqlite3": "^13.0.3",
-    "eslint": "^10.14.0",
+    "better-sqlite3": "^13.2.0",
+    "eslint": "^10.15.0",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.3.14"
   },
