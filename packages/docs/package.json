@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.155",
-    "@iconify-json/simple-icons": "^1.2.101",
+    "@iconify-json/simple-icons": "^1.2.103",
     "@iconify-json/vscode-icons": "^1.2.96",
     "@nullix/zod-mongoose-studio": "workspace:*",
     "@nuxt/content": "^3.16.2",
